@@ -1,22 +1,18 @@
 # Noor — Islamic Educational App
 
 ## Project Overview
-A reverent Islamic educational mobile app built with **Expo + React Native**. Provides the Quran (Arabic + translations + recitations), hadith, stories of Prophets and companions, and curated Quranic wisdom.
-
-## Current Phase: Phase 1 (Foundation)
-Design system · Navigation shell · Home screen · Quran reader MVP · Bookmarks
+A reverent Islamic educational companion. Quran (Arabic + translations + recitations), 99 Names of Allah, themed Quranic wisdom, bookmarks, and remembrance. Ships as both an installable PWA and a Capacitor-wrapped Android app from a **single `index.html`**.
 
 ---
 
-## Sacred Text Rules (NEVER VIOLATE THESE)
+## Architecture at a glance
 
-1. **Never** set `numberOfLines` or `ellipsizeMode` on Quranic `Text` nodes
-2. **Always** use `sacredTextStyle()` from `src/design/typography.ts` for Quranic Arabic
-3. **Always** wrap Quranic text in `<SacredFrame>` — it enforces styling and warns in dev if bypassed
-4. **Never** break Arabic words across lines
-5. `writingDirection: 'rtl'` and `textAlign: 'right'` are mandatory on all Arabic text
-6. `allowFontScaling={false}` on all Quranic `Text` nodes
-7. The `sacred` color token in `tokens.ts` is **reserved** — only `SacredFrame` may use it directly
+- **One file does the whole app.** `index.html` holds markup, CSS (tokens + components), and a Vue 3 app. No build step, no bundler, no node_modules for the app itself — only Capacitor's CLI for packaging.
+- **Vue 3 from CDN** (`vue.global.prod.js`) + **Tailwind from CDN** (`cdn.tailwindcss.com`) + **Google Fonts** for display text.
+- **Local font asset:** `assets/fonts/KFGQPCUthmanicScriptHAFS.ttf` is copied into `www/fonts/` and `@font-face`-loaded for Quranic Arabic. The other fonts (Amiri, Cormorant Garamond, Inter) come from Google Fonts at runtime.
+- **Persistence:** `localStorage` only. Keys: `noor_profile`, `noor_bookmarks`, `noor_last`, `noor_theme`, `noor_prefs`, `noor_arabic_size`.
+- **Offline shell:** `sw.js` — network-first with cache fallback; always-live pass-through for `api.quran.com`, `verses.quran.com`, `everyayah.com`.
+- **Android wrapper:** Capacitor 8 copies `index.html`, `sw.js`, and fonts into `www/`, then into the Android project.
 
 ---
 
@@ -24,91 +20,123 @@ Design system · Navigation shell · Home screen · Quran reader MVP · Bookmark
 
 | Layer | Choice |
 |-------|--------|
-| Framework | Expo SDK 54 + React Native 0.81 |
-| Language | TypeScript (strict) |
-| Styling | NativeWind v4 + StyleSheet; tokens in `src/design/tokens.ts` |
-| Navigation | React Navigation v7 (bottom tabs + native stack) |
-| State | Zustand v5 |
-| Audio | expo-av |
-| Persistence | react-native-mmkv (requires `expo prebuild`) |
-| Icons | lucide-react-native |
+| App framework | Vue 3 (global build, CDN) |
+| Styling | Tailwind (CDN) + CSS custom properties in `:root` / `.dark` |
+| Persistence | `localStorage` |
+| Offline | Service worker (`sw.js`) |
+| Native wrapper | Capacitor 8 (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android`) |
+| Fonts | KFGQPC Uthmanic Hafs (local), Amiri / Cormorant Garamond / Inter (Google Fonts) |
 
 ---
 
 ## Getting Started
 
 ```bash
-npm install
-npx expo prebuild        # required for MMKV native module
-npx expo run:android     # or run:ios on macOS
+npm install              # installs Capacitor CLI + Android platform
+npm run add-android      # first-time only — creates /android
+npm run build            # copies index.html, sw.js, fonts into www/ and syncs Android
+npm run open             # opens Android Studio
 ```
 
-> **Note:** `expo prebuild` generates `android/` and `ios/` directories. These are git-ignored. Rebuild after adding native modules.
+Scripts in `package.json`:
+
+| Script | What it does |
+|--------|--------------|
+| `build` | `mkdir -p www/fonts && cp index.html www/ && cp sw.js www/ && cp assets/fonts/*.ttf www/fonts/ && npx cap copy android` |
+| `sync` | `npx cap sync android` (copy + update native deps) |
+| `open` | `npx cap open android` |
+| `add-android` | One-time Android platform add |
+
+For pure web testing, open `index.html` directly in a browser or serve the project root over any static server.
 
 ---
 
-## Fonts
+## Folder Layout
 
-Place these font files in `assets/fonts/` before running:
+```
+noor/
+├── index.html              # THE app — markup, styles, Vue component
+├── sw.js                   # Service worker
+├── capacitor.config.json   # appId com.themra99.noor, webDir www, bg #0D1F1A
+├── package.json
+├── assets/
+│   ├── fonts/
+│   │   └── KFGQPCUthmanicScriptHAFS.ttf   # local Quran font (the others come from Google)
+│   ├── icon.png, adaptive-icon.png, splash-icon.png, favicon.png
+└── www/                    # build output — git-ignored, created by npm run build
+```
 
-| File | Source |
-|------|--------|
-| `KFGQPCUthmanicScriptHAFS.ttf` | [King Fahd Complex](https://qurancomplex.gov.sa) — free download |
-| `Amiri-Regular.ttf` | [Google Fonts / Amiri](https://fonts.google.com/specimen/Amiri) |
-| `CormorantGaramond-SemiBold.ttf` | [Google Fonts / Cormorant Garamond](https://fonts.google.com/specimen/Cormorant+Garamond) |
-| `Inter-Regular.ttf` | [Google Fonts / Inter](https://fonts.google.com/specimen/Inter) |
-| `Inter-Medium.ttf` | Google Fonts / Inter |
-| `Inter-SemiBold.ttf` | Google Fonts / Inter |
+`android/` and `www/` are git-ignored.
 
 ---
 
 ## Design Tokens (Madinah Palette)
 
-Defined in `src/design/tokens.ts` — **single source of truth**.
+Defined in the `:root` / `.dark` blocks of `index.html`. **Single source of truth** — never hard-code hex values outside those blocks.
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| `base` | `#0F4C3A` | Primary brand (emerald) |
-| `accent` | `#C9A961` | Gold — decorative, CTA, highlights |
-| `ink` | `#1A1A1A` | Body text |
-| `parchment` | `#F5F0E1` | Light background |
-| `sacred` | `#0F4C3A` | **Reserved — SacredFrame only** |
-| `darkSurface` | `#0D1F1A` | Dark mode background |
+| Token | Light | Dark | Use |
+|-------|-------|------|-----|
+| `--base` | `#0F4C3A` | same | Primary brand (emerald) |
+| `--accent` | `#C9A961` | `#E8C979` | Gold — decorative, CTA, highlights |
+| `--parchment` | `#F5F0E1` | — | Cream background in light mode |
+| `--ink` | `#1A1A1A` | — | Body text in light mode |
+| `--sacred` | `#0F4C3A` | same | **Reserved — `.sacred-frame` only** |
+| `--bg` | `#F5F0E1` | `#0D1F1A` | App background |
+| `--text` / `--text-2` / `--text-3` / `--text-4` | — | — | Text tiers (primary → muted) |
 
----
-
-## Key File Locations
-
-| File | Purpose |
-|------|---------|
-| `src/design/tokens.ts` | All design tokens — start here |
-| `src/design/typography.ts` | `sacredTextStyle()` — canonical Quranic text helper |
-| `src/components/sacred/` | All Quranic text components live here |
-| `src/services/api/quranClient.ts` | Quran.com API v4 client |
-| `src/services/audio/AudioService.ts` | expo-av singleton |
-| `src/store/` | All Zustand stores |
+Motion tokens: `--ease-out-expo`, `--ease-in-out-expo`, `--ease-smooth`, `--ease-bounce`, `--dur-quick | med | slow`.
 
 ---
 
-## API
+## Sacred Text Rules (NEVER VIOLATE)
 
-- **Quran:** `https://api.quran.com/api/v4` — no key required for Phase 1
-  - Translation ID `131` = The Clear Quran (Dr. Mustafa Khattab)
-  - Recitation ID `7` = Mishary Rashid Alafasy
-- **Audio CDN:** `https://everyayah.com/data/Alafasy_128kbps/{SSS}{AAA}.mp3`
-- **Hadith (Phase 3):** Sunnah.com API — requires an API key, apply at sunnah.com/developers
+1. **Always** use the `.sacred-text` CSS class for Quranic Arabic — it applies Uthmanic Hafs, RTL, right-align, and line-height tuned for ligatures.
+2. **Never** apply `text-overflow: ellipsis`, `-webkit-line-clamp`, or any truncation to Quranic text.
+3. **Never** break Arabic words across lines (the font + line-height in `.sacred-text` handles this; don't override with `word-break` / `overflow-wrap`).
+4. `dir="rtl"` and `lang="ar"` go on every Quranic `<p>`.
+5. The `--sacred` color token is reserved for `.sacred-frame` — don't reuse it elsewhere.
+6. Ayah markers use the `.ayah-marker` class (gold circle with Arabic-Indic digit via `toArabicDigits`).
+
+---
+
+## App Structure (inside `index.html`)
+
+### Pages (`page` reactive ref)
+- `onboarding` — name capture, first-run
+- `home` — greeting, daily verse, continue reading, quick entries
+- `quran` — surah list with search + Meccan/Medinan filter
+- `reader` — ayah-by-ayah Arabic + Khattab translation + audio + bookmark
+- `bookmarks` — saved verses
+- `names` — the 99 Names of Allah (grid)
+- `wisdom` — themed Quranic verses
+- `hadith` — placeholder (Phase 3)
+- `stories` — placeholder (Phase 4)
+- `settings` — theme, reciter, Arabic size, export/import, clear data
+
+### Reactive state (all in the Vue `setup()` function)
+- `page`, `isDark`, `profile`, `bookmarks`, `lastPosition`
+- `currentSurah`, `verses`, `loadingVerses`, `versesError`
+- `surahSearch`, `revFilter`, `arabicSize`
+- `wisdomTheme`, `selectedName`, `selectedVerse`
+- `audio { isPlaying, currentAyah, el, ... }`, `prefs`, `toast`
+
+### API & audio
+- Surahs + ayahs: `https://api.quran.com/api/v4/verses/by_chapter/{id}?translations=131&fields=text_uthmani,verse_key,verse_number`
+- Translation 131 = The Clear Quran (Dr. Mustafa Khattab).
+- Audio: `https://everyayah.com/data/Alafasy_128kbps/{SSS}{AAA}.mp3` with fallback reciters (user-toggleable). A single `<audio>` element is driven imperatively from `playAyah` / `toggleAudio` / `stopAudio`.
 
 ---
 
 ## Do Nots
 
-- ❌ No AI-generated images of Prophets or sacred figures
-- ❌ No background music
-- ❌ No auto-play recitation without user action
-- ❌ No ads near Quran/hadith
-- ❌ No da'if or mawdu' hadiths without clear labeling
-- ❌ No flashy animations on sacred screens
-- ❌ No breaking Arabic words across lines
+- No AI-generated images of Prophets or sacred figures
+- No background music
+- No auto-play recitation without user action
+- No ads near Quran
+- No da'if or mawdu' hadiths without clear labeling
+- No flashy animations on sacred screens
+- No breaking Arabic words across lines
+- No hard-coded hex values outside the token blocks
 
 ---
 
@@ -116,8 +144,8 @@ Defined in `src/design/tokens.ts` — **single source of truth**.
 
 | Phase | Focus |
 |-------|-------|
-| **1** ✅ | Design system, navigation, home, Quran reader MVP, bookmarks |
-| 2 | Multiple translations, tafsir, multiple qaris, offline download |
+| **1** ✅ | Design system, navigation, home, Quran reader MVP, bookmarks, 99 Names, wisdom |
+| 2 | Multiple translations, tafsir, multiple qaris, offline surah download |
 | 3 | Hadith browser (Sunnah.com), search, bookmarks |
 | 4 | Prophet stories, Seerah, Sahaba, quotes gallery |
 | 5 | Prayer times, Qibla, widgets, accessibility audit |

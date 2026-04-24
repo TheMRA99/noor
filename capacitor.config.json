@@ -1,0 +1,8 @@
+{
+  "appId": "com.themra99.noor",
+  "appName": "Noor",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#0D1F1A"
+  }
+}

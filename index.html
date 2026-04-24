@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Noor — A reverent Islamic companion: Quran, 99 Names of Allah, wisdom, and remembrance.">
+  <meta name="theme-color" content="#0A0F0D">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Noor">
+  <title>Noor — نور</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230A0F0D'/><text x='50' y='62' text-anchor='middle' font-family='Inter,sans-serif' font-weight='900' font-size='44' fill='%23C9A961' letter-spacing='-2'>N</text></svg>">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =================================================================
+       NOOR — DESIGN TOKENS
+       Editorial Madinah: parchment/emerald with hard type & heavy rules.
+       Single source of truth. Never hard-code hex outside this block.
+       ================================================================= */
+    :root {
+      /* Brand */
+      --base: #0F4C3A;
+      --base-2: #1A6650;
+      --accent: #C9A961;
+      --accent-2: #B8935A;
+      --accent-soft: rgba(201,169,97,0.12);
+      --parchment: #F5F0E1;
+      --ink: #0A0F0D;
+      --sacred: #0F4C3A;        /* RESERVED — .sacred-frame only */
+
+      /* Motion */
+      --e-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --e-inout: cubic-bezier(0.87, 0, 0.13, 1);
+      --e-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+      --e-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --d-q: 0.24s;
+      --d-m: 0.45s;
+      --d-s: 0.75s;
+    }
+
+    /* LIGHT — Parchment daylight, emerald ink */
+    :root {
+      --bg: #F5F0E1;
+      --bg-2: #FFFCF2;
+      --bg-3: #ECE4D0;
+      --bg-invert: #0A0F0D;
+      --fg-invert: #F5F0E1;
+      --surface: #FFFCF2;
+      --surface-2: rgba(255,252,242,0.76);
+      --surface-border: rgba(10,15,13,0.12);
+      --surface-hover: #FFFEF7;
+      --text: #0A0F0D;
+      --text-2: #3E4A44;
+      --text-3: #7A7065;
+      --text-4: #BFB5A4;
+      --rule: rgba(10,15,13,0.85);
+      --rule-soft: rgba(10,15,13,0.15);
+      --chip-bg: rgba(10,15,13,0.05);
+      --header-bg: rgba(245,240,225,0.9);
+    }
+
+    /* DARK — Madinah night, lamplight gold */
+    .dark, body.dark-bg {
+      --bg: #0A0F0D;
+      --bg-2: #121916;
+      --bg-3: #060A08;
+      --bg-invert: #F5F0E1;
+      --fg-invert: #0A0F0D;
+      --surface: #121916;
+      --surface-2: rgba(18,25,22,0.7);
+      --surface-border: rgba(245,240,225,0.14);
+      --surface-hover: #181F1C;
+      --text: #F5F0E1;
+      --text-2: rgba(245,240,225,0.78);
+      --text-3: rgba(245,240,225,0.5);
+      --text-4: rgba(245,240,225,0.22);
+      --rule: rgba(245,240,225,0.85);
+      --rule-soft: rgba(245,240,225,0.14);
+      --chip-bg: rgba(245,240,225,0.06);
+      --accent: #E8C979;
+      --accent-2: #D4B56A;
+      --header-bg: rgba(10,15,13,0.88);
+    }
+
+    /* ===== RESETS ===== */
+    ::selection { background: var(--accent); color: var(--ink); }
+    [v-cloak] { display: none !important; }
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 400;
+      background: var(--bg);
+      color: var(--text);
+      overscroll-behavior: none;
+      transition: background var(--d-m) var(--e-smooth), color 0.4s;
+      min-height: 100vh;
+      font-feature-settings: 'ss01', 'cv11';
+    }
+    button, [role="button"], .tile, .hv, .ed-row { transition: transform var(--d-q) var(--e-out), color var(--d-q), background var(--d-q), border-color var(--d-q); }
+
+    /* ===== TYPE SYSTEM — editorial ===== */
+    .f-display { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; }
+    .f-body    { font-family: 'Inter', system-ui, sans-serif; }
+    .f-ar      { font-family: 'Amiri', 'Amiri Quran', serif; }
+    .num       { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+    .display {
+      font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 0.92;
+    }
+    .display-xl { font-size: clamp(56px, 17vw, 120px); }
+    .display-lg { font-size: clamp(40px, 12vw, 82px); }
+    .display-md { font-size: clamp(32px, 9vw, 56px); }
+    .display-sm { font-size: clamp(24px, 6.5vw, 38px); }
+
+    .kicker {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+      font-size: 10px;
+    }
+    .label {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+    }
+    .mono-num {
+      font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .text-accent { color: var(--accent); }
+    .text-emerald { color: var(--base); }
+    .dark .text-emerald { color: #5EA892; }
+
+    /* ===== SACRED TEXT — QURANIC ARABIC ===== */
+    /* RULES (see CLAUDE.md):
+       1. NEVER truncate
+       2. Always RTL, right-aligned
+       3. Never break words
+       4. Generous line-height
+    */
+    .sacred-text {
+      font-family: 'Amiri Quran', 'Amiri', serif;
+      direction: rtl;
+      text-align: right;
+      line-height: 2.2;
+      font-weight: 400;
+      color: var(--text);
+      word-break: keep-all;
+      overflow-wrap: normal;
+      white-space: normal;
+      letter-spacing: 0;
+      user-select: text;
+      -webkit-line-clamp: unset !important;
+      display: block !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+    }
+    .sacred-text.size-sm { font-size: 22px; line-height: 2.0; }
+    .sacred-text.size-md { font-size: 28px; line-height: 2.2; }
+    .sacred-text.size-lg { font-size: 34px; line-height: 2.3; }
+    .sacred-text.size-xl { font-size: 40px; line-height: 2.4; }
+
+    .bismillah {
+      text-align: center;
+      padding: 26px 10px 22px;
+    }
+    .bismillah-text {
+      font-family: 'Amiri Quran','Amiri',serif;
+      font-size: 30px;
+      direction: rtl;
+      color: var(--accent);
+      line-height: 1.8;
+      font-weight: 400;
+    }
+    .ayah-marker {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 30px;
+      padding: 0 8px;
+      border: 1.5px solid var(--accent);
+      color: var(--accent);
+      font-family: 'Amiri', serif;
+      font-weight: 700;
+      font-size: 13px;
+      line-height: 1;
+      flex-shrink: 0;
+      border-radius: 999px;
+    }
+
+    /* ===== RULES & DIVIDERS (the editorial backbone) ===== */
+    .rule { height: 1px; background: var(--rule); width: 100%; }
+    .rule-thick { height: 2px; background: var(--rule); width: 100%; }
+    .rule-soft { height: 1px; background: var(--rule-soft); width: 100%; }
+    .rule-gold { height: 1px; background: var(--accent); opacity: 0.8; }
+
+    .rule-v { width: 1px; background: var(--rule-soft); height: 100%; }
+
+    /* Corner brackets (LN4-style frame markers) */
+    .brackets {
+      position: relative;
+    }
+    .brackets::before, .brackets::after {
+      content: ''; position: absolute; width: 10px; height: 10px;
+      border-color: var(--text); border-style: solid; pointer-events: none;
+    }
+    .brackets::before { top: 6px; left: 6px; border-width: 1.5px 0 0 1.5px; }
+    .brackets::after  { bottom: 6px; right: 6px; border-width: 0 1.5px 1.5px 0; }
+
+    .brackets-accent::before, .brackets-accent::after { border-color: var(--accent); }
+
+    /* ===== SURFACES ===== */
+    .glass {
+      background: var(--header-bg);
+      backdrop-filter: blur(24px) saturate(1.3);
+      -webkit-backdrop-filter: blur(24px) saturate(1.3);
+    }
+    .surface {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+    }
+    .surface-2 {
+      background: var(--surface-2);
+      border: 1px solid var(--surface-border);
+    }
+    .hv { cursor: pointer; }
+    .hv:hover { border-color: var(--accent); }
+    .hv:active { transform: scale(0.985); }
+
+    .invert {
+      background: var(--bg-invert);
+      color: var(--fg-invert);
+      border: 1px solid var(--bg-invert);
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px;
+      padding: 14px 22px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 11px;
+      border-radius: 999px;
+      border: 1.5px solid var(--text);
+      background: var(--text);
+      color: var(--bg);
+      transition: transform var(--d-q) var(--e-out), background var(--d-q), color var(--d-q), border-color var(--d-q);
+      cursor: pointer;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: scale(0.98); }
+    .btn-accent {
+      background: var(--accent);
+      color: var(--ink);
+      border-color: var(--accent);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--text);
+    }
+    .btn-ghost:hover { background: var(--text); color: var(--bg); }
+    .btn-square {
+      border-radius: 4px;
+    }
+    .btn-block { width: 100%; padding: 18px 22px; font-size: 12px; letter-spacing: 0.24em; }
+
+    .btn-icon {
+      width: 40px; height: 40px; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--surface-border);
+      color: var(--text);
+      background: transparent;
+      transition: all var(--d-q) var(--e-out);
+    }
+    .btn-icon:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+    /* ===== HOVER STRIKE ===== */
+    .hv-strike {
+      position: relative;
+      display: inline-block;
+    }
+    .hv-strike::after {
+      content: ''; position: absolute; left: 0; top: 50%;
+      width: 0; height: 1.5px; background: currentColor;
+      transition: width 0.35s var(--e-out);
+    }
+    .hv-strike:hover::after { width: 100%; }
+
+    /* ===== EDITORIAL LIST ROW ===== */
+    .ed-row {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 4px;
+      border-top: 1px solid var(--rule-soft);
+      transition: transform var(--d-q) var(--e-out), color var(--d-q), padding var(--d-q);
+    }
+    .ed-row:last-child { border-bottom: 1px solid var(--rule-soft); }
+    .ed-row:hover { transform: translateX(6px); color: var(--accent); }
+    .ed-row:hover .ed-num { color: var(--accent); }
+    .ed-row .ed-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-3);
+    }
+
+    /* ===== TILES (grid cards) ===== */
+    .tile {
+      position: relative;
+      padding: 22px 18px 20px;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      overflow: hidden;
+      text-align: left;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: border-color var(--d-q), transform var(--d-q) var(--e-out);
+    }
+    .tile:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .tile:active { transform: scale(0.98); }
+    .tile .tile-index {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--text-3);
+      margin-bottom: 40px;
+    }
+    .tile .tile-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .tile .tile-sub {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 6px;
+      letter-spacing: 0.02em;
+    }
+    .tile .tile-arrow {
+      position: absolute;
+      top: 18px; right: 18px;
+      color: var(--text-3);
+      transition: transform var(--d-q) var(--e-out), color var(--d-q);
+    }
+    .tile:hover .tile-arrow { transform: translate(4px, -4px); color: var(--accent); }
+
+    /* ===== MARQUEE TICKER ===== */
+    .marquee {
+      overflow: hidden;
+      white-space: nowrap;
+      mask-image: linear-gradient(90deg, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+    }
+    .marquee-track {
+      display: inline-block;
+      animation: marquee 48s linear infinite;
+      will-change: transform;
+    }
+    .marquee-track > span { display: inline-block; padding: 0 28px; }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ===== BIG HERO STRIP (masthead) ===== */
+    .masthead {
+      position: relative;
+      padding: 24px 0 20px;
+    }
+    .masthead-ar {
+      position: absolute; right: 0; top: 18px;
+      font-family: 'Amiri Quran','Amiri',serif;
+      direction: rtl;
+      color: var(--accent);
+      font-size: 26px;
+      opacity: 0.9;
+      line-height: 1;
+    }
+
+    /* ===== VERSE CARD (reader) ===== */
+    .verse-card {
+      position: relative;
+      padding: 26px 20px 20px;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 4px;
+      transition: border-color var(--d-q);
+    }
+    .verse-card.is-playing { border-color: var(--accent); }
+    .verse-card .verse-index {
+      position: absolute;
+      top: 14px; left: 20px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+    }
+    .verse-card .verse-num {
+      position: absolute;
+      top: 14px; right: 20px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+    }
+
+    /* ===== NAME TILE (99 Names) ===== */
+    .name-tile {
+      position: relative;
+      padding: 20px 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color var(--d-q), transform var(--d-q) var(--e-out);
+    }
+    .name-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .name-tile:active { transform: scale(0.97); }
+    .name-tile .name-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--text-3);
+      margin-bottom: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+    .name-tile:hover .name-num { color: var(--accent); }
+    .name-tile .name-ar {
+      font-family: 'Amiri Quran','Amiri',serif;
+      direction: rtl;
+      color: var(--text);
+      font-size: 28px;
+      line-height: 1.3;
+      margin-bottom: 6px;
+      text-align: right;
+    }
+    .name-tile .name-en {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: -0.01em;
+      color: var(--text-2);
+    }
+    .name-tile .name-tr {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    /* ===== CHIPS ===== */
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 10px;
+      border: 1px solid var(--surface-border);
+      color: var(--text-2);
+      border-radius: 999px;
+      background: var(--surface);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all var(--d-q);
+    }
+    .chip:hover { border-color: var(--text); color: var(--text); }
+    .chip.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    /* ===== PLAY BUTTON ===== */
+    .play-btn {
+      width: 40px; height: 40px;
+      border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--text);
+      transition: all var(--d-q) var(--e-out);
+    }
+    .play-btn:hover { background: var(--text); color: var(--bg); transform: scale(1.05); }
+    .play-btn.playing { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+    .play-btn.playing:hover { transform: scale(1.05); }
+
+    /* ===== TOGGLE ===== */
+    .toggle {
+      width: 52px; height: 28px;
+      border-radius: 999px;
+      border: 1.5px solid var(--text);
+      position: relative; cursor: pointer;
+      background: transparent;
+      transition: background var(--d-q);
+    }
+    .toggle .knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 21px; height: 21px; border-radius: 50%;
+      background: var(--text);
+      transition: transform var(--d-q) var(--e-bounce), background var(--d-q);
+    }
+    .toggle.is-on { background: var(--accent); border-color: var(--accent); }
+    .toggle.is-on .knob { transform: translateX(23px); background: var(--ink); }
+
+    /* ===== SEARCH / INPUT ===== */
+    .input {
+      width: 100%;
+      padding: 16px 18px;
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--surface-border);
+      border-radius: 4px;
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      outline: none;
+      transition: border-color var(--d-q);
+    }
+    .input:focus { border-color: var(--text); }
+    .input-lg {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      padding: 22px 18px;
+    }
+    .input::placeholder { color: var(--text-4); }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .page-enter { animation: pageIn 0.55s var(--e-out) both; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-up { animation: slideUp 0.55s var(--e-out) both; }
+
+    .stagger > * { opacity: 0; animation: slideUp 0.5s var(--e-out) both; }
+    .stagger > *:nth-child(1)  { animation-delay: 0.02s; }
+    .stagger > *:nth-child(2)  { animation-delay: 0.06s; }
+    .stagger > *:nth-child(3)  { animation-delay: 0.10s; }
+    .stagger > *:nth-child(4)  { animation-delay: 0.14s; }
+    .stagger > *:nth-child(5)  { animation-delay: 0.18s; }
+    .stagger > *:nth-child(6)  { animation-delay: 0.22s; }
+    .stagger > *:nth-child(7)  { animation-delay: 0.26s; }
+    .stagger > *:nth-child(8)  { animation-delay: 0.30s; }
+    .stagger > *:nth-child(n+9){ animation-delay: 0.34s; }
+
+    /* Skeleton */
+    @keyframes shimmer {
+      0% { background-position: -600px 0; }
+      100% { background-position: 600px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-3) 0%, var(--surface-hover) 50%, var(--bg-3) 100%);
+      background-size: 1200px 100%;
+      animation: shimmer 1.8s linear infinite;
+      border-radius: 2px;
+    }
+
+    /* Modal */
+    @keyframes modalIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes sheetIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-bd { animation: modalIn 0.25s var(--e-out) both; }
+    .modal-ct { animation: sheetIn 0.4s var(--e-out) both; }
+
+    /* Toast */
+    @keyframes toastIn {
+      from { opacity: 0; transform: translate(-50%, -8px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .toast { animation: toastIn 0.3s var(--e-out) both; }
+
+    /* Scroll hide */
+    .scroll-hide::-webkit-scrollbar { display: none; }
+    .scroll-hide { scrollbar-width: none; -ms-overflow-style: none; }
+
+    /* Safe area */
+    .safe-top { padding-top: env(safe-area-inset-top); }
+    .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 92px); }
+    .safe-x { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+
+    /* Tab active */
+    .tab-on { color: var(--text); }
+    .tab-on .tab-underline { background: var(--accent); height: 2px; width: 100%; }
+
+    /* Audio bar */
+    .audio-bar {
+      position: fixed;
+      left: 8px; right: 8px;
+      bottom: 78px;
+      max-width: 560px;
+      margin: 0 auto;
+      z-index: 45;
+      padding: 12px 16px;
+      background: var(--bg-invert);
+      color: var(--fg-invert);
+      border: 1px solid var(--bg-invert);
+      border-radius: 4px;
+    }
+
+    /* Pulse dot */
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.8s ease-in-out infinite; }
+
+    /* Wisdom pull-quote */
+    .pull-quote {
+      position: relative;
+      padding: 30px 20px 26px;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color var(--d-q);
+    }
+    .pull-quote:hover { border-color: var(--accent); }
+    .pull-quote .big-quote {
+      position: absolute;
+      top: 6px; left: 14px;
+      font-family: 'Space Grotesk', serif;
+      font-weight: 700;
+      font-size: 60px;
+      color: var(--accent);
+      line-height: 1;
+      opacity: 0.4;
+    }
+
+    /* Heavy block */
+    .block-invert {
+      background: var(--bg-invert);
+      color: var(--fg-invert);
+      padding: 22px 20px;
+      border-radius: 4px;
+    }
+
+    /* Masthead big number (surah) */
+    .big-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(140px, 40vw, 220px);
+      letter-spacing: -0.06em;
+      line-height: 0.82;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* utility */
+    .divide-y-rules > * + * { border-top: 1px solid var(--rule-soft); }
+
+    /* Focus */
+    button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" v-cloak>
+
+    <!-- ======================= HEADER ======================= -->
+    <header v-if="showHeader" class="glass fixed top-0 left-0 right-0 z-40 safe-top" :style="{borderBottom:'1px solid var(--rule)'}">
+      <div class="max-w-xl mx-auto flex items-center justify-between px-5 py-3.5">
+        <button @click="page==='home'?null:go('home')" class="flex items-baseline gap-2">
+          <span class="display f-display" style="font-size:22px;font-weight:700;letter-spacing:-0.04em;color:var(--text)">NOOR</span>
+          <span class="f-ar text-accent" style="font-size:15px;direction:rtl">نور</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <span class="kicker num" style="color:var(--text-3)">{{currentTick}}</span>
+          <div class="toggle" :class="{'is-on':isDark}" @click="toggleTheme"><div class="knob"></div></div>
+        </div>
+      </div>
+      <div class="rule"></div>
+    </header>
+
+    <main class="max-w-xl mx-auto px-5 safe-x safe-bottom" :class="showHeader?'pt-20':'pt-4'">
+
+      <!-- ================= ONBOARDING ================= -->
+      <div v-if="page==='onboarding'" class="page-enter min-h-screen flex flex-col pt-6 pb-8">
+        <div class="flex items-center justify-between mb-10">
+          <span class="kicker" style="color:var(--text-3)">ISSUE / 2026</span>
+          <div class="toggle" :class="{'is-on':isDark}" @click="toggleTheme"><div class="knob"></div></div>
+        </div>
+
+        <div class="flex-1 flex flex-col justify-center">
+          <p class="kicker text-accent mb-4 slide-up">A reverent companion</p>
+          <h1 class="display display-xl slide-up" style="animation-delay:0.08s;color:var(--text)">
+            NOOR<span class="text-accent">.</span>
+          </h1>
+          <p class="f-ar text-accent slide-up" style="animation-delay:0.14s;font-size:42px;direction:rtl;margin-top:8px">نور</p>
+
+          <div class="rule mt-8 mb-6 slide-up" style="animation-delay:0.22s"></div>
+
+          <p class="f-body slide-up text-lg leading-snug" style="animation-delay:0.28s;color:var(--text-2);max-width:420px">
+            The Quran. The ninety-nine names. Timeless wisdom — in the quiet of your pocket.
+          </p>
+
+          <div class="mt-10 space-y-0 divide-y-rules slide-up" style="animation-delay:0.36s">
+            <div v-for="(step,si) in [{n:'01',t:'Read the Quran',d:'Authentic Uthmani · Khattab translation'},{n:'02',t:'Reflect on the Names',d:'Ninety-nine attributes of Allah'},{n:'03',t:'Find wisdom',d:'Verses for patience, gratitude, mercy'}]" :key="si"
+                 class="py-5 flex items-baseline gap-5">
+              <span class="mono-num text-accent" style="font-size:14px;letter-spacing:0.18em;min-width:32px">{{step.n}}</span>
+              <div class="flex-1 min-w-0">
+                <p class="f-display" style="font-size:20px;font-weight:700;letter-spacing:-0.02em;color:var(--text)">{{step.t}}</p>
+                <p class="text-sm mt-1" style="color:var(--text-3)">{{step.d}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rule mb-5"></div>
+        <button @click="go('setup-name')" class="btn btn-block slide-up" style="animation-delay:0.5s">
+          ENTER
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <p class="kicker text-center mt-4" style="color:var(--text-4)">ALL DATA STAYS ON YOUR DEVICE</p>
+      </div>
+
+      <!-- ================= SETUP NAME ================= -->
+      <div v-if="page==='setup-name'" class="page-enter min-h-screen flex flex-col justify-center pt-10 pb-8">
+        <p class="kicker text-accent mb-4">Step 01 of 01</p>
+        <h2 class="display display-lg mb-2" style="color:var(--text)">As-salamu<br>alaikum<span class="text-accent">.</span></h2>
+        <div class="rule my-6"></div>
+        <p class="label mb-4" style="color:var(--text-3)">What should we call you?</p>
+        <input v-model="profile.name" @keyup.enter="profile.name.trim()&&finishSetup()" type="text" placeholder="Your name" maxlength="30" class="input input-lg">
+        <div class="flex items-center gap-5 mt-8">
+          <div class="flex-shrink-0 invert" style="width:64px;height:64px;border-radius:4px;display:flex;align-items:center;justify-content:center">
+            <span class="display f-display" style="font-size:30px;font-weight:700">{{avatarInitial}}</span>
+          </div>
+          <p class="text-sm" style="color:var(--text-3)">Only used to greet you. Never leaves your device.</p>
+        </div>
+        <div class="flex-1"></div>
+        <div class="rule mb-5 mt-10"></div>
+        <button @click="finishSetup()" :disabled="!profile.name.trim()" class="btn btn-block" :style="!profile.name.trim()?{opacity:0.35,cursor:'not-allowed'}:{}">
+          CONTINUE
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+
+      <!-- ================= HOME ================= -->
+      <div v-if="page==='home'" class="page-enter">
+        <!-- Masthead -->
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">{{greeting}} / {{todayLabel}}</p>
+          <h2 class="display display-lg mt-3" style="color:var(--text)">
+            {{profile.name.split(' ')[0]}}<span class="text-accent">.</span>
+          </h2>
+          <p class="f-ar text-accent mt-2" style="font-size:20px;direction:rtl">أَهْلًا وَسَهْلًا</p>
+        </div>
+
+        <div class="rule mt-2 mb-6"></div>
+
+        <!-- Marquee of dhikr -->
+        <div class="marquee mb-7" style="border-top:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft);padding:10px 0">
+          <div class="marquee-track kicker" style="color:var(--text-3)">
+            <span v-for="n in 2" :key="n">
+              <span>﷽</span>
+              <span>SUBHĀNALLĀH</span>
+              <span>●</span>
+              <span>ALHAMDULILLĀH</span>
+              <span>●</span>
+              <span>ALLĀHU AKBAR</span>
+              <span>●</span>
+              <span>LĀ ILĀHA ILLALLĀH</span>
+              <span>●</span>
+              <span>ASTAGHFIRULLĀH</span>
+              <span>●</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Feature: Daily verse -->
+        <div v-if="dailyVerse" @click="openVerseDetail(dailyVerse)" class="hv mb-7" style="cursor:pointer">
+          <div class="flex items-baseline justify-between mb-3">
+            <p class="kicker text-accent">VERSE OF THE DAY</p>
+            <p class="mono-num" style="font-size:11px;letter-spacing:0.14em;color:var(--text-3)">{{dailyVerse.reference.replace('Quran ','').toUpperCase()}}</p>
+          </div>
+          <div class="rule-thick mb-5"></div>
+          <p class="sacred-text size-md mb-5">{{dailyVerse.arabic}}</p>
+          <div class="rule-gold w-16 mb-4"></div>
+          <p class="f-display leading-snug" style="font-size:20px;font-weight:500;letter-spacing:-0.015em;color:var(--text)">"{{dailyVerse.translation}}"</p>
+          <div class="flex items-center gap-2 mt-5 hv-strike" style="color:var(--accent)">
+            <span class="label">OPEN IN READER</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+        </div>
+
+        <!-- Continue reading -->
+        <div v-if="lastPosition" @click="resumeReading" class="block-invert hv mb-7" style="cursor:pointer">
+          <div class="flex items-center gap-4">
+            <span class="mono-num" style="font-size:42px;letter-spacing:-0.04em;line-height:0.9;color:var(--accent)">{{String(lastPosition.surahId).padStart(3,'0')}}</span>
+            <div class="flex-1 min-w-0">
+              <p class="kicker" style="color:var(--accent)">CONTINUE READING</p>
+              <p class="f-display mt-1 truncate" style="font-size:20px;font-weight:700;letter-spacing:-0.02em">{{getSurah(lastPosition.surahId).nameEn}}</p>
+              <p class="text-xs mt-0.5 num" style="opacity:0.7">AYAH {{lastPosition.ayah}} / {{getSurah(lastPosition.surahId).ayahCount}}</p>
+            </div>
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+        </div>
+
+        <!-- Quick entries -->
+        <div class="flex items-baseline justify-between mb-4">
+          <p class="kicker" style="color:var(--text-3)">QUICK ACCESS</p>
+          <p class="kicker num" style="color:var(--text-4)">04 / 04</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-8">
+          <button @click="go('quran')" class="tile">
+            <p class="tile-index">01 / QURAN</p>
+            <p class="tile-title">The<br>Quran</p>
+            <p class="tile-sub num">114 SURAHS</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('bookmarks')" class="tile">
+            <p class="tile-index">02 / SAVED</p>
+            <p class="tile-title">Book<br>marks</p>
+            <p class="tile-sub num">{{String(bookmarks.length).padStart(2,'0')}} SAVED</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('names')" class="tile">
+            <p class="tile-index">03 / NAMES</p>
+            <p class="tile-title">99<br>Names</p>
+            <p class="tile-sub num">ASMA UL-HUSNA</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('wisdom')" class="tile">
+            <p class="tile-index">04 / WISDOM</p>
+            <p class="tile-title">Timeless<br>Wisdom</p>
+            <p class="tile-sub num">{{String(WISDOM_COUNT).padStart(2,'0')}} VERSES</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+        </div>
+
+        <!-- Reflection -->
+        <div v-if="dailyReflection" class="mb-4">
+          <div class="flex items-baseline justify-between mb-3">
+            <p class="kicker" style="color:var(--text-3)">TODAY'S REFLECTION</p>
+            <p class="kicker num" style="color:var(--text-4)">{{todayLabel}}</p>
+          </div>
+          <div class="rule mb-5"></div>
+          <p class="f-display leading-snug" style="font-size:26px;font-weight:500;letter-spacing:-0.02em;color:var(--text)">"{{dailyReflection}}"</p>
+        </div>
+      </div>
+
+      <!-- ================= QURAN LIST ================= -->
+      <div v-if="page==='quran'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">INDEX / THE BOOK</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">The<br>Qur'ān<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْقُرْآن</p>
+        </div>
+
+        <div class="rule-thick mb-4"></div>
+        <div class="flex items-baseline justify-between mb-5">
+          <p class="kicker num" style="color:var(--text-3)">114 SURAHS</p>
+          <p class="kicker num" style="color:var(--text-3)">6,236 VERSES</p>
+        </div>
+
+        <!-- Search -->
+        <div class="relative mb-4">
+          <input v-model="surahSearch" type="text" placeholder="Search — name, meaning, number" class="input">
+          <button v-if="surahSearch" @click="surahSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
+          <button v-for="f in [{id:'',label:'ALL'},{id:'Mecca',label:'MECCAN'},{id:'Medina',label:'MEDINAN'}]" :key="f.id" @click="revFilter=f.id" class="chip" :class="{active:revFilter===f.id}">{{f.label}}</button>
+        </div>
+
+        <!-- List -->
+        <div class="stagger">
+          <button v-for="s in filteredSurahs" :key="s.id" @click="openReader(s.id)" class="ed-row w-full text-left">
+            <span class="ed-num num">{{String(s.id).padStart(3,'0')}}</span>
+            <div class="flex-1 min-w-0">
+              <p class="f-display truncate" style="font-size:19px;font-weight:700;letter-spacing:-0.02em">{{s.nameEn}}</p>
+              <p class="text-xs mt-1 truncate" style="color:var(--text-3)">{{s.meaning.toUpperCase()}} <span class="mx-1" style="opacity:0.5">/</span> {{s.revelationPlace==='Mecca'?'MECCAN':'MEDINAN'}} <span class="mx-1" style="opacity:0.5">/</span> <span class="num">{{s.ayahCount}} AYĀT</span></p>
+            </div>
+            <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:22px">{{s.nameAr}}</p>
+          </button>
+          <p v-if="filteredSurahs.length===0" class="text-center py-12 kicker" style="color:var(--text-3)">NO MATCHES FOR "{{surahSearch.toUpperCase()}}"</p>
+        </div>
+      </div>
+
+      <!-- ================= READER ================= -->
+      <div v-if="page==='reader'" class="page-enter">
+        <button @click="go('quran')" class="flex items-center gap-2 mb-4 mt-2 label hv-strike" style="color:var(--text-3)">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="square" d="M19 12H5M11 6l-6 6 6 6"/></svg>
+          INDEX
+        </button>
+
+        <div v-if="currentSurah">
+          <!-- Surah masthead -->
+          <div class="relative mb-6 pt-2">
+            <p class="kicker" style="color:var(--text-3)">SURAH / {{currentSurah.revelationPlace==='Mecca'?'MECCAN':'MEDINAN'}} / <span class="num">{{currentSurah.ayahCount}} AYĀT</span></p>
+            <div class="flex items-end justify-between mt-2">
+              <div class="flex-1 min-w-0">
+                <h1 class="display display-md" style="color:var(--text)">{{currentSurah.nameEn}}<span class="text-accent">.</span></h1>
+                <p class="f-body mt-2" style="font-size:15px;color:var(--text-3)">{{currentSurah.meaning}}</p>
+              </div>
+              <p class="big-num flex-shrink-0" style="font-size:clamp(64px,16vw,92px);line-height:0.82;color:var(--accent);opacity:0.8">{{String(currentSurah.id).padStart(3,'0')}}</p>
+            </div>
+            <p class="f-ar text-accent mt-4" style="direction:rtl;font-size:36px;text-align:right">{{currentSurah.nameAr}}</p>
+          </div>
+          <div class="rule-thick mb-4"></div>
+
+          <!-- Font size controls -->
+          <div class="flex items-center justify-between mb-5">
+            <p class="kicker" style="color:var(--text-3)">TEXT SIZE</p>
+            <div class="flex gap-1.5">
+              <button v-for="sz in ['sm','md','lg','xl']" :key="sz" @click="arabicSize=sz;savePrefs()" class="w-9 h-9 rounded-full border text-xs font-bold transition-all" :style="arabicSize===sz?{background:'var(--text)',color:'var(--bg)',borderColor:'var(--text)'}:{background:'transparent',color:'var(--text-3)',borderColor:'var(--surface-border)'}">
+                {{sz.toUpperCase()}}
+              </button>
+            </div>
+          </div>
+
+          <!-- Bismillah -->
+          <div v-if="currentSurah.id!==1 && currentSurah.id!==9" class="bismillah mb-2" style="border-top:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft)">
+            <p class="bismillah-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
+            <p class="kicker mt-3" style="color:var(--text-3)">IN THE NAME OF ALLAH, THE MOST MERCIFUL</p>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div v-if="loadingVerses" class="space-y-3 mt-5">
+          <div v-for="n in 4" :key="n" class="verse-card">
+            <div class="skeleton h-5 w-full mb-3 mt-4"></div>
+            <div class="skeleton h-5 w-5/6 mb-5"></div>
+            <div class="skeleton h-4 w-full mb-2"></div>
+            <div class="skeleton h-4 w-3/4"></div>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div v-if="versesError" class="surface p-6 text-center mt-4" style="border-radius:4px">
+          <p class="kicker text-accent mb-2">CONNECTION FAILED</p>
+          <p class="text-sm mb-5" style="color:var(--text-2)">Couldn't load verses — check your connection.</p>
+          <button @click="loadSurah(currentSurah.id)" class="btn btn-ghost">RETRY</button>
+        </div>
+
+        <!-- Ayahs -->
+        <div v-if="!loadingVerses && verses.length>0" class="space-y-3 mt-2">
+          <div v-for="v in verses" :key="v.verse_key" :id="'ayah-'+v.verse_key" class="verse-card" :class="{'is-playing':audio.currentAyah===v.verse_key}">
+            <span class="verse-index">AYAH</span>
+            <span class="verse-num num">{{String(v.verse_number).padStart(3,'0')}} / {{String(currentSurah.ayahCount).padStart(3,'0')}}</span>
+
+            <div class="rule-soft mt-6 mb-4"></div>
+            <p class="sacred-text" :class="'size-'+arabicSize" :dir="'rtl'" :lang="'ar'">
+              {{v.text_uthmani}} <span class="ayah-marker mx-1">{{toArabicDigits(v.verse_number)}}</span>
+            </p>
+            <div class="rule-gold w-12 my-4"></div>
+            <p class="f-display leading-snug" style="font-size:16px;font-weight:500;letter-spacing:-0.01em;color:var(--text-2)">{{stripHtml(v.translation)}}</p>
+
+            <div class="rule-soft mt-5 mb-3"></div>
+            <div class="flex items-center gap-2">
+              <button @click="playAyah(v)" class="play-btn" :class="{playing:audio.currentAyah===v.verse_key&&audio.isPlaying}">
+                <svg v-if="!(audio.currentAyah===v.verse_key&&audio.isPlaying)" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.84A1 1 0 004.84 3.7v12.6a1 1 0 001.46.86l11-6.3a1 1 0 000-1.72l-11-6.3z"/></svg>
+                <svg v-else class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5zm7 0h3v12h-3z"/></svg>
+              </button>
+              <button @click="toggleBookmark(v)" class="btn-icon" :style="isBookmarked(v.verse_key)?{borderColor:'var(--accent)',color:'var(--accent)'}:{}">
+                <svg v-if="isBookmarked(v.verse_key)" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+              </button>
+              <button @click="shareAyah(v)" class="btn-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v14"/></svg>
+              </button>
+              <span class="ml-auto kicker num" style="color:var(--text-3)">{{v.verse_key}}</span>
+            </div>
+          </div>
+        </div>
+
+        <p v-if="!loadingVerses && verses.length>0" class="text-center mt-8 mb-4 f-ar text-accent" style="font-size:24px;direction:rtl">۞</p>
+      </div>
+
+      <!-- ================= BOOKMARKS ================= -->
+      <div v-if="page==='bookmarks'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">ARCHIVE / SAVED</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Book<br>marks<span class="text-accent">.</span></h2>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <div class="flex items-baseline justify-between mb-6">
+          <p class="kicker num" style="color:var(--text-3)">{{String(bookmarks.length).padStart(2,'0')}} SAVED</p>
+          <p class="kicker" style="color:var(--text-3)">SORTED BY RECENT</p>
+        </div>
+
+        <div v-if="bookmarks.length===0" class="text-center py-14">
+          <div class="inline-flex items-center justify-center mb-5" style="width:72px;height:72px;border:1.5px solid var(--surface-border);border-radius:4px;color:var(--text-3)">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+          </div>
+          <p class="display display-sm mb-2" style="color:var(--text)">Nothing saved yet<span class="text-accent">.</span></p>
+          <p class="text-sm mb-6" style="color:var(--text-3)">Tap the bookmark icon on any ayah to save it here.</p>
+          <button @click="go('quran')" class="btn btn-ghost">BROWSE THE QURAN →</button>
+        </div>
+
+        <div v-if="bookmarks.length>0" class="space-y-3 stagger">
+          <div v-for="(bm,bi) in bookmarksSorted" :key="bm.verse_key" class="verse-card">
+            <span class="verse-index">{{String(bi+1).padStart(2,'0')}} / {{String(bookmarks.length).padStart(2,'0')}}</span>
+            <span class="verse-num num">{{bm.verse_key}}</span>
+            <div class="rule-soft mt-6 mb-4"></div>
+
+            <div class="flex items-baseline gap-2 mb-3">
+              <span class="chip" style="background:var(--chip-bg);border-color:var(--rule-soft)">{{bm.surahNameEn.toUpperCase()}}</span>
+            </div>
+
+            <p class="sacred-text size-sm mb-3">{{bm.arabic}}</p>
+            <div class="rule-gold w-12 mb-3"></div>
+            <p class="f-display leading-snug mb-5" style="font-size:15px;font-weight:500;color:var(--text-2)">"{{bm.translation}}"</p>
+
+            <div class="rule-soft mb-3"></div>
+            <div class="flex items-center justify-between">
+              <button @click="jumpToBookmark(bm)" class="label hv-strike text-accent flex items-center gap-1.5">
+                OPEN IN READER
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </button>
+              <button @click="removeBookmark(bm.verse_key)" class="btn-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 99 NAMES ================= -->
+      <div v-if="page==='names'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">ASMĀ UL-ḤUSNĀ</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">The 99<br>Names<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْأَسْمَاء</p>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker num mb-6" style="color:var(--text-3)">99 / 99 OF ALLAH'S MOST BEAUTIFUL NAMES</p>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button v-for="n in asmaUlHusna" :key="n.id" @click="selectedName=n" class="name-tile">
+            <p class="name-num">{{String(n.id).padStart(2,'0')}}</p>
+            <p class="name-ar">{{n.ar}}</p>
+            <p class="name-en">{{n.translit}}</p>
+            <p class="name-tr">{{n.meaning.toUpperCase()}}</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= WISDOM ================= -->
+      <div v-if="page==='wisdom'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">EDITORIAL / REFLECTION</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Timeless<br>Wisdom<span class="text-accent">.</span></h2>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-6" style="color:var(--text-3)">VERSES TO REFLECT ON, GROUPED BY THEME</p>
+
+        <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
+          <button v-for="t in wisdomThemes" :key="t.id" @click="wisdomTheme=t.id" class="chip" :class="{active:wisdomTheme===t.id}">
+            {{t.label.toUpperCase()}}
+          </button>
+        </div>
+
+        <div class="space-y-3 stagger">
+          <div v-for="(w,wi) in filteredWisdom" :key="w.reference+wi" @click="openVerseDetail(w)" class="pull-quote">
+            <span class="big-quote">"</span>
+            <div class="pl-6">
+              <div class="flex items-baseline justify-between mb-3">
+                <p class="kicker text-accent">{{getThemeLabel(w.theme).toUpperCase()}}</p>
+                <p class="mono-num" style="font-size:11px;letter-spacing:0.14em;color:var(--text-3)">{{w.reference.replace('Quran ','').toUpperCase()}}</p>
+              </div>
+              <p class="sacred-text size-sm mb-4">{{w.arabic}}</p>
+              <div class="rule-gold w-12 mb-3"></div>
+              <p class="f-display leading-snug" style="font-size:16px;font-weight:500;letter-spacing:-0.015em;color:var(--text-2)">"{{w.translation}}"</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= HADITH PLACEHOLDER ================= -->
+      <div v-if="page==='hadith'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">PHASE 03 / FORTHCOMING</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Hadith<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْحَدِيث</p>
+        </div>
+        <div class="rule-thick mb-6"></div>
+        <div class="brackets p-6 surface" style="border-radius:4px">
+          <p class="kicker mb-3 text-accent">COMING SOON</p>
+          <p class="f-display" style="font-size:20px;font-weight:500;letter-spacing:-0.015em;color:var(--text-2);line-height:1.45">
+            Authentic collections — Bukhari, Muslim, and the four Sunan — arriving in the next chapter,
+            <span class="text-accent">in shā'a Allāh</span>.
+          </p>
+        </div>
+      </div>
+
+      <!-- ================= STORIES PLACEHOLDER ================= -->
+      <div v-if="page==='stories'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">PHASE 04 / FORTHCOMING</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Stories<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْقَصَص</p>
+        </div>
+        <div class="rule-thick mb-6"></div>
+        <div class="brackets p-6 surface" style="border-radius:4px">
+          <p class="kicker mb-3 text-accent">COMING SOON</p>
+          <p class="f-display" style="font-size:20px;font-weight:500;letter-spacing:-0.015em;color:var(--text-2);line-height:1.45">
+            The Prophets, the Sahaba, and lessons from the Seerah — coming soon,
+            <span class="text-accent">in shā'a Allāh</span>.
+          </p>
+        </div>
+      </div>
+
+      <!-- ================= LIBRARY ================= -->
+      <div v-if="page==='library'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">COLLECTION / LIBRARY</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Your<br>Library<span class="text-accent">.</span></h2>
+        </div>
+        <div class="rule-thick mb-6"></div>
+        <p class="kicker mb-5" style="color:var(--text-3)">EVERYTHING BEYOND THE QURAN</p>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button @click="go('names')" class="tile">
+            <p class="tile-index">01 / NAMES</p>
+            <p class="tile-title">99<br>Names</p>
+            <p class="tile-sub num">ASMA UL-HUSNA</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('wisdom')" class="tile">
+            <p class="tile-index">02 / WISDOM</p>
+            <p class="tile-title">Timeless<br>Wisdom</p>
+            <p class="tile-sub num">THEMED VERSES</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('hadith')" class="tile">
+            <p class="tile-index">03 / HADITH</p>
+            <p class="tile-title">Hadith</p>
+            <p class="tile-sub num">COMING PHASE 03</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('stories')" class="tile">
+            <p class="tile-index">04 / STORIES</p>
+            <p class="tile-title">Prophet<br>Stories</p>
+            <p class="tile-sub num">COMING PHASE 04</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= PROFILE / SETTINGS ================= -->
+      <div v-if="page==='profile'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">PROFILE / SETTINGS</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">{{profile.name.split(' ')[0]||'Friend'}}<span class="text-accent">.</span></h2>
+        </div>
+        <div class="rule-thick mb-6"></div>
+
+        <div class="flex items-center gap-4 mb-8">
+          <div class="invert" style="width:72px;height:72px;border-radius:4px;display:flex;align-items:center;justify-content:center">
+            <span class="display f-display" style="font-size:34px;font-weight:700">{{avatarInitial}}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="kicker text-accent">AS-SALAMU ALAIKUM</p>
+            <p class="f-display mt-1 truncate" style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:var(--text)">{{profile.name||'Friend'}}</p>
+            <p class="kicker num mt-0.5" style="color:var(--text-3)">MEMBER SINCE {{todayYear}}</p>
+          </div>
+        </div>
+
+        <!-- Account section -->
+        <p class="kicker mb-3" style="color:var(--text-3)">ACCOUNT</p>
+        <div class="divide-y-rules" style="border-top:1px solid var(--rule);border-bottom:1px solid var(--rule-soft)">
+          <button @click="showNameEdit=true" class="w-full flex items-center gap-4 py-4 text-left hv-strike">
+            <div class="flex-1 min-w-0">
+              <p class="f-display" style="font-size:16px;font-weight:600;color:var(--text)">Your name</p>
+              <p class="text-xs mt-1" style="color:var(--text-3)">{{profile.name||'Not set'}}</p>
+            </div>
+            <svg class="w-4 h-4" style="color:var(--text-3)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M9 5l7 7-7 7"/></svg>
+          </button>
+          <div class="w-full flex items-center gap-4 py-4">
+            <div class="flex-1 min-w-0">
+              <p class="f-display" style="font-size:16px;font-weight:600;color:var(--text)">Dark mode</p>
+              <p class="text-xs mt-1" style="color:var(--text-3)">{{isDark?'ON / MADINAH NIGHT':'OFF / DAYLIGHT PARCHMENT'}}</p>
+            </div>
+            <div class="toggle" :class="{'is-on':isDark}" @click="toggleTheme"><div class="knob"></div></div>
+          </div>
+          <button @click="cyclePreferredReciter" class="w-full flex items-center gap-4 py-4 text-left hv-strike">
+            <div class="flex-1 min-w-0">
+              <p class="f-display" style="font-size:16px;font-weight:600;color:var(--text)">Reciter</p>
+              <p class="text-xs mt-1" style="color:var(--text-3)">{{getReciterName(prefs.reciterId).toUpperCase()}}</p>
+            </div>
+            <svg class="w-4 h-4" style="color:var(--text-3)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <!-- Data section -->
+        <p class="kicker mb-3 mt-8" style="color:var(--text-3)">DATA</p>
+        <div class="divide-y-rules" style="border-top:1px solid var(--rule);border-bottom:1px solid var(--rule-soft)">
+          <button @click="exportData" class="w-full flex items-center gap-4 py-4 text-left hv-strike">
+            <div class="flex-1 min-w-0">
+              <p class="f-display" style="font-size:16px;font-weight:600;color:var(--text)">Export bookmarks</p>
+              <p class="text-xs mt-1" style="color:var(--text-3)">DOWNLOAD AS .JSON</p>
+            </div>
+            <svg class="w-4 h-4" style="color:var(--text-3)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <label class="w-full flex items-center gap-4 py-4 text-left cursor-pointer hv-strike">
+            <div class="flex-1 min-w-0">
+              <p class="f-display" style="font-size:16px;font-weight:600;color:var(--text)">Import bookmarks</p>
+              <p class="text-xs mt-1" style="color:var(--text-3)">FROM .JSON BACKUP</p>
+            </div>
+            <svg class="w-4 h-4" style="color:var(--text-3)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M17 7l-10 10M7 7h10v10"/></svg>
+            <input type="file" accept=".json" @change="importData" class="hidden">
+          </label>
+        </div>
+
+        <button @click="showDeleteConfirm=true" class="mt-8 btn btn-block" style="background:transparent;color:#E15554;border-color:#E15554">
+          CLEAR ALL DATA
+        </button>
+
+        <div class="text-center mt-12 mb-4">
+          <div class="rule-gold w-16 mx-auto mb-4"></div>
+          <p class="f-ar text-accent mb-2" style="font-size:24px;direction:rtl">نور</p>
+          <p class="display f-display mb-2" style="font-size:20px;font-weight:700;letter-spacing:-0.02em;color:var(--text)">NOOR / V1.0</p>
+          <p class="text-[10px] italic max-w-xs mx-auto leading-relaxed" style="color:var(--text-4)">
+            نِيَّةً لِوَجْهِ اللهِ<br>May this be a sadaqah jariyah.
+          </p>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ================= AUDIO BAR ================= -->
+    <div v-if="audio.currentAyah" class="audio-bar">
+      <div class="flex items-center gap-3">
+        <div class="pulse-dot"></div>
+        <div class="flex-1 min-w-0">
+          <p class="kicker text-accent">NOW PLAYING · {{getReciterName(prefs.reciterId).toUpperCase()}}</p>
+          <p class="f-display mt-0.5 truncate" style="font-size:15px;font-weight:600;letter-spacing:-0.01em">{{audio.label}}</p>
+        </div>
+        <button @click="toggleAudio" class="play-btn playing" style="border-color:var(--accent);background:var(--accent);color:var(--ink)">
+          <svg v-if="audio.isPlaying" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5zm7 0h3v12h-3z"/></svg>
+          <svg v-else class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.84A1 1 0 004.84 3.7v12.6a1 1 0 001.46.86l11-6.3a1 1 0 000-1.72l-11-6.3z"/></svg>
+        </button>
+        <button @click="stopAudio" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= BOTTOM NAV ================= -->
+    <nav v-if="showHeader" class="glass fixed bottom-0 left-0 right-0 z-40" style="padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--rule)">
+      <div class="max-w-xl mx-auto grid grid-cols-4">
+        <button v-for="(tab,ti) in [{id:'home',label:'HOME',match:['home']},{id:'quran',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories']},{id:'profile',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-3" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
+          <span class="mono-num" style="font-size:10px;letter-spacing:0.14em;opacity:0.6">0{{ti+1}}</span>
+          <span class="label mt-1" style="font-size:10px">{{tab.label}}</span>
+          <div class="tab-underline mt-2" style="height:2px;width:24px;background:transparent"></div>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ================= MODALS ================= -->
+    <!-- Name edit -->
+    <div v-if="showNameEdit" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="showNameEdit=false">
+      <div class="w-full max-w-sm modal-ct" :style="{background:'var(--bg)',border:'1.5px solid var(--text)',borderRadius:4}">
+        <div class="p-6">
+          <p class="kicker text-accent mb-2">EDIT PROFILE</p>
+          <h3 class="display display-sm mb-5" style="color:var(--text)">Your name</h3>
+          <input v-model="profile.name" @keyup.enter="showNameEdit=false;save()" type="text" maxlength="30" class="input input-lg" style="font-size:20px">
+          <div class="flex gap-3 mt-5">
+            <button @click="showNameEdit=false" class="btn btn-ghost flex-1">CANCEL</button>
+            <button @click="showNameEdit=false;save()" class="btn btn-accent flex-1">SAVE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Name detail -->
+    <div v-if="selectedName" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedName=null">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4}">
+        <!-- Black masthead -->
+        <div class="invert p-6 pb-7 relative">
+          <div class="flex items-center justify-between mb-5">
+            <span class="kicker" style="color:var(--accent)">NAME / <span class="num">{{String(selectedName.id).padStart(2,'0')}} OF 99</span></span>
+            <button @click="selectedName=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="f-ar" style="color:var(--accent);font-size:72px;direction:rtl;line-height:1;margin-bottom:14px;text-align:right">{{selectedName.ar}}</p>
+          <h3 class="display display-md" style="color:var(--fg-invert)">{{selectedName.translit}}</h3>
+          <p class="kicker mt-3" style="color:rgba(245,240,225,0.7)">{{selectedName.meaning.toUpperCase()}}</p>
+        </div>
+        <div class="p-6">
+          <p class="kicker mb-3" style="color:var(--text-3)">REFLECTION</p>
+          <p class="f-display leading-snug mb-6" style="font-size:17px;font-weight:500;letter-spacing:-0.015em;color:var(--text-2)">
+            Take a moment to contemplate this attribute of Allah. Invoke it in your du'a, and carry it with you through the day.
+          </p>
+          <button @click="selectedName=null" class="btn btn-ghost btn-block">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verse detail -->
+    <div v-if="selectedVerse" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedVerse=null">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4}">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-5">
+            <p class="kicker text-accent">VERSE · {{selectedVerse.reference.replace('Quran ','').toUpperCase()}}</p>
+            <button @click="selectedVerse=null" class="btn-icon">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="rule-thick mb-5"></div>
+          <p class="sacred-text size-md mb-5">{{selectedVerse.arabic}}</p>
+          <div class="rule-gold w-16 mb-4"></div>
+          <p class="f-display leading-snug mb-6" style="font-size:19px;font-weight:500;letter-spacing:-0.015em;color:var(--text)">"{{selectedVerse.translation}}"</p>
+          <button v-if="selectedVerse.surahId" @click="openReaderAt(selectedVerse.surahId, selectedVerse.ayah);selectedVerse=null" class="btn btn-block">
+            OPEN IN READER
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete confirm -->
+    <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="showDeleteConfirm=false">
+      <div class="w-full max-w-sm modal-ct" :style="{background:'var(--bg)',border:'1.5px solid #E15554',borderRadius:4}">
+        <div class="p-6">
+          <p class="kicker mb-2" style="color:#E15554">WARNING / IRREVERSIBLE</p>
+          <h3 class="display display-sm mb-3" style="color:var(--text)">Clear all data?</h3>
+          <p class="text-sm mb-6" style="color:var(--text-3)">Removes your name, bookmarks, and preferences. This cannot be undone.</p>
+          <div class="flex gap-3">
+            <button @click="showDeleteConfirm=false" class="btn btn-ghost flex-1">CANCEL</button>
+            <button @click="clearAll" class="btn flex-1" style="background:#E15554;border-color:#E15554;color:#fff">DELETE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div v-if="toast.show" class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] toast">
+      <div class="invert px-5 py-3 flex items-center gap-3" style="border-radius:4px">
+        <div class="pulse-dot"></div>
+        <p class="label">{{toast.message}}</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/* =================================================================
+   NOOR — APP DATA
+   ================================================================= */
+
+/* All 114 surahs */
+var SURAHS_DB = [
+  {id:1,nameAr:"ٱلْفَاتِحَة",nameEn:"Al-Fatihah",meaning:"The Opening",revelationPlace:"Mecca",ayahCount:7},
+  {id:2,nameAr:"ٱلْبَقَرَة",nameEn:"Al-Baqarah",meaning:"The Cow",revelationPlace:"Medina",ayahCount:286},
+  {id:3,nameAr:"آل عِمْرَان",nameEn:"Ali 'Imran",meaning:"Family of Imran",revelationPlace:"Medina",ayahCount:200},
+  {id:4,nameAr:"ٱلنِّسَاء",nameEn:"An-Nisa",meaning:"The Women",revelationPlace:"Medina",ayahCount:176},
+  {id:5,nameAr:"ٱلْمَائِدَة",nameEn:"Al-Ma'idah",meaning:"The Table Spread",revelationPlace:"Medina",ayahCount:120},
+  {id:6,nameAr:"ٱلْأَنْعَام",nameEn:"Al-An'am",meaning:"The Cattle",revelationPlace:"Mecca",ayahCount:165},
+  {id:7,nameAr:"ٱلْأَعْرَاف",nameEn:"Al-A'raf",meaning:"The Heights",revelationPlace:"Mecca",ayahCount:206},
+  {id:8,nameAr:"ٱلْأَنْفَال",nameEn:"Al-Anfal",meaning:"The Spoils of War",revelationPlace:"Medina",ayahCount:75},
+  {id:9,nameAr:"ٱلتَّوْبَة",nameEn:"At-Tawbah",meaning:"The Repentance",revelationPlace:"Medina",ayahCount:129},
+  {id:10,nameAr:"يُونُس",nameEn:"Yunus",meaning:"Jonah",revelationPlace:"Mecca",ayahCount:109},
+  {id:11,nameAr:"هُود",nameEn:"Hud",meaning:"Hud",revelationPlace:"Mecca",ayahCount:123},
+  {id:12,nameAr:"يُوسُف",nameEn:"Yusuf",meaning:"Joseph",revelationPlace:"Mecca",ayahCount:111},
+  {id:13,nameAr:"ٱلرَّعْد",nameEn:"Ar-Ra'd",meaning:"The Thunder",revelationPlace:"Medina",ayahCount:43},
+  {id:14,nameAr:"إِبْرَاهِيم",nameEn:"Ibrahim",meaning:"Abraham",revelationPlace:"Mecca",ayahCount:52},
+  {id:15,nameAr:"ٱلْحِجْر",nameEn:"Al-Hijr",meaning:"The Rocky Tract",revelationPlace:"Mecca",ayahCount:99},
+  {id:16,nameAr:"ٱلنَّحْل",nameEn:"An-Nahl",meaning:"The Bee",revelationPlace:"Mecca",ayahCount:128},
+  {id:17,nameAr:"ٱلْإِسْرَاء",nameEn:"Al-Isra",meaning:"The Night Journey",revelationPlace:"Mecca",ayahCount:111},
+  {id:18,nameAr:"ٱلْكَهْف",nameEn:"Al-Kahf",meaning:"The Cave",revelationPlace:"Mecca",ayahCount:110},
+  {id:19,nameAr:"مَرْيَم",nameEn:"Maryam",meaning:"Mary",revelationPlace:"Mecca",ayahCount:98},
+  {id:20,nameAr:"طٰهٰ",nameEn:"Ta-Ha",meaning:"Ta-Ha",revelationPlace:"Mecca",ayahCount:135},
+  {id:21,nameAr:"ٱلْأَنْبِيَاء",nameEn:"Al-Anbiya",meaning:"The Prophets",revelationPlace:"Mecca",ayahCount:112},
+  {id:22,nameAr:"ٱلْحَجّ",nameEn:"Al-Hajj",meaning:"The Pilgrimage",revelationPlace:"Medina",ayahCount:78},
+  {id:23,nameAr:"ٱلْمُؤْمِنُون",nameEn:"Al-Mu'minun",meaning:"The Believers",revelationPlace:"Mecca",ayahCount:118},
+  {id:24,nameAr:"ٱلنُّور",nameEn:"An-Nur",meaning:"The Light",revelationPlace:"Medina",ayahCount:64},
+  {id:25,nameAr:"ٱلْفُرْقَان",nameEn:"Al-Furqan",meaning:"The Criterion",revelationPlace:"Mecca",ayahCount:77},
+  {id:26,nameAr:"ٱلشُّعَرَاء",nameEn:"Ash-Shu'ara",meaning:"The Poets",revelationPlace:"Mecca",ayahCount:227},
+  {id:27,nameAr:"ٱلنَّمْل",nameEn:"An-Naml",meaning:"The Ant",revelationPlace:"Mecca",ayahCount:93},
+  {id:28,nameAr:"ٱلْقَصَص",nameEn:"Al-Qasas",meaning:"The Stories",revelationPlace:"Mecca",ayahCount:88},
+  {id:29,nameAr:"ٱلْعَنْكَبُوت",nameEn:"Al-'Ankabut",meaning:"The Spider",revelationPlace:"Mecca",ayahCount:69},
+  {id:30,nameAr:"ٱلرُّوم",nameEn:"Ar-Rum",meaning:"The Romans",revelationPlace:"Mecca",ayahCount:60},
+  {id:31,nameAr:"لُقْمَان",nameEn:"Luqman",meaning:"Luqman",revelationPlace:"Mecca",ayahCount:34},
+  {id:32,nameAr:"ٱلسَّجْدَة",nameEn:"As-Sajdah",meaning:"The Prostration",revelationPlace:"Mecca",ayahCount:30},
+  {id:33,nameAr:"ٱلْأَحْزَاب",nameEn:"Al-Ahzab",meaning:"The Confederates",revelationPlace:"Medina",ayahCount:73},
+  {id:34,nameAr:"سَبَأ",nameEn:"Saba",meaning:"Sheba",revelationPlace:"Mecca",ayahCount:54},
+  {id:35,nameAr:"فَاطِر",nameEn:"Fatir",meaning:"The Originator",revelationPlace:"Mecca",ayahCount:45},
+  {id:36,nameAr:"يٰسٓ",nameEn:"Ya-Sin",meaning:"Ya-Sin",revelationPlace:"Mecca",ayahCount:83},
+  {id:37,nameAr:"ٱلصَّافَّات",nameEn:"As-Saffat",meaning:"Those Lined Up",revelationPlace:"Mecca",ayahCount:182},
+  {id:38,nameAr:"صٓ",nameEn:"Sad",meaning:"Sad",revelationPlace:"Mecca",ayahCount:88},
+  {id:39,nameAr:"ٱلزُّمَر",nameEn:"Az-Zumar",meaning:"The Groups",revelationPlace:"Mecca",ayahCount:75},
+  {id:40,nameAr:"غَافِر",nameEn:"Ghafir",meaning:"The Forgiver",revelationPlace:"Mecca",ayahCount:85},
+  {id:41,nameAr:"فُصِّلَت",nameEn:"Fussilat",meaning:"Explained in Detail",revelationPlace:"Mecca",ayahCount:54},
+  {id:42,nameAr:"ٱلشُّورَىٰ",nameEn:"Ash-Shura",meaning:"The Consultation",revelationPlace:"Mecca",ayahCount:53},
+  {id:43,nameAr:"ٱلزُّخْرُف",nameEn:"Az-Zukhruf",meaning:"The Gold Adornments",revelationPlace:"Mecca",ayahCount:89},
+  {id:44,nameAr:"ٱلدُّخَان",nameEn:"Ad-Dukhan",meaning:"The Smoke",revelationPlace:"Mecca",ayahCount:59},
+  {id:45,nameAr:"ٱلْجَاثِيَة",nameEn:"Al-Jathiyah",meaning:"The Kneeling",revelationPlace:"Mecca",ayahCount:37},
+  {id:46,nameAr:"ٱلْأَحْقَاف",nameEn:"Al-Ahqaf",meaning:"The Sand Dunes",revelationPlace:"Mecca",ayahCount:35},
+  {id:47,nameAr:"مُحَمَّد",nameEn:"Muhammad",meaning:"Muhammad",revelationPlace:"Medina",ayahCount:38},
+  {id:48,nameAr:"ٱلْفَتْح",nameEn:"Al-Fath",meaning:"The Victory",revelationPlace:"Medina",ayahCount:29},
+  {id:49,nameAr:"ٱلْحُجُرَات",nameEn:"Al-Hujurat",meaning:"The Chambers",revelationPlace:"Medina",ayahCount:18},
+  {id:50,nameAr:"قٓ",nameEn:"Qaf",meaning:"Qaf",revelationPlace:"Mecca",ayahCount:45},
+  {id:51,nameAr:"ٱلذَّارِيَات",nameEn:"Adh-Dhariyat",meaning:"The Winds",revelationPlace:"Mecca",ayahCount:60},
+  {id:52,nameAr:"ٱلطُّور",nameEn:"At-Tur",meaning:"The Mount",revelationPlace:"Mecca",ayahCount:49},
+  {id:53,nameAr:"ٱلنَّجْم",nameEn:"An-Najm",meaning:"The Star",revelationPlace:"Mecca",ayahCount:62},
+  {id:54,nameAr:"ٱلْقَمَر",nameEn:"Al-Qamar",meaning:"The Moon",revelationPlace:"Mecca",ayahCount:55},
+  {id:55,nameAr:"ٱلرَّحْمَٰن",nameEn:"Ar-Rahman",meaning:"The Most Merciful",revelationPlace:"Medina",ayahCount:78},
+  {id:56,nameAr:"ٱلْوَاقِعَة",nameEn:"Al-Waqi'ah",meaning:"The Inevitable",revelationPlace:"Mecca",ayahCount:96},
+  {id:57,nameAr:"ٱلْحَدِيد",nameEn:"Al-Hadid",meaning:"The Iron",revelationPlace:"Medina",ayahCount:29},
+  {id:58,nameAr:"ٱلْمُجَادِلَة",nameEn:"Al-Mujadilah",meaning:"The Pleading Woman",revelationPlace:"Medina",ayahCount:22},
+  {id:59,nameAr:"ٱلْحَشْر",nameEn:"Al-Hashr",meaning:"The Exile",revelationPlace:"Medina",ayahCount:24},
+  {id:60,nameAr:"ٱلْمُمْتَحَنَة",nameEn:"Al-Mumtahanah",meaning:"She That Is To Be Examined",revelationPlace:"Medina",ayahCount:13},
+  {id:61,nameAr:"ٱلصَّفّ",nameEn:"As-Saff",meaning:"The Ranks",revelationPlace:"Medina",ayahCount:14},
+  {id:62,nameAr:"ٱلْجُمُعَة",nameEn:"Al-Jumu'ah",meaning:"Friday",revelationPlace:"Medina",ayahCount:11},
+  {id:63,nameAr:"ٱلْمُنَافِقُون",nameEn:"Al-Munafiqun",meaning:"The Hypocrites",revelationPlace:"Medina",ayahCount:11},
+  {id:64,nameAr:"ٱلتَّغَابُن",nameEn:"At-Taghabun",meaning:"Mutual Disillusion",revelationPlace:"Medina",ayahCount:18},
+  {id:65,nameAr:"ٱلطَّلَاق",nameEn:"At-Talaq",meaning:"The Divorce",revelationPlace:"Medina",ayahCount:12},
+  {id:66,nameAr:"ٱلتَّحْرِيم",nameEn:"At-Tahrim",meaning:"The Prohibition",revelationPlace:"Medina",ayahCount:12},
+  {id:67,nameAr:"ٱلْمُلْك",nameEn:"Al-Mulk",meaning:"The Sovereignty",revelationPlace:"Mecca",ayahCount:30},
+  {id:68,nameAr:"ٱلْقَلَم",nameEn:"Al-Qalam",meaning:"The Pen",revelationPlace:"Mecca",ayahCount:52},
+  {id:69,nameAr:"ٱلْحَاقَّة",nameEn:"Al-Haqqah",meaning:"The Reality",revelationPlace:"Mecca",ayahCount:52},
+  {id:70,nameAr:"ٱلْمَعَارِج",nameEn:"Al-Ma'arij",meaning:"The Ascending Stairways",revelationPlace:"Mecca",ayahCount:44},
+  {id:71,nameAr:"نُوح",nameEn:"Nuh",meaning:"Noah",revelationPlace:"Mecca",ayahCount:28},
+  {id:72,nameAr:"ٱلْجِنّ",nameEn:"Al-Jinn",meaning:"The Jinn",revelationPlace:"Mecca",ayahCount:28},
+  {id:73,nameAr:"ٱلْمُزَّمِّل",nameEn:"Al-Muzzammil",meaning:"The Enshrouded One",revelationPlace:"Mecca",ayahCount:20},
+  {id:74,nameAr:"ٱلْمُدَّثِّر",nameEn:"Al-Muddaththir",meaning:"The Cloaked One",revelationPlace:"Mecca",ayahCount:56},
+  {id:75,nameAr:"ٱلْقِيَامَة",nameEn:"Al-Qiyamah",meaning:"The Resurrection",revelationPlace:"Mecca",ayahCount:40},
+  {id:76,nameAr:"ٱلْإِنْسَان",nameEn:"Al-Insan",meaning:"Man",revelationPlace:"Medina",ayahCount:31},
+  {id:77,nameAr:"ٱلْمُرْسَلَات",nameEn:"Al-Mursalat",meaning:"Those Sent Forth",revelationPlace:"Mecca",ayahCount:50},
+  {id:78,nameAr:"ٱلنَّبَأ",nameEn:"An-Naba",meaning:"The Tidings",revelationPlace:"Mecca",ayahCount:40},
+  {id:79,nameAr:"ٱلنَّازِعَات",nameEn:"An-Nazi'at",meaning:"Those Who Pull Out",revelationPlace:"Mecca",ayahCount:46},
+  {id:80,nameAr:"عَبَسَ",nameEn:"'Abasa",meaning:"He Frowned",revelationPlace:"Mecca",ayahCount:42},
+  {id:81,nameAr:"ٱلتَّكْوِير",nameEn:"At-Takwir",meaning:"The Folding Up",revelationPlace:"Mecca",ayahCount:29},
+  {id:82,nameAr:"ٱلْإِنْفِطَار",nameEn:"Al-Infitar",meaning:"The Cleaving",revelationPlace:"Mecca",ayahCount:19},
+  {id:83,nameAr:"ٱلْمُطَفِّفِين",nameEn:"Al-Mutaffifin",meaning:"Defrauding",revelationPlace:"Mecca",ayahCount:36},
+  {id:84,nameAr:"ٱلْإِنْشِقَاق",nameEn:"Al-Inshiqaq",meaning:"The Splitting Open",revelationPlace:"Mecca",ayahCount:25},
+  {id:85,nameAr:"ٱلْبُرُوج",nameEn:"Al-Buruj",meaning:"The Constellations",revelationPlace:"Mecca",ayahCount:22},
+  {id:86,nameAr:"ٱلطَّارِق",nameEn:"At-Tariq",meaning:"The Morning Star",revelationPlace:"Mecca",ayahCount:17},
+  {id:87,nameAr:"ٱلْأَعْلَىٰ",nameEn:"Al-A'la",meaning:"The Most High",revelationPlace:"Mecca",ayahCount:19},
+  {id:88,nameAr:"ٱلْغَاشِيَة",nameEn:"Al-Ghashiyah",meaning:"The Overwhelming",revelationPlace:"Mecca",ayahCount:26},
+  {id:89,nameAr:"ٱلْفَجْر",nameEn:"Al-Fajr",meaning:"The Dawn",revelationPlace:"Mecca",ayahCount:30},
+  {id:90,nameAr:"ٱلْبَلَد",nameEn:"Al-Balad",meaning:"The City",revelationPlace:"Mecca",ayahCount:20},
+  {id:91,nameAr:"ٱلشَّمْس",nameEn:"Ash-Shams",meaning:"The Sun",revelationPlace:"Mecca",ayahCount:15},
+  {id:92,nameAr:"ٱللَّيْل",nameEn:"Al-Layl",meaning:"The Night",revelationPlace:"Mecca",ayahCount:21},
+  {id:93,nameAr:"ٱلضُّحَىٰ",nameEn:"Ad-Duha",meaning:"The Forenoon",revelationPlace:"Mecca",ayahCount:11},
+  {id:94,nameAr:"ٱلشَّرْح",nameEn:"Ash-Sharh",meaning:"The Opening Forth",revelationPlace:"Mecca",ayahCount:8},
+  {id:95,nameAr:"ٱلتِّين",nameEn:"At-Tin",meaning:"The Fig",revelationPlace:"Mecca",ayahCount:8},
+  {id:96,nameAr:"ٱلْعَلَق",nameEn:"Al-'Alaq",meaning:"The Clot",revelationPlace:"Mecca",ayahCount:19},
+  {id:97,nameAr:"ٱلْقَدْر",nameEn:"Al-Qadr",meaning:"The Power",revelationPlace:"Mecca",ayahCount:5},
+  {id:98,nameAr:"ٱلْبَيِّنَة",nameEn:"Al-Bayyinah",meaning:"The Evidence",revelationPlace:"Medina",ayahCount:8},
+  {id:99,nameAr:"ٱلزَّلْزَلَة",nameEn:"Az-Zalzalah",meaning:"The Earthquake",revelationPlace:"Medina",ayahCount:8},
+  {id:100,nameAr:"ٱلْعَادِيَات",nameEn:"Al-'Adiyat",meaning:"The Chargers",revelationPlace:"Mecca",ayahCount:11},
+  {id:101,nameAr:"ٱلْقَارِعَة",nameEn:"Al-Qari'ah",meaning:"The Striking Calamity",revelationPlace:"Mecca",ayahCount:11},
+  {id:102,nameAr:"ٱلتَّكَاثُر",nameEn:"At-Takathur",meaning:"Competition",revelationPlace:"Mecca",ayahCount:8},
+  {id:103,nameAr:"ٱلْعَصْر",nameEn:"Al-'Asr",meaning:"Time",revelationPlace:"Mecca",ayahCount:3},
+  {id:104,nameAr:"ٱلْهُمَزَة",nameEn:"Al-Humazah",meaning:"The Slanderer",revelationPlace:"Mecca",ayahCount:9},
+  {id:105,nameAr:"ٱلْفِيل",nameEn:"Al-Fil",meaning:"The Elephant",revelationPlace:"Mecca",ayahCount:5},
+  {id:106,nameAr:"قُرَيْش",nameEn:"Quraysh",meaning:"Quraysh",revelationPlace:"Mecca",ayahCount:4},
+  {id:107,nameAr:"ٱلْمَاعُون",nameEn:"Al-Ma'un",meaning:"Small Kindnesses",revelationPlace:"Mecca",ayahCount:7},
+  {id:108,nameAr:"ٱلْكَوْثَر",nameEn:"Al-Kawthar",meaning:"Abundance",revelationPlace:"Mecca",ayahCount:3},
+  {id:109,nameAr:"ٱلْكَافِرُون",nameEn:"Al-Kafirun",meaning:"The Disbelievers",revelationPlace:"Mecca",ayahCount:6},
+  {id:110,nameAr:"ٱلنَّصْر",nameEn:"An-Nasr",meaning:"The Help",revelationPlace:"Medina",ayahCount:3},
+  {id:111,nameAr:"ٱلْمَسَد",nameEn:"Al-Masad",meaning:"Palm Fiber",revelationPlace:"Mecca",ayahCount:5},
+  {id:112,nameAr:"ٱلْإِخْلَاص",nameEn:"Al-Ikhlas",meaning:"Sincerity",revelationPlace:"Mecca",ayahCount:4},
+  {id:113,nameAr:"ٱلْفَلَق",nameEn:"Al-Falaq",meaning:"The Daybreak",revelationPlace:"Mecca",ayahCount:5},
+  {id:114,nameAr:"ٱلنَّاس",nameEn:"An-Nas",meaning:"Mankind",revelationPlace:"Mecca",ayahCount:6}
+];
+
+/* 99 Names of Allah */
+var ASMA_DB = [
+  {id:1,ar:"ٱلرَّحْمَٰن",translit:"Ar-Rahman",meaning:"The Most Merciful"},
+  {id:2,ar:"ٱلرَّحِيم",translit:"Ar-Rahim",meaning:"The Especially Merciful"},
+  {id:3,ar:"ٱلْمَلِك",translit:"Al-Malik",meaning:"The King"},
+  {id:4,ar:"ٱلْقُدُّوس",translit:"Al-Quddus",meaning:"The Most Holy"},
+  {id:5,ar:"ٱلسَّلَام",translit:"As-Salam",meaning:"The Source of Peace"},
+  {id:6,ar:"ٱلْمُؤْمِن",translit:"Al-Mu'min",meaning:"The Giver of Faith"},
+  {id:7,ar:"ٱلْمُهَيْمِن",translit:"Al-Muhaymin",meaning:"The Guardian"},
+  {id:8,ar:"ٱلْعَزِيز",translit:"Al-'Aziz",meaning:"The Almighty"},
+  {id:9,ar:"ٱلْجَبَّار",translit:"Al-Jabbar",meaning:"The Compeller"},
+  {id:10,ar:"ٱلْمُتَكَبِّر",translit:"Al-Mutakabbir",meaning:"The Supreme"},
+  {id:11,ar:"ٱلْخَالِق",translit:"Al-Khaliq",meaning:"The Creator"},
+  {id:12,ar:"ٱلْبَارِئ",translit:"Al-Bari'",meaning:"The Originator"},
+  {id:13,ar:"ٱلْمُصَوِّر",translit:"Al-Musawwir",meaning:"The Fashioner"},
+  {id:14,ar:"ٱلْغَفَّار",translit:"Al-Ghaffar",meaning:"The All-Forgiving"},
+  {id:15,ar:"ٱلْقَهَّار",translit:"Al-Qahhar",meaning:"The Subduer"},
+  {id:16,ar:"ٱلْوَهَّاب",translit:"Al-Wahhab",meaning:"The Bestower"},
+  {id:17,ar:"ٱلرَّزَّاق",translit:"Ar-Razzaq",meaning:"The Provider"},
+  {id:18,ar:"ٱلْفَتَّاح",translit:"Al-Fattah",meaning:"The Opener"},
+  {id:19,ar:"ٱلْعَلِيم",translit:"Al-'Alim",meaning:"The All-Knowing"},
+  {id:20,ar:"ٱلْقَابِض",translit:"Al-Qabid",meaning:"The Constrictor"},
+  {id:21,ar:"ٱلْبَاسِط",translit:"Al-Basit",meaning:"The Expander"},
+  {id:22,ar:"ٱلْخَافِض",translit:"Al-Khafid",meaning:"The Abaser"},
+  {id:23,ar:"ٱلرَّافِع",translit:"Ar-Rafi'",meaning:"The Exalter"},
+  {id:24,ar:"ٱلْمُعِزّ",translit:"Al-Mu'izz",meaning:"The Honorer"},
+  {id:25,ar:"ٱلْمُذِلّ",translit:"Al-Mudhill",meaning:"The Humbler"},
+  {id:26,ar:"ٱلسَّمِيع",translit:"As-Sami'",meaning:"The All-Hearing"},
+  {id:27,ar:"ٱلْبَصِير",translit:"Al-Basir",meaning:"The All-Seeing"},
+  {id:28,ar:"ٱلْحَكَم",translit:"Al-Hakam",meaning:"The Judge"},
+  {id:29,ar:"ٱلْعَدْل",translit:"Al-'Adl",meaning:"The Just"},
+  {id:30,ar:"ٱللَّطِيف",translit:"Al-Latif",meaning:"The Subtle"},
+  {id:31,ar:"ٱلْخَبِير",translit:"Al-Khabir",meaning:"The All-Aware"},
+  {id:32,ar:"ٱلْحَلِيم",translit:"Al-Halim",meaning:"The Forbearing"},
+  {id:33,ar:"ٱلْعَظِيم",translit:"Al-'Azim",meaning:"The Magnificent"},
+  {id:34,ar:"ٱلْغَفُور",translit:"Al-Ghafur",meaning:"The Forgiving"},
+  {id:35,ar:"ٱلشَّكُور",translit:"Ash-Shakur",meaning:"The Appreciative"},
+  {id:36,ar:"ٱلْعَلِيّ",translit:"Al-'Aliyy",meaning:"The Most High"},
+  {id:37,ar:"ٱلْكَبِير",translit:"Al-Kabir",meaning:"The Greatest"},
+  {id:38,ar:"ٱلْحَفِيظ",translit:"Al-Hafiz",meaning:"The Preserver"},
+  {id:39,ar:"ٱلْمُقِيت",translit:"Al-Muqit",meaning:"The Sustainer"},
+  {id:40,ar:"ٱلْحَسِيب",translit:"Al-Hasib",meaning:"The Reckoner"},
+  {id:41,ar:"ٱلْجَلِيل",translit:"Al-Jalil",meaning:"The Majestic"},
+  {id:42,ar:"ٱلْكَرِيم",translit:"Al-Karim",meaning:"The Generous"},
+  {id:43,ar:"ٱلرَّقِيب",translit:"Ar-Raqib",meaning:"The Watchful"},
+  {id:44,ar:"ٱلْمُجِيب",translit:"Al-Mujib",meaning:"The Responsive"},
+  {id:45,ar:"ٱلْوَاسِع",translit:"Al-Wasi'",meaning:"The All-Encompassing"},
+  {id:46,ar:"ٱلْحَكِيم",translit:"Al-Hakim",meaning:"The Wise"},
+  {id:47,ar:"ٱلْوَدُود",translit:"Al-Wadud",meaning:"The Loving"},
+  {id:48,ar:"ٱلْمَجِيد",translit:"Al-Majid",meaning:"The Glorious"},
+  {id:49,ar:"ٱلْبَاعِث",translit:"Al-Ba'ith",meaning:"The Resurrector"},
+  {id:50,ar:"ٱلشَّهِيد",translit:"Ash-Shahid",meaning:"The Witness"},
+  {id:51,ar:"ٱلْحَقّ",translit:"Al-Haqq",meaning:"The Truth"},
+  {id:52,ar:"ٱلْوَكِيل",translit:"Al-Wakil",meaning:"The Trustee"},
+  {id:53,ar:"ٱلْقَوِيّ",translit:"Al-Qawiyy",meaning:"The Powerful"},
+  {id:54,ar:"ٱلْمَتِين",translit:"Al-Matin",meaning:"The Firm"},
+  {id:55,ar:"ٱلْوَلِيّ",translit:"Al-Waliyy",meaning:"The Protecting Friend"},
+  {id:56,ar:"ٱلْحَمِيد",translit:"Al-Hamid",meaning:"The Praiseworthy"},
+  {id:57,ar:"ٱلْمُحْصِي",translit:"Al-Muhsi",meaning:"The Accounter"},
+  {id:58,ar:"ٱلْمُبْدِئ",translit:"Al-Mubdi'",meaning:"The Originator"},
+  {id:59,ar:"ٱلْمُعِيد",translit:"Al-Mu'id",meaning:"The Restorer"},
+  {id:60,ar:"ٱلْمُحْيِي",translit:"Al-Muhyi",meaning:"The Giver of Life"},
+  {id:61,ar:"ٱلْمُمِيت",translit:"Al-Mumit",meaning:"The Bringer of Death"},
+  {id:62,ar:"ٱلْحَيّ",translit:"Al-Hayy",meaning:"The Ever-Living"},
+  {id:63,ar:"ٱلْقَيُّوم",translit:"Al-Qayyum",meaning:"The Self-Existing"},
+  {id:64,ar:"ٱلْوَاجِد",translit:"Al-Wajid",meaning:"The Perceiver"},
+  {id:65,ar:"ٱلْمَاجِد",translit:"Al-Majid",meaning:"The Illustrious"},
+  {id:66,ar:"ٱلْوَاحِد",translit:"Al-Wahid",meaning:"The One"},
+  {id:67,ar:"ٱلْأَحَد",translit:"Al-Ahad",meaning:"The Unique"},
+  {id:68,ar:"ٱلصَّمَد",translit:"As-Samad",meaning:"The Eternal"},
+  {id:69,ar:"ٱلْقَادِر",translit:"Al-Qadir",meaning:"The Able"},
+  {id:70,ar:"ٱلْمُقْتَدِر",translit:"Al-Muqtadir",meaning:"The Omnipotent"},
+  {id:71,ar:"ٱلْمُقَدِّم",translit:"Al-Muqaddim",meaning:"The Expediter"},
+  {id:72,ar:"ٱلْمُؤَخِّر",translit:"Al-Mu'akhkhir",meaning:"The Delayer"},
+  {id:73,ar:"ٱلْأَوَّل",translit:"Al-Awwal",meaning:"The First"},
+  {id:74,ar:"ٱلْآخِر",translit:"Al-Akhir",meaning:"The Last"},
+  {id:75,ar:"ٱلظَّاهِر",translit:"Az-Zahir",meaning:"The Manifest"},
+  {id:76,ar:"ٱلْبَاطِن",translit:"Al-Batin",meaning:"The Hidden"},
+  {id:77,ar:"ٱلْوَالِي",translit:"Al-Wali",meaning:"The Governor"},
+  {id:78,ar:"ٱلْمُتَعَالِي",translit:"Al-Muta'ali",meaning:"The Most Exalted"},
+  {id:79,ar:"ٱلْبَرّ",translit:"Al-Barr",meaning:"The Source of Goodness"},
+  {id:80,ar:"ٱلتَّوَّاب",translit:"At-Tawwab",meaning:"The Accepter of Repentance"},
+  {id:81,ar:"ٱلْمُنْتَقِم",translit:"Al-Muntaqim",meaning:"The Avenger"},
+  {id:82,ar:"ٱلْعَفُوّ",translit:"Al-'Afuww",meaning:"The Pardoner"},
+  {id:83,ar:"ٱلرَّءُوف",translit:"Ar-Ra'uf",meaning:"The Compassionate"},
+  {id:84,ar:"مَالِكُ ٱلْمُلْك",translit:"Malik-al-Mulk",meaning:"Master of the Kingdom"},
+  {id:85,ar:"ذُو ٱلْجَلَالِ وَٱلْإِكْرَام",translit:"Dhu'l-Jalali wa'l-Ikram",meaning:"Lord of Majesty and Bounty"},
+  {id:86,ar:"ٱلْمُقْسِط",translit:"Al-Muqsit",meaning:"The Equitable"},
+  {id:87,ar:"ٱلْجَامِع",translit:"Al-Jami'",meaning:"The Gatherer"},
+  {id:88,ar:"ٱلْغَنِيّ",translit:"Al-Ghaniyy",meaning:"The Self-Sufficient"},
+  {id:89,ar:"ٱلْمُغْنِي",translit:"Al-Mughni",meaning:"The Enricher"},
+  {id:90,ar:"ٱلْمَانِع",translit:"Al-Mani'",meaning:"The Withholder"},
+  {id:91,ar:"ٱلضَّارّ",translit:"Ad-Darr",meaning:"The Distresser"},
+  {id:92,ar:"ٱلنَّافِع",translit:"An-Nafi'",meaning:"The Benefiter"},
+  {id:93,ar:"ٱلنُّور",translit:"An-Nur",meaning:"The Light"},
+  {id:94,ar:"ٱلْهَادِي",translit:"Al-Hadi",meaning:"The Guide"},
+  {id:95,ar:"ٱلْبَدِيع",translit:"Al-Badi'",meaning:"The Originator"},
+  {id:96,ar:"ٱلْبَاقِي",translit:"Al-Baqi",meaning:"The Everlasting"},
+  {id:97,ar:"ٱلْوَارِث",translit:"Al-Warith",meaning:"The Inheritor"},
+  {id:98,ar:"ٱلرَّشِيد",translit:"Ar-Rashid",meaning:"The Guide to the Right Path"},
+  {id:99,ar:"ٱلصَّبُور",translit:"As-Sabur",meaning:"The Patient"}
+];
+
+/* Daily verses (rotate by day-of-year) */
+var DAILY_VERSES = [
+  {reference:"Quran 2:286",surahId:2,ayah:286,arabic:"لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا",translation:"Allah does not burden a soul beyond what it can bear."},
+  {reference:"Quran 94:5-6",surahId:94,ayah:5,arabic:"فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا ۝ إِنَّ مَعَ ٱلْعُسْرِ يُسْرًا",translation:"So surely with hardship comes ease. Surely with hardship comes ease."},
+  {reference:"Quran 13:28",surahId:13,ayah:28,arabic:"أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ",translation:"Surely in the remembrance of Allah do hearts find peace."},
+  {reference:"Quran 3:139",surahId:3,ayah:139,arabic:"وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ",translation:"Do not lose hope, nor grieve — you are the superior if you are true believers."},
+  {reference:"Quran 65:3",surahId:65,ayah:3,arabic:"وَمَن يَتَوَكَّلْ عَلَى ٱللَّهِ فَهُوَ حَسْبُهُۥ",translation:"Whoever puts their trust in Allah — He is sufficient for them."},
+  {reference:"Quran 2:152",surahId:2,ayah:152,arabic:"فَٱذْكُرُونِىٓ أَذْكُرْكُمْ وَٱشْكُرُوا۟ لِى وَلَا تَكْفُرُونِ",translation:"So remember Me; I will remember you. And thank Me, and never be ungrateful."},
+  {reference:"Quran 39:53",surahId:39,ayah:53,arabic:"لَا تَقْنَطُوا۟ مِن رَّحْمَةِ ٱللَّهِ ۚ إِنَّ ٱللَّهَ يَغْفِرُ ٱلذُّنُوبَ جَمِيعًا",translation:"Do not despair of the mercy of Allah. Surely Allah forgives all sins."},
+  {reference:"Quran 2:255",surahId:2,ayah:255,arabic:"ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ",translation:"Allah — there is no deity except Him, the Ever-Living, the Self-Sustaining."},
+  {reference:"Quran 29:69",surahId:29,ayah:69,arabic:"وَٱلَّذِينَ جَٰهَدُوا۟ فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا",translation:"As for those who strive in Our cause, We will surely guide them to Our ways."},
+  {reference:"Quran 14:7",surahId:14,ayah:7,arabic:"لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ",translation:"If you are grateful, I will certainly give you more."},
+  {reference:"Quran 40:60",surahId:40,ayah:60,arabic:"ٱدْعُونِىٓ أَسْتَجِبْ لَكُمْ",translation:"Call upon Me, I will respond to you."},
+  {reference:"Quran 93:3",surahId:93,ayah:3,arabic:"مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ",translation:"Your Lord has neither forsaken you, nor has He become displeased."},
+  {reference:"Quran 21:87",surahId:21,ayah:87,arabic:"لَّآ إِلَٰهَ إِلَّآ أَنتَ سُبْحَٰنَكَ إِنِّى كُنتُ مِنَ ٱلظَّٰلِمِينَ",translation:"There is no deity except You; glory be to You! I have certainly done wrong."},
+  {reference:"Quran 20:114",surahId:20,ayah:114,arabic:"رَّبِّ زِدْنِى عِلْمًا",translation:"My Lord, increase me in knowledge."},
+  {reference:"Quran 6:162",surahId:6,ayah:162,arabic:"قُلْ إِنَّ صَلَاتِى وَنُسُكِى وَمَحْيَاىَ وَمَمَاتِى لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ",translation:"Say: Indeed my prayer, my sacrifice, my life and my death are for Allah, Lord of all worlds."},
+  {reference:"Quran 3:8",surahId:3,ayah:8,arabic:"رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا",translation:"Our Lord, do not let our hearts deviate after You have guided us."},
+  {reference:"Quran 17:80",surahId:17,ayah:80,arabic:"رَّبِّ أَدْخِلْنِى مُدْخَلَ صِدْقٍ وَأَخْرِجْنِى مُخْرَجَ صِدْقٍ",translation:"My Lord, cause me to enter a sound entrance, and to exit a sound exit."},
+  {reference:"Quran 2:201",surahId:2,ayah:201,arabic:"رَبَّنَآ ءَاتِنَا فِى ٱلدُّنْيَا حَسَنَةً وَفِى ٱلْءَاخِرَةِ حَسَنَةً وَقِنَا عَذَابَ ٱلنَّارِ",translation:"Our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire."},
+  {reference:"Quran 42:30",surahId:42,ayah:30,arabic:"وَمَآ أَصَٰبَكُم مِّن مُّصِيبَةٍۢ فَبِمَا كَسَبَتْ أَيْدِيكُمْ وَيَعْفُوا۟ عَن كَثِيرٍۢ",translation:"Whatever affliction befalls you is because of what your own hands have earned — and He pardons much."},
+  {reference:"Quran 4:147",surahId:4,ayah:147,arabic:"مَّا يَفْعَلُ ٱللَّهُ بِعَذَابِكُمْ إِن شَكَرْتُمْ وَءَامَنتُمْ",translation:"Why would Allah punish you if you are grateful and believe?"},
+  {reference:"Quran 57:4",surahId:57,ayah:4,arabic:"وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",translation:"And He is with you wherever you are."},
+  {reference:"Quran 50:16",surahId:50,ayah:16,arabic:"وَنَحْنُ أَقْرَبُ إِلَيْهِ مِنْ حَبْلِ ٱلْوَرِيدِ",translation:"We are closer to him than his jugular vein."},
+  {reference:"Quran 16:97",surahId:16,ayah:97,arabic:"مَنْ عَمِلَ صَٰلِحًا مِّن ذَكَرٍ أَوْ أُنثَىٰ وَهُوَ مُؤْمِنٌ فَلَنُحْيِيَنَّهُۥ حَيَوٰةًۭ طَيِّبَةًۭ",translation:"Whoever does good, whether male or female, and is a believer — We will grant them a good life."},
+  {reference:"Quran 2:45",surahId:2,ayah:45,arabic:"وَٱسْتَعِينُوا۟ بِٱلصَّبْرِ وَٱلصَّلَوٰةِ",translation:"Seek help through patience and prayer."},
+  {reference:"Quran 66:8",surahId:66,ayah:8,arabic:"يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ تُوبُوٓا۟ إِلَى ٱللَّهِ تَوْبَةًۭ نَّصُوحًا",translation:"O believers, turn to Allah in sincere repentance."},
+  {reference:"Quran 24:35",surahId:24,ayah:35,arabic:"ٱللَّهُ نُورُ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضِ",translation:"Allah is the Light of the heavens and the earth."},
+  {reference:"Quran 2:186",surahId:2,ayah:186,arabic:"وَإِذَا سَأَلَكَ عِبَادِى عَنِّى فَإِنِّى قَرِيبٌ",translation:"When My servants ask you about Me — I am indeed near."},
+  {reference:"Quran 49:13",surahId:49,ayah:13,arabic:"إِنَّ أَكْرَمَكُمْ عِندَ ٱللَّهِ أَتْقَىٰكُمْ",translation:"The most honorable of you in the sight of Allah is the most righteous."},
+  {reference:"Quran 103:2-3",surahId:103,ayah:2,arabic:"إِنَّ ٱلْإِنسَٰنَ لَفِى خُسْرٍ ۝ إِلَّا ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّٰلِحَٰتِ",translation:"Indeed, humankind is in loss — except those who believe and do righteous deeds."},
+  {reference:"Quran 7:199",surahId:7,ayah:199,arabic:"خُذِ ٱلْعَفْوَ وَأْمُرْ بِٱلْعُرْفِ وَأَعْرِضْ عَنِ ٱلْجَٰهِلِينَ",translation:"Be tolerant, command what is good, and turn away from the ignorant."}
+];
+
+var DAILY_REFLECTIONS = [
+  "Every breath is a renewal of your covenant with Allah.",
+  "Patience is not the absence of pain — it is trust in its unseen purpose.",
+  "Begin with the Name of the Most Merciful; end with gratitude to the Most Generous.",
+  "Your du'a is never wasted. Either you receive what you asked for, or something better — or a burden is lifted.",
+  "The ink of the scholar is more sacred than the blood of the martyr.",
+  "Whoever knows himself knows his Lord.",
+  "Silence is often louder than dhikr spoken without presence of heart.",
+  "Allah is closer to you than your jugular vein. What need of loneliness?",
+  "The sweetest tears are those shed in sujood.",
+  "Trust the timing. The One who sends the rain knows when the soil is ready."
+];
+
+/* Wisdom */
+var WISDOM_THEMES = [
+  {id:"all",label:"All",icon:"✦"},
+  {id:"patience",label:"Patience",icon:"◆"},
+  {id:"gratitude",label:"Gratitude",icon:"◆"},
+  {id:"mercy",label:"Mercy",icon:"◆"},
+  {id:"faith",label:"Faith",icon:"◆"},
+  {id:"prayer",label:"Prayer",icon:"◆"},
+  {id:"hope",label:"Hope",icon:"◆"}
+];
+
+var WISDOM_DB = [
+  {theme:"patience",reference:"Quran 2:153",surahId:2,ayah:153,arabic:"يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ ٱسْتَعِينُوا۟ بِٱلصَّبْرِ وَٱلصَّلَوٰةِ ۚ إِنَّ ٱللَّهَ مَعَ ٱلصَّٰبِرِينَ",translation:"O believers, seek help through patience and prayer. Surely Allah is with those who are patient."},
+  {theme:"patience",reference:"Quran 39:10",surahId:39,ayah:10,arabic:"إِنَّمَا يُوَفَّى ٱلصَّٰبِرُونَ أَجْرَهُم بِغَيْرِ حِسَابٍۢ",translation:"Indeed, the patient will be given their reward without measure."},
+  {theme:"patience",reference:"Quran 94:5-6",surahId:94,ayah:5,arabic:"فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا ۝ إِنَّ مَعَ ٱلْعُسْرِ يُسْرًا",translation:"So surely with hardship comes ease. Surely with hardship comes ease."},
+  {theme:"gratitude",reference:"Quran 14:7",surahId:14,ayah:7,arabic:"لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ",translation:"If you are grateful, I will surely give you more."},
+  {theme:"gratitude",reference:"Quran 2:152",surahId:2,ayah:152,arabic:"فَٱذْكُرُونِىٓ أَذْكُرْكُمْ وَٱشْكُرُوا۟ لِى وَلَا تَكْفُرُونِ",translation:"Remember Me — I will remember you. Be grateful to Me, and never ungrateful."},
+  {theme:"gratitude",reference:"Quran 16:18",surahId:16,ayah:18,arabic:"وَإِن تَعُدُّوا۟ نِعْمَةَ ٱللَّهِ لَا تُحْصُوهَآ",translation:"If you tried to count Allah's blessings, you could never number them."},
+  {theme:"mercy",reference:"Quran 7:156",surahId:7,ayah:156,arabic:"وَرَحْمَتِى وَسِعَتْ كُلَّ شَىْءٍۢ",translation:"My mercy encompasses everything."},
+  {theme:"mercy",reference:"Quran 39:53",surahId:39,ayah:53,arabic:"لَا تَقْنَطُوا۟ مِن رَّحْمَةِ ٱللَّهِ ۚ إِنَّ ٱللَّهَ يَغْفِرُ ٱلذُّنُوبَ جَمِيعًا",translation:"Do not despair of the mercy of Allah. Surely Allah forgives all sins."},
+  {theme:"mercy",reference:"Quran 6:54",surahId:6,ayah:54,arabic:"كَتَبَ رَبُّكُمْ عَلَىٰ نَفْسِهِ ٱلرَّحْمَةَ",translation:"Your Lord has prescribed mercy upon Himself."},
+  {theme:"faith",reference:"Quran 2:255",surahId:2,ayah:255,arabic:"ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ",translation:"Allah — there is no deity except Him, the Ever-Living, the Self-Sustaining."},
+  {theme:"faith",reference:"Quran 112:1-4",surahId:112,ayah:1,arabic:"قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ ٱللَّهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",translation:"Say: He is Allah, the One. Allah, the Eternal Refuge. He neither begets nor is born, and there is none comparable to Him."},
+  {theme:"faith",reference:"Quran 65:3",surahId:65,ayah:3,arabic:"وَمَن يَتَوَكَّلْ عَلَى ٱللَّهِ فَهُوَ حَسْبُهُۥ",translation:"Whoever puts their trust in Allah — He is sufficient for them."},
+  {theme:"prayer",reference:"Quran 20:14",surahId:20,ayah:14,arabic:"وَأَقِمِ ٱلصَّلَوٰةَ لِذِكْرِىٓ",translation:"Establish prayer for My remembrance."},
+  {theme:"prayer",reference:"Quran 29:45",surahId:29,ayah:45,arabic:"إِنَّ ٱلصَّلَوٰةَ تَنْهَىٰ عَنِ ٱلْفَحْشَآءِ وَٱلْمُنكَرِ",translation:"Surely prayer restrains one from shamefulness and wrongdoing."},
+  {theme:"prayer",reference:"Quran 2:45",surahId:2,ayah:45,arabic:"وَٱسْتَعِينُوا۟ بِٱلصَّبْرِ وَٱلصَّلَوٰةِ",translation:"Seek help through patience and prayer."},
+  {theme:"hope",reference:"Quran 93:3-5",surahId:93,ayah:3,arabic:"مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ ۝ وَلَلْءَاخِرَةُ خَيْرٌۭ لَّكَ مِنَ ٱلْأُولَىٰ ۝ وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ",translation:"Your Lord has not forsaken you, nor is He displeased. The Hereafter is better for you than the first. And your Lord will give you, and you shall be pleased."},
+  {theme:"hope",reference:"Quran 12:87",surahId:12,ayah:87,arabic:"إِنَّهُۥ لَا يَا۟يْـَٔسُ مِن رَّوْحِ ٱللَّهِ إِلَّا ٱلْقَوْمُ ٱلْكَٰفِرُونَ",translation:"None despair of Allah's mercy except those who disbelieve."},
+  {theme:"hope",reference:"Quran 3:139",surahId:3,ayah:139,arabic:"وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ",translation:"Do not lose heart nor grieve — you are the superior, if you are true believers."}
+];
+
+/* Reciters */
+var RECITERS = [
+  {id:7,name:"Mishary Alafasy",subfolder:"Alafasy_128kbps"},
+  {id:3,name:"Abdul Basit",subfolder:"Abdul_Basit_Murattal_192kbps"},
+  {id:1,name:"Abdul Rahman As-Sudais",subfolder:"Abdurrahmaan_As-Sudais_192kbps"},
+  {id:4,name:"Mahmoud Khalil Al-Husary",subfolder:"Husary_128kbps"},
+  {id:10,name:"Hani Ar-Rifai",subfolder:"Hani_Rifai_192kbps"}
+];
+
+/* =================================================================
+   NOOR — VUE APP
+   ================================================================= */
+var V = Vue;
+V.createApp({
+  setup: function () {
+    var page = V.ref('onboarding');
+    var isDark = V.ref(true);
+    var profile = V.ref({ name: '' });
+    var bookmarks = V.ref([]);
+    var lastPosition = V.ref(null);
+
+    var currentSurah = V.ref(null);
+    var verses = V.ref([]);
+    var loadingVerses = V.ref(false);
+    var versesError = V.ref(false);
+    var surahSearch = V.ref('');
+    var revFilter = V.ref('');
+    var arabicSize = V.ref('md');
+
+    var wisdomTheme = V.ref('all');
+    var selectedName = V.ref(null);
+    var selectedVerse = V.ref(null);
+    var showNameEdit = V.ref(false);
+    var showDeleteConfirm = V.ref(false);
+
+    var audio = V.ref({ currentAyah: null, isPlaying: false, label: '' });
+    var audioEl = null;
+
+    var prefs = V.ref({ reciterId: 7 });
+    var toast = V.ref({ show: false, message: '' });
+
+    var currentTick = V.ref('');
+    var tickerTimer = null;
+
+    /* ===== COMPUTED ===== */
+    var showHeader = V.computed(function () {
+      return page.value !== 'onboarding' && page.value !== 'setup-name';
+    });
+
+    var avatarInitial = V.computed(function () {
+      var n = (profile.value.name || '').trim();
+      return n ? n[0].toUpperCase() : 'N';
+    });
+
+    var greeting = V.computed(function () {
+      var h = new Date().getHours();
+      if (h < 5)  return 'LAYLA TAYYIBA';
+      if (h < 12) return 'SABAH AL-KHAYR';
+      if (h < 17) return 'MASA AN-NOOR';
+      if (h < 20) return 'MASA AL-KHAYR';
+      return "LAYLA SA'IDA";
+    });
+
+    var todayLabel = V.computed(function () {
+      var d = new Date();
+      var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      return String(d.getDate()).padStart(2,'0') + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+    });
+
+    var todayYear = V.computed(function () { return new Date().getFullYear(); });
+
+    var filteredSurahs = V.computed(function () {
+      var q = surahSearch.value.toLowerCase().trim();
+      return SURAHS_DB.filter(function (s) {
+        if (revFilter.value && s.revelationPlace !== revFilter.value) return false;
+        if (!q) return true;
+        return s.nameEn.toLowerCase().indexOf(q) >= 0
+          || s.meaning.toLowerCase().indexOf(q) >= 0
+          || String(s.id).indexOf(q) === 0;
+      });
+    });
+
+    var dailyVerse = V.computed(function () {
+      var d = new Date();
+      var dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+      return DAILY_VERSES[dayOfYear % DAILY_VERSES.length];
+    });
+
+    var dailyReflection = V.computed(function () {
+      var d = new Date();
+      var dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+      return DAILY_REFLECTIONS[dayOfYear % DAILY_REFLECTIONS.length];
+    });
+
+    var filteredWisdom = V.computed(function () {
+      if (wisdomTheme.value === 'all') return WISDOM_DB;
+      return WISDOM_DB.filter(function (w) { return w.theme === wisdomTheme.value; });
+    });
+
+    var bookmarksSorted = V.computed(function () {
+      return bookmarks.value.slice().sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+    });
+
+    var asmaUlHusna = V.computed(function () { return ASMA_DB; });
+    var wisdomThemes = V.computed(function () { return WISDOM_THEMES; });
+    var surahs = V.computed(function () { return SURAHS_DB; });
+    var WISDOM_COUNT = WISDOM_DB.length;
+
+    /* ===== METHODS ===== */
+    function go(p) {
+      try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8); } catch (e) {}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(function () { page.value = p; }, 40);
+    }
+
+    function toggleTheme() {
+      isDark.value = !isDark.value;
+      applyTheme();
+      save();
+    }
+    function applyTheme() {
+      document.documentElement.classList.toggle('dark', isDark.value);
+      document.body.classList.toggle('dark-bg', isDark.value);
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', isDark.value ? '#0A0F0D' : '#F5F0E1');
+    }
+
+    function getSurah(id) { return SURAHS_DB.find(function (s) { return s.id === id; }); }
+
+    function toArabicDigits(n) {
+      var map = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+      return String(n).split('').map(function (d) { return map[+d] || d; }).join('');
+    }
+
+    function stripHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/<sup[^>]*>.*?<\/sup>/g, '').replace(/<[^>]+>/g, '').trim();
+    }
+
+    function getThemeLabel(id) {
+      var t = WISDOM_THEMES.find(function (x) { return x.id === id; });
+      return t ? t.label : id;
+    }
+
+    function getReciterName(id) {
+      var r = RECITERS.find(function (x) { return x.id === id; });
+      return r ? r.name : 'Alafasy';
+    }
+
+    function cyclePreferredReciter() {
+      var idx = RECITERS.findIndex(function (r) { return r.id === prefs.value.reciterId; });
+      prefs.value.reciterId = RECITERS[(idx + 1) % RECITERS.length].id;
+      save();
+      showMsg('RECITER · ' + getReciterName(prefs.value.reciterId).toUpperCase());
+    }
+
+    function openReader(surahId) {
+      currentSurah.value = getSurah(surahId);
+      verses.value = [];
+      versesError.value = false;
+      page.value = 'reader';
+      window.scrollTo({ top: 0 });
+      loadSurah(surahId);
+    }
+    function openReaderAt(surahId, ayah) {
+      openReader(surahId);
+      setTimeout(function () {
+        var el = document.getElementById('ayah-' + surahId + ':' + ayah);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 1200);
+    }
+    function resumeReading() {
+      if (lastPosition.value) openReaderAt(lastPosition.value.surahId, lastPosition.value.ayah);
+    }
+
+    function loadSurah(id) {
+      loadingVerses.value = true;
+      versesError.value = false;
+      var url = 'https://api.quran.com/api/v4/verses/by_chapter/' + id +
+        '?translations=131&fields=text_uthmani,verse_key,verse_number' +
+        '&translation_fields=text&per_page=286';
+      fetch(url)
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (d) {
+          verses.value = (d.verses || []).map(function (v) {
+            return {
+              verse_key: v.verse_key,
+              verse_number: v.verse_number,
+              text_uthmani: v.text_uthmani,
+              translation: v.translations && v.translations[0] ? v.translations[0].text : ''
+            };
+          });
+          lastPosition.value = { surahId: id, ayah: 1 };
+          save();
+        })
+        .catch(function (e) {
+          console.warn('Failed to load surah', id, e);
+          versesError.value = true;
+        })
+        .finally(function () { loadingVerses.value = false; });
+    }
+
+    /* ===== AUDIO ===== */
+    function audioUrl(verseKey) {
+      var parts = verseKey.split(':');
+      var surah = String(parts[0]).padStart(3, '0');
+      var ayah = String(parts[1]).padStart(3, '0');
+      var reciter = RECITERS.find(function (r) { return r.id === prefs.value.reciterId; }) || RECITERS[0];
+      return 'https://everyayah.com/data/' + reciter.subfolder + '/' + surah + ayah + '.mp3';
+    }
+    function playAyah(v) {
+      if (audio.value.currentAyah === v.verse_key && audio.value.isPlaying) { pauseAudio(); return; }
+      if (audio.value.currentAyah === v.verse_key && !audio.value.isPlaying && audioEl) {
+        audioEl.play(); audio.value.isPlaying = true; return;
+      }
+      stopAudio();
+      audioEl = new Audio(audioUrl(v.verse_key));
+      audioEl.addEventListener('ended', function () {
+        var idx = verses.value.findIndex(function (x) { return x.verse_key === v.verse_key; });
+        if (idx >= 0 && idx < verses.value.length - 1) {
+          playAyah(verses.value[idx + 1]);
+        } else {
+          audio.value.isPlaying = false;
+        }
+      });
+      audioEl.addEventListener('pause', function () { audio.value.isPlaying = false; });
+      audioEl.addEventListener('play', function () { audio.value.isPlaying = true; });
+      audioEl.addEventListener('error', function () { showMsg('AUDIO FAILED · CHECK CONNECTION'); audio.value.currentAyah = null; });
+      var surahName = currentSurah.value ? currentSurah.value.nameEn : '';
+      audio.value = { currentAyah: v.verse_key, isPlaying: true, label: surahName + ' · Ayah ' + v.verse_number };
+      if (currentSurah.value) {
+        lastPosition.value = { surahId: currentSurah.value.id, ayah: v.verse_number };
+        save();
+      }
+      audioEl.play();
+    }
+    function pauseAudio() { if (audioEl) audioEl.pause(); audio.value.isPlaying = false; }
+    function toggleAudio() {
+      if (!audioEl) return;
+      if (audio.value.isPlaying) { audioEl.pause(); audio.value.isPlaying = false; }
+      else { audioEl.play(); audio.value.isPlaying = true; }
+    }
+    function stopAudio() {
+      if (audioEl) { try { audioEl.pause(); } catch (e) {} audioEl.src = ''; audioEl = null; }
+      audio.value = { currentAyah: null, isPlaying: false, label: '' };
+    }
+
+    /* ===== BOOKMARKS ===== */
+    function isBookmarked(verseKey) {
+      return bookmarks.value.some(function (b) { return b.verse_key === verseKey; });
+    }
+    function toggleBookmark(v) {
+      var key = v.verse_key;
+      if (isBookmarked(key)) {
+        bookmarks.value = bookmarks.value.filter(function (b) { return b.verse_key !== key; });
+        showMsg('BOOKMARK REMOVED');
+      } else {
+        var s = currentSurah.value || getSurah(parseInt(key.split(':')[0], 10));
+        bookmarks.value.push({
+          verse_key: key,
+          surahId: s ? s.id : parseInt(key.split(':')[0], 10),
+          surahNameEn: s ? s.nameEn : '',
+          arabic: v.text_uthmani,
+          translation: stripHtml(v.translation),
+          ts: Date.now()
+        });
+        showMsg('BOOKMARKED');
+      }
+      save();
+    }
+    function removeBookmark(key) {
+      bookmarks.value = bookmarks.value.filter(function (b) { return b.verse_key !== key; });
+      save();
+    }
+    function jumpToBookmark(bm) { openReaderAt(bm.surahId, parseInt(bm.verse_key.split(':')[1], 10)); }
+
+    function openVerseDetail(w) { selectedVerse.value = w; }
+
+    function shareAyah(v) {
+      var s = currentSurah.value;
+      var text = v.text_uthmani + '\n\n"' + stripHtml(v.translation) + '"\n\n— Quran ' + v.verse_key + (s ? ' · ' + s.nameEn : '') + '\n\nvia Noor';
+      if (navigator.share) {
+        navigator.share({ title: 'Noor — Quran ' + v.verse_key, text: text }).catch(function(){});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function () { showMsg('COPIED TO CLIPBOARD'); });
+      } else {
+        showMsg('SHARING NOT SUPPORTED');
+      }
+    }
+
+    /* ===== PERSISTENCE ===== */
+    function save() {
+      try {
+        localStorage.setItem('noor_profile', JSON.stringify(profile.value));
+        localStorage.setItem('noor_bookmarks', JSON.stringify(bookmarks.value));
+        localStorage.setItem('noor_last', JSON.stringify(lastPosition.value));
+        localStorage.setItem('noor_theme', isDark.value ? 'dark' : 'light');
+        localStorage.setItem('noor_prefs', JSON.stringify(prefs.value));
+        localStorage.setItem('noor_arabic_size', arabicSize.value);
+      } catch (e) {}
+    }
+    function savePrefs() { save(); }
+    function load() {
+      try {
+        var p = JSON.parse(localStorage.getItem('noor_profile'));
+        if (p && p.name) profile.value.name = p.name;
+        var bm = JSON.parse(localStorage.getItem('noor_bookmarks'));
+        if (Array.isArray(bm)) bookmarks.value = bm;
+        var lp = JSON.parse(localStorage.getItem('noor_last'));
+        if (lp && lp.surahId) lastPosition.value = lp;
+        var t = localStorage.getItem('noor_theme');
+        if (t === 'light') isDark.value = false;
+        else isDark.value = true;
+        var pr = JSON.parse(localStorage.getItem('noor_prefs'));
+        if (pr && pr.reciterId) prefs.value.reciterId = pr.reciterId;
+        var sz = localStorage.getItem('noor_arabic_size');
+        if (sz) arabicSize.value = sz;
+      } catch (e) {}
+      applyTheme();
+      if (profile.value.name) page.value = 'home';
+      else page.value = 'onboarding';
+    }
+
+    function finishSetup() {
+      if (!profile.value.name.trim()) return;
+      save();
+      go('home');
+      showMsg('AHLAN WA SAHLAN · ' + profile.value.name.split(' ')[0].toUpperCase());
+    }
+
+    function exportData() {
+      var d = { profile: profile.value, bookmarks: bookmarks.value, lastPosition: lastPosition.value, prefs: prefs.value };
+      var b = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = 'noor-backup.json';
+      a.click();
+      showMsg('EXPORTED');
+    }
+    function importData(evt) {
+      var file = evt.target.files[0];
+      if (!file) return;
+      var r = new FileReader();
+      r.onload = function (e) {
+        try {
+          var d = JSON.parse(e.target.result);
+          if (d.bookmarks && Array.isArray(d.bookmarks)) bookmarks.value = d.bookmarks;
+          if (d.profile && d.profile.name) profile.value.name = d.profile.name;
+          if (d.lastPosition) lastPosition.value = d.lastPosition;
+          if (d.prefs) prefs.value = Object.assign({}, prefs.value, d.prefs);
+          save();
+          showMsg('IMPORTED');
+        } catch (err) { showMsg('INVALID FILE'); }
+      };
+      r.readAsText(file);
+      evt.target.value = '';
+    }
+
+    function clearAll() {
+      try {
+        localStorage.removeItem('noor_profile');
+        localStorage.removeItem('noor_bookmarks');
+        localStorage.removeItem('noor_last');
+        localStorage.removeItem('noor_theme');
+        localStorage.removeItem('noor_prefs');
+        localStorage.removeItem('noor_arabic_size');
+      } catch (e) {}
+      profile.value = { name: '' };
+      bookmarks.value = [];
+      lastPosition.value = null;
+      showDeleteConfirm.value = false;
+      page.value = 'onboarding';
+    }
+
+    function showMsg(msg) {
+      toast.value = { show: true, message: msg };
+      setTimeout(function () { toast.value.show = false; }, 2600);
+    }
+
+    /* Header ticker (HH·MM) */
+    function updateTick() {
+      var d = new Date();
+      currentTick.value = String(d.getHours()).padStart(2,'0') + '·' + String(d.getMinutes()).padStart(2,'0');
+    }
+
+    V.onMounted(function () {
+      load();
+      updateTick();
+      tickerTimer = setInterval(updateTick, 20000);
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(function () {});
+      }
+    });
+
+    V.onUnmounted(function () { if (tickerTimer) clearInterval(tickerTimer); });
+
+    return {
+      page: page, isDark: isDark, profile: profile, bookmarks: bookmarks, bookmarksSorted: bookmarksSorted,
+      lastPosition: lastPosition, currentSurah: currentSurah, verses: verses, loadingVerses: loadingVerses,
+      versesError: versesError, surahSearch: surahSearch, revFilter: revFilter, arabicSize: arabicSize,
+      wisdomTheme: wisdomTheme, selectedName: selectedName, selectedVerse: selectedVerse,
+      showNameEdit: showNameEdit, showDeleteConfirm: showDeleteConfirm,
+      audio: audio, prefs: prefs, toast: toast,
+      showHeader: showHeader, avatarInitial: avatarInitial, greeting: greeting,
+      todayLabel: todayLabel, todayYear: todayYear, currentTick: currentTick,
+      filteredSurahs: filteredSurahs, filteredWisdom: filteredWisdom,
+      dailyVerse: dailyVerse, dailyReflection: dailyReflection,
+      asmaUlHusna: asmaUlHusna, wisdomThemes: wisdomThemes, surahs: surahs,
+      WISDOM_COUNT: WISDOM_COUNT,
+      go: go, toggleTheme: toggleTheme, getSurah: getSurah,
+      toArabicDigits: toArabicDigits, stripHtml: stripHtml, getThemeLabel: getThemeLabel,
+      getReciterName: getReciterName, cyclePreferredReciter: cyclePreferredReciter,
+      openReader: openReader, openReaderAt: openReaderAt, resumeReading: resumeReading,
+      loadSurah: loadSurah,
+      playAyah: playAyah, toggleAudio: toggleAudio, stopAudio: stopAudio,
+      isBookmarked: isBookmarked, toggleBookmark: toggleBookmark, removeBookmark: removeBookmark,
+      jumpToBookmark: jumpToBookmark, openVerseDetail: openVerseDetail, shareAyah: shareAyah,
+      save: save, savePrefs: savePrefs, finishSetup: finishSetup,
+      exportData: exportData, importData: importData, clearAll: clearAll
+    };
+  }
+}).mount('#app');
+  </script>
+</body>
+</html>
