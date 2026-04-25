@@ -127,6 +127,15 @@
       -webkit-user-select: none;
       cursor: default;
     }
+    /* Keyboard accessibility — visible focus ring without disturbing
+       the editorial look. Mouse clicks remain ring-free. */
+    :focus { outline: none; }
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+    .input:focus-visible { outline-offset: 0; }
     /* But the Quran reader's Arabic + translit + translation must remain selectable
        so users can copy verses for sharing or notes */
     .sacred-text, .translit-text, .verse-card p {
@@ -2951,7 +2960,139 @@ var FIGURES_DB = [
   {id:'firnas', cat:'historical', n:'59', ar:'عَبَّاس ٱبْن فِرْنَاس', en:'ʿAbbās ibn Firnās (rḥ)', title:'The First Aviator',
     era:'810 – 887 CE', kunya:'al-Andalusī — of Andalusia',
     summary:'Andalusian polymath in the court of Córdoba: poet, musician, physician, astronomer, engineer. He built the first known glider — a wood frame covered with feathers and silk — and at sixty-five years old, in 875 CE, he leapt from a tower in Córdoba and flew, by witness accounts, for several minutes before crashing on landing (he had not made a tail to absorb impact). He survived. The crater on the moon called Ibn Firnas honors him. He also developed an early planetarium, water clocks, and a process for cutting rock crystal. The bridge over the Guadalquivir in Córdoba is named after him.',
-    lesson:'Sixty-five is not too old to fly. The crashing is the only thing that ages you.'}
+    lesson:'Sixty-five is not too old to fly. The crashing is the only thing that ages you.'},
+
+  /* MORE COMPANIONS */
+  {id:'zubayr', cat:'companion', n:'60', ar:'ٱلزُّبَيْر ٱبْن ٱلْعَوَّام', en:'az-Zubayr ibn al-ʿAwwām (RA)', title:'The Disciple — Ḥawārī of the Prophet ﷺ',
+    era:'c. 594 – 656 CE', kunya:'Ḥawārī Rasūl Allāh — the disciple of the Messenger',
+    summary:'Cousin of the Prophet ﷺ, nephew of Khadīja, fourth or fifth person to accept Islam at age fifteen. The Prophet ﷺ said: "Every prophet has a disciple — and my disciple is Zubayr." When the rumor of the Prophet\'s ﷺ death first reached the Muslims in Makkah, the teenage Zubayr was the only man to draw his sword and run through the streets demanding to know where his Prophet ﷺ was — the Prophet ﷺ smiled and ordered him to sheathe it, then prayed for him. He fought at every major battle, was the first to draw his sword in defense of Islam, and one of the ten promised Paradise. Killed in the unrest after the death of ʿUthmān; ʿAlī wept when he heard.',
+    lesson:'The disciple draws his sword the moment he hears his teacher is in danger.'},
+  {id:'abuubayda', cat:'companion', n:'61', ar:'أَبُو عُبَيْدَة ٱبْن ٱلْجَرَّاح', en:'Abū ʿUbayda ibn al-Jarrāḥ (RA)', title:'The Trustworthy of This Nation',
+    era:'c. 583 – 639 CE', kunya:'Amīn hādhihi al-ummah — Trustee of this nation',
+    summary:'The Prophet ﷺ said of him: "Every nation has a trustworthy one — and the trustworthy one of this nation is Abū ʿUbayda." A man of striking modesty and total reliability. Migrated to Abyssinia and to Madīna. Fought at every major battle. As commander in Syria, he conquered Damascus, Ḥimṣ, and other cities — but always lived in a tent and shared his rations with the lowest soldier. When the plague of ʿAmwās broke out in Syria, ʿUmar ordered him to return; he refused — he would not abandon his men. He was among the first to die of the plague.',
+    lesson:'The truest leader is the one who refuses the privilege of safety.'},
+  {id:'talha', cat:'companion', n:'62', ar:'طَلْحَة ٱبْن عُبَيْدِ ٱللَّه', en:'Ṭalḥa ibn ʿUbaydillāh (RA)', title:'The Generous · Living Martyr',
+    era:'c. 594 – 656 CE', kunya:'al-Khayr — the good',
+    summary:'One of the ten promised Paradise. Wealthy merchant who emptied his purse for the cause — the Prophet ﷺ called him Ṭalḥa al-Khayr ("the good"), Ṭalḥa al-Jūd ("the generous"). At Uḥud, when the army was routed and arrows came at the Prophet ﷺ, Ṭalḥa shielded him with his own body, taking arrows in his hand until his fingers were paralyzed. The Prophet ﷺ said about him: "Whoever wants to see a martyr walking on earth, let them look at Ṭalḥa." He was killed years later in the same conflict that took az-Zubayr.',
+    lesson:'A true wealth is the one you spend on what cannot be priced.'},
+  {id:'abdurrahman', cat:'companion', n:'63', ar:'عَبْد ٱلرَّحْمَٰن ٱبْن عَوْف', en:'ʿAbd ar-Raḥmān ibn ʿAwf (RA)', title:'The Generous Trader',
+    era:'c. 580 – 654 CE', kunya:'one of the ten promised Paradise',
+    summary:'When he migrated to Madīna with nothing, the Prophet ﷺ paired him with the wealthy Saʿd ibn ar-Rabīʿ, who offered to share his property and one of his wives. ʿAbd ar-Raḥmān thanked him but said: "Just show me the marketplace." Within a few years he was one of the wealthiest men in Madīna, every fortune given freely in the cause: he once gave 700 camels at one time, then asked his wife if she had been told and given anything. He fed 300 widows in his last year alone.',
+    lesson:'Allah\'s provision arrives at the door of the one who looks for the marketplace, not the handout.'},
+  {id:'said', cat:'companion', n:'64', ar:'سَعِيد ٱبْن زَيْد', en:'Saʿīd ibn Zayd (RA)', title:'One of the Ten Promised Paradise',
+    era:'c. 600 – 671 CE', kunya:'cousin and brother-in-law of ʿUmar',
+    summary:'His wife Fāṭima bint al-Khaṭṭāb was ʿUmar\'s sister. When ʿUmar burst into their home with sword drawn to kill them for accepting Islam, it was the Qurʾān they were reading — and the welt his hand had raised on Fāṭima\'s face — that broke ʿUmar and led to his conversion. Saʿīd fought at every battle except Badr (where he was on a diplomatic mission). One of the earliest believers — yet always quiet, never sought rank.',
+    lesson:'The page in your hand may convert the killer at your door.'},
+
+  /* MORE WOMEN */
+  {id:'safiya', cat:'women', n:'65', ar:'صَفِيَّة بِنْت عَبْد ٱلْمُطَّلِب', en:'Ṣafiyya bint ʿAbd al-Muṭṭalib (RA)', title:'The Warrior Aunt of the Prophet ﷺ',
+    era:'c. 565 – 640 CE', kunya:'paternal aunt of the Prophet ﷺ',
+    summary:'Sister of Ḥamza, paternal aunt of the Prophet ﷺ, mother of az-Zubayr. At the Battle of the Trench, when a Jewish enemy spy crept into the fortress where the women and children were sheltered, she was the only adult man\'s strength in the room — she lifted a tent pole, killed the spy with her own hands, and threw his head over the wall to deter further attempts. She was over sixty years old.',
+    lesson:'There is no age at which faith says: it is no longer your turn.'},
+  {id:'ramla', cat:'women', n:'66', ar:'رَمْلَة بِنْت أَبِي سُفْيَان', en:'Umm Ḥabība — Ramla bint Abī Sufyān (RA)', title:'Mother of the Believers · Daughter of the Enemy',
+    era:'c. 590 – 666 CE', kunya:'Umm al-Muʾminīn',
+    summary:'Daughter of Abū Sufyān, the leader of Quraysh and the most prominent enemy of Islam in its early years. She accepted Islam when her father was still its fiercest persecutor. She and her husband migrated to Abyssinia, where her husband apostatized and died — leaving her alone in a foreign land. The Prophet ﷺ heard of her plight and sent for her in marriage, paying her dowry himself. Her father later came to Madīna and entered her home; she did not let him sit on the Prophet\'s ﷺ bed, saying simply: "It is the bed of the Messenger of Allah ﷺ — and you are an unclean idolater." Years later her father accepted Islam too.',
+    lesson:'Faith does not soften because the enemy is your father.'},
+  {id:'sawda', cat:'women', n:'67', ar:'سَوْدَة بِنْت زَمْعَة', en:'Sawda bint Zamʿa (RA)', title:'Mother of the Believers · The First After Khadīja',
+    era:'c. 590 – 674 CE', kunya:'Umm al-Muʾminīn',
+    summary:'After Khadīja\'s death and the Year of Sorrow, the Prophet ﷺ was alone with his daughters. Khawla bint Ḥakīm proposed Sawda — an older widow whose husband had died on the migration to Abyssinia. She was the first the Prophet ﷺ married after Khadīja, raising his children as her own. When she grew older, she gave her night with the Prophet ﷺ to ʿĀʾisha, saying: "I do not need anything from a husband, but I love to be a wife of the Messenger of Allah ﷺ on the Day of Resurrection."',
+    lesson:'Some loves are not measured in the present, but in the company you keep on the Last Day.'},
+  {id:'maryam_qib', cat:'women', n:'68', ar:'مَارِيَة ٱلْقِبْطِيَّة', en:'Māriya al-Qibṭiyya (RA)', title:'Mother of Ibrāhīm · The Coptic Slave-Queen',
+    era:'died c. 637 CE', kunya:'Umm Ibrāhīm',
+    summary:'A Coptic Christian woman from Egypt, sent as a gift by the Muqawqis to the Prophet ﷺ. She accepted Islam, was freed, and bore his ﷺ son Ibrāhīm — the only male child of his after Khadīja. The Prophet ﷺ rejoiced enormously over the boy. When Ibrāhīm died at one and a half years old, the Prophet ﷺ wept openly: "The eye sheds tears, the heart grieves, but we say only what pleases our Lord. Indeed, O Ibrāhīm — we are saddened by your departure." A solar eclipse occurred the day Ibrāhīm died; people whispered it was because of him. The Prophet ﷺ corrected them publicly: "The sun and moon do not eclipse for the death or birth of any human."',
+    lesson:'Even the Messenger ﷺ wept — grief is faithful, not faithless.'},
+  {id:'shifa', cat:'women', n:'69', ar:'ٱلشِّفَاء بِنْت عَبْد ٱللَّه', en:'ash-Shifāʾ bint ʿAbdillāh (RA)', title:'Teacher of Reading & Writing',
+    era:'c. 580 – 660 CE', kunya:'al-ʿAdawiyya — of the ʿAdī clan',
+    summary:'A learned woman of Quraysh, an early convert. She was already literate before Islam — rare for any woman or man in Arabia. The Prophet ﷺ sent her to teach Ḥafṣa bint ʿUmar to read and write, and asked her to teach others. Under ʿUmar\'s caliphate, he appointed her market inspector (ḥisba) of Madīna — among the earliest women in any culture to hold formal civic authority. She also practiced ruqya (medicinal recitation) and trained others in it.',
+    lesson:'Where there is knowledge, there is no question of who may teach it.'},
+
+  /* MORE SCHOLARS */
+  {id:'rabia_basri', cat:'scholar', n:'70', ar:'حَسَن ٱلْبَصْرِيّ', en:'Ḥasan al-Baṣrī (rḥ)', title:'The Tabiʿī of Baṣra · Voice of Conscience',
+    era:'642 – 728 CE', kunya:'al-Baṣrī — of Baṣra',
+    summary:'Born to a freed slave family in Madīna, raised by the household of Umm Salama (RA). He met around 130 companions of the Prophet ﷺ. Settled in Baṣra, where his sermons drew thousands; al-Ḥajjāj — the brutal governor — would silence himself when Ḥasan walked past. He spoke openly against the abuses of the Umayyad rulers but was protected by his fame and his piety. His sayings still circulate: "The world is a transit. The Hereafter is the destination."',
+    lesson:'A scholar who fears no ruler protects every common person.'},
+  {id:'jafar', cat:'scholar', n:'71', ar:'جَعْفَر ٱلصَّادِق', en:'Jaʿfar aṣ-Ṣādiq (rḥ)', title:'The Truthful · Sixth Imam · Teacher of the Imams',
+    era:'702 – 765 CE', kunya:'aṣ-Ṣādiq — the truthful',
+    summary:'Great-great-grandson of the Prophet ﷺ through Ḥusayn (RA) and Fāṭima (RA). One of the most extraordinary scholars in Islamic history — Imām Abū Ḥanīfa, Imām Mālik, and the founder of alchemy Jābir ibn Ḥayyān were all his students. A pivotal figure in Sunni and Shīʿa scholarship alike. His exegesis of the Qurʾān, his work on jurisprudence, his treatises on the natural sciences and astronomy — all influence the centuries that follow him. He chose, like ʿAlī al-Riḍā, to stay out of politics and dedicate his life to teaching.',
+    lesson:'A great teacher leaves greater students than monuments.'},
+  {id:'ibnhajar', cat:'scholar', n:'72', ar:'ٱبْن حَجَر ٱلْعَسْقَلَانِيّ', en:'Ibn Ḥajar al-ʿAsqalānī (rḥ)', title:'The Greatest Commentator on Bukhārī',
+    era:'1372 – 1449 CE', kunya:'Shaykh al-Islām',
+    summary:'Born in Cairo. His Fatḥ al-Bārī — a commentary on Ṣaḥīḥ al-Bukhārī — runs to over fifteen volumes and is considered the most important work on the Bukhārī text ever composed. Took twenty-five years to write. He was Chief Judge of Egypt at one point, but stepped back from politics to teach and write. His son-in-law was the historian al-Sakhāwī, who continued his school.',
+    lesson:'Some books take twenty-five years — and then the world reads them for six hundred more.'},
+  {id:'suyuti', cat:'scholar', n:'73', ar:'جَلَال ٱلدِّين ٱلسُّيُوطِيّ', en:'Jalāl ad-Dīn as-Suyūṭī (rḥ)', title:'The Polymath of Cairo',
+    era:'1445 – 1505 CE', kunya:'al-Khaḍīrī',
+    summary:'Born in Cairo. By the age of forty he had withdrawn entirely from public life to write — and produced over six hundred works in his lifetime, on tafsīr, hadith, jurisprudence, history, language, and the sciences. His Tafsīr al-Jalālayn (with Jalāl al-Maḥallī), al-Itqān fī ʿulūm al-Qurʾān, and Tārīkh al-Khulafāʾ are still standard references.',
+    lesson:'When the world is too loud, the only thing left to do is fill the library.'},
+  {id:'ahmadsirhindi', cat:'scholar', n:'74', ar:'أَحْمَد ٱلسِّرْهِنْدِيّ', en:'Aḥmad Sirhindī (rḥ)', title:'Mujaddid Alf Thānī — Reviver of the Second Millennium',
+    era:'1564 – 1624 CE', kunya:'Mujaddid — reviver of religion',
+    summary:'Indian scholar of the Naqshbandī Sufi order. He lived during the reign of the Mughal emperor Akbar, who had begun mixing Hindu and Muslim doctrine into a syncretic court religion (Dīn-i Ilāhī). Sirhindī wrote letter after letter to the nobility refuting the new religion and defending strict Sunni practice. Imprisoned by Jahāngīr in the fort of Gwalior — he kept writing and teaching from there, eventually winning over the emperor himself. He is credited with returning the Mughal court to mainstream Islam.',
+    lesson:'A pen in a prison can reverse the religion of an empire.'},
+  {id:'shahwaliullah', cat:'scholar', n:'75', ar:'شَاه وَلِيّ ٱللَّه ٱلدِّهْلَوِيّ', en:'Shāh Walīullāh ad-Dihlawī (rḥ)', title:'The Bridge Between East and Reform',
+    era:'1703 – 1762 CE', kunya:'al-Muḥaddith',
+    summary:'Indian scholar in Delhi during the decline of the Mughal Empire. He translated the Qurʾān into Persian — controversial in his day, transformative for the future. His Ḥujjat Allāh al-Bāligha is a major work integrating jurisprudence with the philosophy of human civilization. He attempted to reconcile the differences between the four Sunni schools and to revive hadith study in India.',
+    lesson:'A translator opens a door for centuries he will never see opened.'},
+  {id:'iqbal', cat:'scholar', n:'76', ar:'مُحَمَّد إِقْبَال', en:'Muḥammad Iqbāl (rḥ)', title:'Poet of the Self · Philosopher of Awakening',
+    era:'1877 – 1938 CE', kunya:'ʿAllāma — the very learned',
+    summary:'Philosopher, poet, jurist, lawyer, scholar of Islamic thought. Born in Sialkot (in present-day Pakistan), educated in Lahore, then Cambridge, Munich. His Persian and Urdu poetry — Asrār-i Khudī, Bāl-i Jibrīl, Zarb-i Kalīm — is among the most beautiful spiritual literature of the modern age. His Reconstruction of Religious Thought in Islam is a serious philosophical attempt to think Islam through modernity. He proposed the political vision of a Muslim homeland in South Asia at the Allahabad address of 1930 — laying the conceptual foundation for Pakistan.',
+    lesson:'Awaken the self — and the nation will follow.'},
+
+  /* MORE WARRIORS */
+  {id:'aybak', cat:'warrior', n:'77', ar:'قُطْب ٱلدِّين أَيْبَك', en:'Quṭb ad-Dīn Aybak', title:'The Slave Who Founded a Sultanate',
+    era:'1150 – 1210 CE', kunya:'Lakh Bakhsh — giver of millions',
+    summary:'Sold as a slave to the Ghurids, he rose through merit until his master Muḥammad of Ghor entrusted him with India. After Muḥammad\'s assassination, Aybak declared himself sultan in Delhi (1206) — founding the Mamluk Sultanate, the first Muslim dynasty to rule from Delhi. Famous for his immense generosity, his nickname "Lakh Bakhsh" — "giver of a hundred thousand" — came from how often he distributed wealth. He commissioned the Quṭb Mīnār in Delhi, the tallest brick minaret in the world.',
+    lesson:'No one is born a sultan — they earn it, sometimes from chains.'},
+  {id:'aurangzeb', cat:'warrior', n:'78', ar:'أَوْرَنْگْزِيب', en:'Awrangzīb ʿĀlamgīr', title:'The Last Great Mughal',
+    era:'1618 – 1707 CE', kunya:'ʿĀlamgīr — world-seizer',
+    summary:'Sixth Mughal emperor of India. He memorized the Qurʾān, wrote out copies of the muṣḥaf in his own hand, and sold them to support himself — refusing to use the imperial treasury for personal expenses. Stitched the prayer caps he wore in court. Commissioned the Fatāwā ʿĀlamgīriyya, a massive Ḥanafī legal compilation that remained authoritative across South Asia for two centuries. His military expansion brought the Mughal Empire to its greatest geographic extent. A controversial figure historically, but in personal piety, austerity, and devotion to the Qurʾān, his life was undeniably remarkable.',
+    lesson:'The richest emperor was a copyist of the Qurʾān before he was anything else.'},
+  {id:'omar_mukhtar', cat:'warrior', n:'79', ar:'عُمَر ٱلْمُخْتَار', en:'ʿUmar al-Mukhtār', title:'Lion of the Desert',
+    era:'1858 – 1931 CE', kunya:'Shaykh al-Mujāhidīn',
+    summary:'Libyan Qurʾān teacher who, in his sixties, led the resistance against Italian colonial occupation for twenty years. With a small force of mostly tribesmen and graduates of his Qurʾān schools, he kept the Italian army of tens of thousands at bay across the Cyrenaica desert. Captured by the Italians in 1931 at age seventy-three, after his horse was shot under him. At his trial — a sham — he refused to ask for clemency and said: "We will not surrender. We will win or we will die." He was hanged in front of his own people. His last word was "Allāh."',
+    lesson:'When the homeland is taken, the school can become an army.'},
+  {id:'salahuddin_palestine', cat:'warrior', n:'80', ar:'عِزّ ٱلدِّين ٱلْقَسَّام', en:'ʿIzz ad-Dīn al-Qassām', title:'The Syrian Imam Who Resisted',
+    era:'1882 – 1935 CE', kunya:'al-Shahīd — the martyr',
+    summary:'Syrian-born scholar, imam, and teacher in Haifa during the British Mandate period of Palestine. Trained at al-Azhar. He preached self-reliance, literacy, and resistance against colonial dispossession. Built schools, taught Qurʾān, and founded a movement that combined religious revival with nationalist defense. Killed in a British military operation in 1935 alongside a small band of his followers — his death galvanized the wider Arab Revolt of 1936.',
+    lesson:'Faith taught from a pulpit can outlive the empire that hangs the imam.'},
+
+  /* MORE HISTORICAL */
+  {id:'jabir', cat:'historical', n:'81', ar:'جَابِر ٱبْن حَيَّان', en:'Jābir ibn Ḥayyān (Geber) (rḥ)', title:'Father of Chemistry',
+    era:'c. 721 – 815 CE', kunya:'Abū Mūsā',
+    summary:'Persian-Arab polymath, student of Imām Jaʿfar aṣ-Ṣādiq. He developed systematic methods of crystallization, distillation, sublimation, and oxidation — naming many of the substances and instruments that founded chemistry. The English word "alchemy" (and through it, "chemistry") and "alkali" come from his Arabic terminology. He insisted on experiment over speculation: "The first essential in chemistry is that you should perform practical work and conduct experiments — for he who performs not practical work nor makes experiments will never attain the least degree of mastery."',
+    lesson:'Theory is air. The experiment is the bread.'},
+  {id:'idrisi', cat:'historical', n:'82', ar:'ٱلْإِدْرِيسِيّ', en:'al-Idrīsī (rḥ)', title:'Cartographer of the World',
+    era:'1100 – 1165 CE', kunya:'al-Sharīf',
+    summary:'Born in Ceuta to an Arab Andalusian family. Lived twenty years at the court of King Roger II of Sicily, who commissioned him to make a map and book of the entire known world. His Tabula Rogeriana, completed in 1154, was the most accurate world map for three hundred years — used by sailors and merchants from Lisbon to Beijing. He computed the Earth\'s circumference within 10 percent of the modern value. Drew, on his map, the south at the top and the north at the bottom — showing how perspective is itself a choice.',
+    lesson:'The world is the size of the cartographer\'s patience.'},
+  {id:'kindi', cat:'historical', n:'83', ar:'ٱلْكِنْدِيّ', en:'al-Kindī (rḥ)', title:'The Philosopher of the Arabs',
+    era:'c. 801 – 873 CE', kunya:'Faylasūf al-ʿArab',
+    summary:'Director of the House of Wisdom in Baghdad after the founding generation. He oversaw the translation of Greek philosophy, science, and medicine into Arabic — Aristotle, Euclid, Ptolemy. He wrote on optics, music, metallurgy, gem science, the construction of swords, encryption, and the philosophy of religion. His treatise on cryptanalysis is the earliest known mathematical analysis of frequency analysis — the foundation of modern code-breaking.',
+    lesson:'A great translator makes a civilization carry the wealth of its predecessors.'},
+  {id:'mansur', cat:'historical', n:'84', ar:'هَارُون ٱلرَّشِيد', en:'Hārūn ar-Rashīd', title:'The Caliph of the Golden Age',
+    era:'763 – 809 CE', kunya:'ar-Rashīd — the rightly guided',
+    summary:'Fifth Abbasid caliph; his reign is the high water of medieval Islamic civilization. Founded the Bayt al-Ḥikma (House of Wisdom) in Baghdad, where Muslim, Christian, Jewish, and Zoroastrian scholars together translated and produced a library that had no rival on earth. Sent diplomatic gifts — including a water-clock and an elephant — to Charlemagne. The setting of much of the Thousand and One Nights. He is said to have made ḥajj on foot in alternate years.',
+    lesson:'A patron of learning sets a thousand-year direction.'},
+  {id:'akbar', cat:'historical', n:'85', ar:'أَكْبَر', en:'Akbar the Great', title:'Mughal Emperor of the Subcontinent',
+    era:'1542 – 1605 CE', kunya:'al-Akbar — the great',
+    summary:'Third Mughal emperor of India, taking the throne at thirteen. He abolished the jizya tax on non-Muslims, married Hindu princesses without converting them, appointed Hindus to high office, and founded an interfaith debate hall — the ʿIbādat Khāna — where Sunnis, Shīʿīs, Hindus, Jains, Zoroastrians, Christians, and Jews debated openly. Built a city of palaces in Fatehpur Sīkrī. Illiterate himself, he kept a corps of readers around him at all hours so he could absorb books on every subject. His religious experiments later in life were controversial and short-lived; the empire reverted to mainstream Islam under his successors.',
+    lesson:'Power is sometimes wisest in the room where every voice is heard.'},
+  {id:'rumi_haritha', cat:'historical', n:'86', ar:'فِيرُوز شَاه تُغْلُق', en:'Fīrūz Shāh Tughluq', title:'Builder of Hospitals & Canals',
+    era:'1309 – 1388 CE', kunya:'sultan of Delhi',
+    summary:'Sultan of Delhi for nearly forty years (1351 – 1388). Of all the Delhi sultans, the one most remembered for civic works: he built or restored hundreds of mosques, schools, hospitals, public baths, and the largest network of irrigation canals India had ever seen, including a 240-kilometer canal still in use. He founded a free hospital that treated patients regardless of religion, and a fund that paid the dowries of poor girls (Hindu and Muslim alike) so they could marry.',
+    lesson:'A ruler is remembered for the wells he dug, not the wars he fought.'},
+
+  /* MORE QUR\'ĀNIC FIGURES */
+  {id:'ashabuukhdud', cat:'quranic', n:'87', ar:'أَصْحَابُ ٱلْأُخْدُود', en:'Aṣḥāb al-Ukhdūd', title:'The People of the Trench',
+    era:'pre-Islamic', kunya:'"the makers of the trench"',
+    summary:'In Surah al-Burūj (85:4-8), the Qurʾān commemorates believers who were thrown into a fiery trench by tyrants for refusing to renounce their faith — and the tyrants sat by the fire watching them burn. Tradition associates this with the Christian martyrs of Najrān killed by Dhū Nuwās in 6th-century Yemen, but the Qurʾān leaves the time and place unspecified — making them a sign for every age. The verses curse the persecutors and promise the believers Paradise.',
+    lesson:'Some witnesses pass through the fire — the fire passes after them.'},
+  {id:'ashabusabt', cat:'quranic', n:'88', ar:'أَصْحَابُ ٱلْكَهْف ٱلْمُسَخَّرُون', en:'The Sabbath-Breakers', title:'The People Who Were Tested by the Sea',
+    era:'pre-Islamic', kunya:'mentioned in 2:65, 7:163-166',
+    summary:'A coastal Israelite town whose people were forbidden to fish on the Sabbath. The fish came in abundance only on Saturday and disappeared on weekdays — a clear test. They schemed: they put out nets on Friday and collected on Sunday. The Qurʾān describes how the community split: some openly broke the rule, some openly forbade them, and a third group stayed silent. Allah punished those who broke the law and saved those who forbade it. The Qurʾān does not say what happened to the silent ones.',
+    lesson:'The crime is not only what your hand does — it is what your tongue refuses to say.'},
+  {id:'iram', cat:'quranic', n:'89', ar:'إِرَم ذَاتُ ٱلْعِمَاد', en:'Iram of the Pillars', title:'The Lost City of ʿĀd',
+    era:'pre-Islamic', kunya:'mentioned in Surah al-Fajr (89:7-8)',
+    summary:'In Surah al-Fajr, Allah refers to "Iram of the lofty pillars, whose like was never made in the lands" — the great city of the people of ʿĀd, to whom the prophet Hūd was sent. The people of ʿĀd were physically powerful and built towering monuments, claiming "Who is mightier than us in strength?" When they refused Hūd\'s message, Allah sent a furious wind that lasted seven nights and eight days, leaving the city buried in the sand. Lost for thousands of years until satellite imagery in the 1990s located what is believed to be the site, in Oman\'s Empty Quarter.',
+    lesson:'The strongest cities of the proudest peoples — the desert covers them.'}
 ];
 
 /* =================================================================
@@ -3957,6 +4098,9 @@ V.createApp({
       showMsg('RECITER · ' + getReciterName(prefs.value.reciterId).toUpperCase());
     }
 
+    /* When opening, we record the target ayah; the verses watcher
+       below scrolls once verses arrive — no race-prone setTimeout. */
+    var _pendingScroll = null;
     function openReader(surahId) {
       currentSurah.value = getSurah(surahId);
       verses.value = [];
@@ -3966,15 +4110,68 @@ V.createApp({
       loadSurah(surahId);
     }
     function openReaderAt(surahId, ayah) {
+      _pendingScroll = surahId + ':' + ayah;
       openReader(surahId);
-      setTimeout(function () {
-        var el = document.getElementById('ayah-' + surahId + ':' + ayah);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 1200);
     }
     function resumeReading() {
       if (lastPosition.value) openReaderAt(lastPosition.value.surahId, lastPosition.value.ayah);
     }
+    /* Watcher: scroll to pending ayah once verses have rendered */
+    var _scrollObserver = null;
+    function _stopReaderObserver() {
+      if (_scrollObserver) { _scrollObserver.disconnect(); _scrollObserver = null; }
+    }
+    function _startReaderObserver() {
+      _stopReaderObserver();
+      if (typeof IntersectionObserver === 'undefined') return;
+      var nodes = document.querySelectorAll('[id^="ayah-"]');
+      if (!nodes.length) return;
+      _scrollObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting && e.intersectionRatio > 0.55 && currentSurah.value) {
+            var key = e.target.id.replace('ayah-', '');
+            var ayah = parseInt(key.split(':')[1], 10);
+            if (ayah && currentSurah.value && ayah !== (lastPosition.value || {}).ayah) {
+              lastPosition.value = { surahId: currentSurah.value.id, ayah: ayah };
+              save();
+            }
+          }
+        });
+      }, { rootMargin: '-30% 0px -50% 0px', threshold: [0.55] });
+      nodes.forEach(function (n) { _scrollObserver.observe(n); });
+    }
+    V.watch(function () { return verses.value.length; }, function (n) {
+      if (n > 0 && _pendingScroll) {
+        var key = _pendingScroll;
+        _pendingScroll = null;
+        V.nextTick(function () {
+          var el = document.getElementById('ayah-' + key);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          _startReaderObserver();
+        });
+      } else if (n > 0) {
+        V.nextTick(_startReaderObserver);
+      }
+    });
+    /* Stop observing when leaving the reader */
+    V.watch(function () { return page.value; }, function (p) {
+      if (p !== 'reader') _stopReaderObserver();
+    });
+    /* Watcher: when a new ayah starts playing, scroll it into view */
+    V.watch(function () { return audio.value.currentAyah; }, function (key) {
+      if (!key) return;
+      V.nextTick(function () {
+        var el = document.getElementById('ayah-' + key);
+        if (el) {
+          var rect = el.getBoundingClientRect();
+          var offTop = rect.top < 80;
+          var offBottom = rect.bottom > (window.innerHeight - 160);
+          if (offTop || offBottom) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    });
 
     function loadSurah(id) {
       loadingVerses.value = true;
@@ -4005,7 +4202,11 @@ V.createApp({
               translation: v.translations && v.translations[0] ? v.translations[0].text : ''
             };
           });
-          lastPosition.value = { surahId: id, ayah: 1 };
+          // Preserve last-read ayah if reopening the same surah; otherwise
+          // a "Continue reading" tile would always restart at ayah 1.
+          var keepAyah = (lastPosition.value && lastPosition.value.surahId === id)
+            ? lastPosition.value.ayah : 1;
+          lastPosition.value = { surahId: id, ayah: keepAyah };
           save();
         })
         .catch(function (e) {

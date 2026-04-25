@@ -126,12 +126,22 @@ Motion tokens: `--ease-out-expo`, `--ease-in-out-expo`, `--ease-smooth`, `--ease
 - `audio { isPlaying, currentAyah, label }`, `prefs { reciterId, showTranslit }`, `toast`
 
 ### Built-in data (no API needed)
-- `SURAHS_DB` (114, with `meaning` field), `ASMA_DB` (99), `DAILY_VERSES` (~30), `DAILY_REFLECTIONS` (35)
-- `WISDOM_THEMES` (8 + All) + `WISDOM_DB` (44), `RECITERS` (5)
-- `HADITH_DB` (40), `STORIES_DB` (25)
-- `FIGURE_CATEGORIES` (3 + All) + `FIGURES_DB` (37: 9 companions, 15 women, 13 scholars)
+- `SURAHS_DB` (114, with `meaning` field), `ASMA_DB` (99), `DAILY_VERSES` (30 — Arabic + translit + translation), `DAILY_REFLECTIONS` (35)
+- `WISDOM_THEMES` (10 + All: + Charity, Justice) + `WISDOM_DB` (59 — every entry has translit), `RECITERS` (5)
+- `HADITH_DB` (40), `STORIES_DB` (25 prophets)
+- `FIGURE_CATEGORIES` (6 + All) + `FIGURES_DB` (89: 14 companions · 20 women · 20 scholars · 10 quranic figures · 10 warriors · 15 historical)
 - `SEERAH_DB` (17 chronological events from the life of the Prophet ﷺ)
-- `SOLACE_THEMES` (15) + `SOLACE_DB` (~79)
+- `SOLACE_THEMES` (19) + `SOLACE_DB` (131): anxiety · grief · hardship · forgiveness · trust · fear · gratitude · nearness · doubt · illness · parents · provision · sleep · guidance · patience · protection · repentance · heart · death
+
+### Translit coverage (every Arabic verse has matching transliteration)
+- WISDOM_DB ✓ HADITH_DB ✓ SOLACE_DB ✓ DAILY_VERSES ✓ ASMA_DB ✓
+- Diacritic system: ʿ (ʿayn), ʾ (hamza), ḥ ṣ ṭ ḍ ẓ (emphatics), ā ī ū (long vowels), th dh sh kh gh.
+
+### Reader behavior
+- Continue-reading: tracked by IntersectionObserver — `lastPosition.ayah` updates as the user scrolls past each verse.
+- Bookmark / Continue jumps use a watcher on `verses.value.length` (no setTimeout race).
+- Audio auto-scrolls the currently-playing ayah into view if it's offscreen.
+- `:focus-visible` rings show on keyboard nav only.
 
 ### API & audio
 - Surahs + ayahs: `https://api.quran.com/api/v4/verses/by_chapter/{id}?translations=131&words=true&word_fields=text_uthmani,transliteration&fields=text_uthmani,verse_key,verse_number`
