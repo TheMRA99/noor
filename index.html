@@ -122,7 +122,7 @@
       cursor: default;
     }
     /* Non-interactive editorial bits never show a text-caret cursor */
-    .kicker, .label, .mono-num, .f-ar, h1, h2, h3 {
+    .kicker, .label, .mono-num, .f-ar, h1, h2, h3, .maker-sig, .maker-sig * {
       user-select: none;
       -webkit-user-select: none;
       cursor: default;
@@ -766,7 +766,7 @@
           </p>
 
           <div class="mt-10 space-y-0 divide-y-rules slide-up" style="animation-delay:0.36s">
-            <div v-for="(step,si) in [{n:'01',t:'Read the Quran',d:'Authentic Uthmani · Khattab translation'},{n:'02',t:'Reflect on the Names',d:'Ninety-nine attributes of Allah'},{n:'03',t:'Find wisdom',d:'Verses for patience, gratitude, mercy'}]" :key="si"
+            <div v-for="(step,si) in [{n:'01',t:'Read the Quran',d:'Uthmani script · clear English translation'},{n:'02',t:'Reflect on the Names',d:'Ninety-nine attributes of Allah'},{n:'03',t:'Find wisdom',d:'Verses for patience, gratitude, mercy'}]" :key="si"
                  class="py-5 flex items-baseline gap-5">
               <span class="mono-num text-accent" style="font-size:14px;letter-spacing:0.18em;min-width:32px">{{step.n}}</span>
               <div class="flex-1 min-w-0">
@@ -1329,8 +1329,9 @@
       <!-- ================= LIBRARY ================= -->
       <div v-if="page==='library'" class="page-enter">
         <div class="masthead">
-          <p class="kicker" style="color:var(--text-3)">COLLECTION / LIBRARY</p>
-          <h2 class="display display-lg mt-2" style="color:var(--text)">Your<br>Library<span class="text-accent">.</span></h2>
+          <p class="kicker" style="color:var(--text-3)">COLLECTION / BEYOND THE BOOK</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">The<br>Annex<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْمَجْمُوعَة</p>
         </div>
         <div class="rule-thick mb-6"></div>
         <p class="kicker mb-5" style="color:var(--text-3)">EVERYTHING BEYOND THE QURAN</p>
@@ -1431,7 +1432,7 @@
         </button>
 
         <!-- Maker's signature -->
-        <div class="mt-12 p-6 text-center" :style="{background:isDark?'linear-gradient(180deg,rgba(13,31,26,0.96),rgba(8,20,16,0.98))':'linear-gradient(180deg,rgba(245,240,225,0.98),rgba(238,230,210,0.96))',border:'1px solid '+(isDark?'rgba(232,201,121,0.10)':'rgba(15,76,58,0.08)'),borderRadius:4,boxShadow:isDark?'0 4px 24px rgba(0,0,0,0.4)':'0 2px 12px rgba(15,76,58,0.04)'}">
+        <div class="maker-sig mt-12 p-6 text-center" :style="{background:isDark?'linear-gradient(180deg,rgba(13,31,26,0.96),rgba(8,20,16,0.98))':'linear-gradient(180deg,rgba(245,240,225,0.98),rgba(238,230,210,0.96))',border:'1px solid '+(isDark?'rgba(232,201,121,0.10)':'rgba(15,76,58,0.08)'),borderRadius:4,boxShadow:isDark?'0 4px 24px rgba(0,0,0,0.4)':'0 2px 12px rgba(15,76,58,0.04)'}">
           <!-- Thin rule top -->
           <div class="mx-auto mb-4" :style="{width:'40px',height:'1px',background:isDark?'rgba(232,201,121,0.18)':'rgba(15,76,58,0.12)'}"></div>
           <!-- Minimal crest with signature MA -->
@@ -2396,9 +2397,12 @@ var STORIES_DB = [
    ================================================================= */
 var FIGURE_CATEGORIES = [
   {id:'all',       label:'All',        kicker:'EVERYONE'},
+  {id:'quranic',   label:'Qur\'ānic',  kicker:'NAMED IN THE BOOK · NOT PROPHETS'},
   {id:'companion', label:'Companions', kicker:'THE ṢAḤĀBA · GOLDEN GENERATION'},
   {id:'women',     label:'Women',      kicker:'WOMEN OF ISLAM'},
-  {id:'scholar',   label:'Scholars',   kicker:'IMĀMS · MUḤADDITHŪN · SAGES'}
+  {id:'warrior',   label:'Warriors',   kicker:'GENERALS · LIBERATORS · DEFENDERS'},
+  {id:'scholar',   label:'Scholars',   kicker:'IMĀMS · MUḤADDITHŪN · SAGES'},
+  {id:'historical',label:'Historical', kicker:'POLYMATHS · RULERS · EXPLORERS'}
 ];
 
 var FIGURES_DB = [
@@ -2409,15 +2413,15 @@ var FIGURES_DB = [
     lesson:'Truthfulness is its own kingdom.'},
   {id:'umar', cat:'companion', n:'02', ar:'عُمَر ٱبْن ٱلْخَطَّاب', en:'ʿUmar ibn al-Khaṭṭāb (RA)', title:'The Second Caliph · al-Fārūq',
     era:'c. 584 – 644 CE', kunya:'al-Fārūq — the one who distinguishes truth from falsehood',
-    summary:'Once a fierce opponent of Islam, he set out to kill the Prophet ﷺ — and instead, hearing his sister recite the Qurʾān, accepted faith. The Prophet ﷺ said: "If there were a prophet after me, it would be ʿUmar." His ten years as caliph saw the conquest of Syria, Egypt, and Persia, the founding of the Islamic calendar, the night patrols of his city, and the building of the first treasury and judicial system. Walked Jerusalem in a patched cloak, leading his servant\'s camel.',
-    lesson:'A just leader is the shadow of God on earth.'},
+    summary:'Once one of Islam\'s most violent enemies — tall, strong, feared in Makkah\'s streets — he set out one morning with his sword to kill the Prophet ﷺ. On the way, a man told him: "Look first to your own house — your sister has accepted Islam." He went there, struck his sister Fāṭima, then saw blood on her face and stopped. He picked up the page she had been reciting from — it was the opening of Surah Ṭā Hā. By the end of the page, he was a Muslim. Within hours, he stood beside the Prophet ﷺ in the Kaʿba, openly declaring his faith, and the Muslims prayed in public for the first time. The Prophet ﷺ later said: "If there were a prophet after me, it would be ʿUmar." His ten years as caliph saw the conquest of Syria, Egypt, and Persia. He founded the Islamic calendar, established the first state treasury (bayt al-māl), the first organized police, the first night patrols (which he led himself, in disguise), the first formal judiciary, and a stipend register for every citizen — including non-Muslims. When he entered Jerusalem after its surrender, the patriarch offered him the keys to the city — he was wearing a patched cloak, leading his servant\'s camel by the bridle, taking turns riding. He was murdered while leading the dawn prayer by a Persian slave; his last command was to choose his successor by consultation, not by appointment.',
+    lesson:'A just leader is the shadow of God on earth — and walks barefoot in it.'},
   {id:'uthman', cat:'companion', n:'03', ar:'عُثْمَان ٱبْن عَفَّان', en:'ʿUthmān ibn ʿAffān (RA)', title:'The Third Caliph · Dhū an-Nūrayn',
     era:'c. 576 – 656 CE', kunya:'Dhū an-Nūrayn — possessor of the two lights',
     summary:'A man of immense wealth and immense modesty. Married two of the Prophet\'s ﷺ daughters in turn — hence Dhū an-Nūrayn. Bought the well of Rūma and gave it freely to the people of Madīna. Funded the Army of Hardship at Tabūk. As caliph, he commissioned the standardized text of the Qurʾān — the muṣḥaf you read today is from the ʿUthmānic codex. Killed in his home by rebels, the Qurʾān open in his lap.',
     lesson:'Generosity is faith made visible.'},
   {id:'ali', cat:'companion', n:'04', ar:'عَلِيّ ٱبْن أَبِي طَالِب', en:'ʿAlī ibn Abī Ṭālib (RA)', title:'The Fourth Caliph · The Lion of Allah',
-    era:'c. 600 – 661 CE', kunya:'Asad Allāh — the Lion of Allah',
-    summary:'Cousin of the Prophet ﷺ, raised in his household. The first child to accept Islam. Slept in the Prophet\'s ﷺ bed during the Hijrah to mislead the assassins. Married Fāṭima, the Prophet\'s ﷺ daughter — from them came Ḥasan and Ḥusayn. A warrior at Badr, Uḥud, Khaybar — the gate of Khaybar, which forty men could not move, he lifted alone. Equally a scholar, his sayings fill volumes. The Prophet ﷺ called him "the gate to the city of knowledge."',
+    era:'c. 600 – 661 CE', kunya:'Asad Allāh — the Lion of Allah · Abū Turāb',
+    summary:'Cousin of the Prophet ﷺ, raised in his household from the age of five — when a famine struck Makkah, the Prophet ﷺ took him in to ease his uncle Abū Ṭālib\'s burden. He was the first child to accept Islam, around age ten. On the night of the Hijrah, when forty assassins surrounded the Prophet\'s ﷺ house, ʿAlī volunteered to sleep in his bed wearing his green Yemeni cloak — the assassins waited through the night, blades drawn, watching what they thought was their target. By morning, the Prophet ﷺ was already on the road. He stayed behind to return the deposits people had left in the Prophet\'s ﷺ trust to their owners. He married Fāṭima — they were so poor in their first year that she ground flour until her hands bled and he carried water until his back ached, but they refused to ask the Prophet ﷺ for help. From them came al-Ḥasan and al-Ḥusayn, the only continuing line of the Prophet ﷺ. A warrior at every major battle: at Khaybar, when senior commanders failed to take the fort, the Prophet ﷺ said: "Tomorrow I will give the standard to a man whom Allah and His Messenger love." He gave it to ʿAlī. The legend says ʿAlī used the iron gate of Khaybar — which forty men could not move — as his shield. He was equally a scholar; the Prophet ﷺ said: "I am the city of knowledge, and ʿAlī is its gate." His sermons, letters, and aphorisms fill the Nahj al-Balāgha — six hundred years before modern Arabic prose, his words shaped the language. He was murdered while leading dawn prayer by a Khārijite assassin\'s poisoned blade.',
     lesson:'Courage and learning belong to the same heart.'},
   {id:'khalid', cat:'companion', n:'05', ar:'خَالِد ٱبْن ٱلْوَلِيد', en:'Khālid ibn al-Walīd (RA)', title:'The Sword of Allah Unsheathed',
     era:'c. 592 – 642 CE', kunya:'Sayf Allāh al-Maslūl — the Drawn Sword of Allah',
@@ -2446,16 +2450,16 @@ var FIGURES_DB = [
 
   /* WOMEN */
   {id:'khadija', cat:'women', n:'11', ar:'خَدِيجَة بِنْت خُوَيْلِد', en:'Khadīja bint Khuwaylid (RA)', title:'The First Believer',
-    era:'c. 555 – 619 CE', kunya:'Umm al-Muʾminīn — Mother of the Believers',
-    summary:'A noblewoman of Quraysh, a successful merchant who employed the young Muḥammad ﷺ. She proposed marriage to him; he was twenty-five, she was forty. Together they had Fāṭima and others. When the first revelation came in the cave of Ḥirāʾ and he returned trembling, she wrapped him in her cloak and said: "By Allah, He will never disgrace you. You uphold ties of kinship, you bear the burden of the weak, you give to the destitute, you honor your guests, you stand up for what is right." She was the first to believe — before any other soul. The Prophet ﷺ never married another woman in her lifetime, and grieved her until his last day.',
+    era:'c. 555 – 619 CE', kunya:'Umm al-Muʾminīn · aṭ-Ṭāhira — the pure',
+    summary:'Born into the noble Quraysh, twice widowed by twenty-eight, she became one of Makkah\'s wealthiest merchants — running her own caravan trade in an age when that was unheard of. Her honesty earned her the title aṭ-Ṭāhira, "the pure," before Islam was even spoken of. When she heard of a young man named Muḥammad — known as al-Amīn, the trustworthy — she hired him to lead her caravan to Syria. He returned with profits beyond what others had achieved, and her servant Maysara reported astonishing things he had seen on the journey: a monk recognizing prophetic signs, two angels shading him from the sun. She sent her friend Nafīsa to ask if he would consider marriage. He was twenty-five; she was forty. She paid the dowry. They were married for twenty-five years; she bore him six children, including Fāṭima. He took no other wife while she lived. When the first revelation shook him in the cave of Ḥirāʾ and he came home wrapped in trembling, telling her "Cover me, cover me!" — she wrapped him in her cloak, listened, and said: "By Allah, He will never disgrace you. You keep family ties, you carry the burdens of the weak, you give to the poor, you honor your guests, you stand for the truth." She took him to her cousin Waraqa, a Christian scholar of Hebrew scripture, who confirmed: this is the same Nāmūs who came to Mūsā. She spent her wealth on the cause until, in the years of the boycott, the family had nothing left. She died in the Year of Sorrow. The Prophet ﷺ wept for her so often that ʿĀʾisha — who never met her — said: "I was never as jealous of any of his ﷺ wives as I was of Khadīja, and I never even saw her."',
     lesson:'The first to believe in you carries you when you cannot carry yourself.'},
   {id:'aisha', cat:'women', n:'12', ar:'عَائِشَة بِنْت أَبِي بَكْر', en:'ʿĀʾisha bint Abī Bakr (RA)', title:'Mother of the Believers · Scholar',
     era:'c. 614 – 678 CE', kunya:'Umm al-Muʾminīn · al-Ṣiddīqa bint aṣ-Ṣiddīq',
     summary:'Daughter of Abū Bakr. Wife of the Prophet ﷺ. The most learned woman in Islamic history — over 2,210 hadiths reported on her authority. Companions, including the senior ones, came to her with their questions. She taught fiqh, tafsīr, medicine, poetry, lineage, and Arabic. The Prophet ﷺ said her superiority to other women was like the superiority of tharīd (a beloved dish) to all other foods. Lived to see four caliphates; survived to teach for nearly fifty years after his ﷺ passing.',
     lesson:'A woman\'s mind, set free, illuminates a thousand years.'},
   {id:'fatima', cat:'women', n:'13', ar:'فَاطِمَة ٱلزَّهْرَاء', en:'Fāṭima az-Zahrāʾ (RA)', title:'Daughter of the Prophet ﷺ',
-    era:'c. 605 – 632 CE', kunya:'az-Zahrāʾ — the radiant · Sayyidat Nisāʾ al-ʿĀlamīn',
-    summary:'The Prophet\'s ﷺ youngest and most beloved daughter. He stood when she entered, kissed her forehead, and called her "a piece of me." She married ʿAlī and bore Ḥasan and Ḥusayn — the only continuing line of the Prophet ﷺ. Their household was so simple that her hands were calloused from grinding flour. The Prophet ﷺ taught her: "Say SubḥānAllāh thirty-three times, Alḥamdulillāh thirty-three times, Allāhu Akbar thirty-four times before sleep — it is better than a servant." She passed away six months after her father, the only one of his children to survive him.',
+    era:'c. 605 – 632 CE', kunya:'az-Zahrāʾ — the radiant · Sayyidat Nisāʾ al-ʿĀlamīn — Mistress of the Women of the Worlds',
+    summary:'Born in the fifth year before prophethood, she grew up watching her father ﷺ persecuted in the streets of Makkah. As a small girl she wiped his face when an idolater dumped camel entrails on his back during prayer. She emigrated to Madīna with the rest of his ﷺ household. The Prophet ﷺ said: "Fāṭima is a piece of me — whoever angers her angers me." Whenever she walked into the room, he ﷺ stood up, took her hand, kissed her forehead, and seated her in his place. She married ʿAlī when he had nothing — the dowry was a shield he had to sell. Their first home was sparse: a sheepskin to sleep on, a leather pillow stuffed with palm fibers, a clay water-jug, a stone hand-mill. Her hands grew calloused from grinding flour; her chest hurt from carrying water. When she finally asked her father for a servant, he came to their home, sat between them on their shared bed, and taught instead: "Shall I teach you something better than what you asked? Before you sleep — say SubḥānAllāh thirty-three times, Alḥamdulillāh thirty-three times, Allāhu Akbar thirty-four times. It is better for you than a servant." She bore al-Ḥasan, al-Ḥusayn, Zaynab, and Umm Kulthūm. From her line alone the descendants of the Prophet ﷺ continue. In his final illness he ﷺ whispered something that made her weep — then whispered again and made her smile. She later said: he told me first that he was dying, then that I would be the first of his family to follow him. She died six months later, at twenty-seven. ʿAlī buried her quietly at night by her wish.',
     lesson:'Faith gleams brightest in the simplest home.'},
   {id:'asma', cat:'women', n:'14', ar:'أَسْمَاء بِنْت أَبِي بَكْر', en:'Asmāʾ bint Abī Bakr (RA)', title:'She of the Two Belts',
     era:'c. 595 – 692 CE', kunya:'Dhāt an-Niṭāqayn — possessor of the two belts',
@@ -2556,7 +2560,101 @@ var FIGURES_DB = [
   {id:'zaynab', cat:'women', n:'37', ar:'زَيْنَب بِنْت جَحْش', en:'Zaynab bint Jaḥsh (RA)', title:'Mother of the Believers · The Generous',
     era:'c. 590 – 641 CE', kunya:'Umm al-Muʾminīn',
     summary:'Cousin of the Prophet ﷺ — daughter of his aunt Umayma. The Prophet ﷺ said of her: "She is the longest in arm among you" — meaning the most generous. She worked tanning leather and spinning, and gave the proceeds in charity. She was the first of his ﷺ wives to pass away after him; ʿĀʾisha said she gave away her entire pension as soon as it arrived. The Qurʾān itself orchestrated her marriage to the Prophet ﷺ (33:37) — abolishing the pre-Islamic taboo against marrying the former wife of an adopted son.',
-    lesson:'Generosity that empties the hand keeps the heart full.'}
+    lesson:'Generosity that empties the hand keeps the heart full.'},
+
+  /* QURʾĀNIC FIGURES — named in the Book, not prophets */
+  {id:'dhulqarnayn', cat:'quranic', n:'38', ar:'ذُو ٱلْقَرْنَيْن', en:'Dhū al-Qarnayn', title:'The Two-Horned One · The Just King',
+    era:'unknown — pre-Islamic', kunya:'"The Two-Horned" — possibly ruler of east and west',
+    summary:'A righteous king whose story is told in Surah al-Kahf (18:83-98) — Allah granted him "from every thing a way," and he traveled to the place where the sun sets, where he found a people; he could have punished or rewarded, and he chose justice. He traveled east, then to a place between two mountains where a people complained of the destructive tribes of Yaʾjūj and Maʾjūj (Gog and Magog). He built a mighty wall of iron and molten copper to hold them back — a wall that, the Qurʾān says, will stand until the end of time, when Allah will level it. Asked for payment, he refused, saying: "What my Lord has given me is better." He never claimed his own greatness — every triumph he attributed to "the mercy of my Lord." Scholars have proposed many candidates for his historical identity (Cyrus the Great is one classical view), but the Qurʾān gives only what matters: he had the means to oppress, and chose to protect.',
+    lesson:'When given power, build a wall — to keep evil out, not to keep yourself in.'},
+  {id:'luqman', cat:'quranic', n:'39', ar:'لُقْمَان ٱلْحَكِيم', en:'Luqmān al-Ḥakīm', title:'The Wise · A Father\'s Counsel',
+    era:'pre-Islamic', kunya:'al-Ḥakīm — the wise',
+    summary:'A man — by some accounts an Ethiopian, a tanner or shepherd or carpenter, formerly enslaved — to whom Allah gave wisdom (Qurʾān 31:12). The thirty-first surah bears his name, and within it are recorded his words to his son — among the most beautiful pieces of fatherly counsel in any scripture: "O my son, do not associate anything with Allah — to associate is a great injustice." "O my son, be aware — even the weight of a mustard seed, hidden inside a rock, in the heavens or in the earth, Allah will bring it forth. Allah is Subtle, All-Aware." "Establish prayer, command good, forbid wrong, and bear with patience whatever befalls you — that is of the resolve in matters." "Do not turn your face away from people in arrogance, do not walk through the earth in pride. Allah does not love anyone self-conceited or boastful. Be moderate in your stride. Lower your voice — the harshest of voices is the braying of the donkey." When asked how he attained wisdom, Luqmān said: by truthful speech, fulfilling trusts, and leaving alone what does not concern me.',
+    lesson:'Wisdom is not in what you know — it is in what you have stopped chasing.'},
+  {id:'khidr', cat:'quranic', n:'40', ar:'ٱلْخَضِر', en:'al-Khiḍr', title:'The Green One · Teacher of Mūsā',
+    era:'pre-Islamic', kunya:'"The Green One" — for wherever he sat, the earth turned green',
+    summary:'A figure granted "mercy from Us, and We taught him knowledge from Us" (Qurʾān 18:65). When Mūsā was told there was someone with knowledge he did not have, he asked Allah to lead him there. He found al-Khiḍr at the meeting place of two seas. Mūsā asked to be his student. Al-Khiḍr warned him: "You will not be able to be patient with me." They traveled together. Three times, al-Khiḍr did things that horrified Mūsā: he scuttled a boat that had carried them for free; he killed a young boy without apparent cause; he rebuilt a wall in a town whose people had refused them food. Each time Mūsā objected. Each time al-Khiḍr explained — the boat was about to be seized by a tyrant king, and the small damage made it overlooked; the boy would have grown into a wickedness that broke his believing parents; the wall protected a treasure for two orphans whose pious father had hidden it for them. Then he ﷺ said: "Whatever I did, I did not do of my own accord."',
+    lesson:'When you cannot see the design — that is not a flaw in the design.'},
+  {id:'bilqis', cat:'quranic', n:'41', ar:'بِلْقِيس', en:'Bilqīs (Queen of Sheba)', title:'Queen of Saba · The Reasoning Sovereign',
+    era:'c. 10th century BCE', kunya:'Malikat Saba — Queen of Sheba',
+    summary:'Queen of the Sabaeans, in what is today Yemen — wealthy, powerful, ruling from a great throne. The Qurʾān (27:23) records that "she has been given of every thing." A hoopoe bird brought news of her to Sulaymān, including the disturbing detail that her people worshipped the sun. Sulaymān sent her a letter inviting her to faith. She consulted her council, and unlike most rulers in such tales, she chose diplomacy over war: "Kings, when they enter a town, ruin it. They reduce its noble citizens to the lowest." She sent ambassadors with lavish gifts, testing him. He returned the gifts and made clear his demand. She came to him in person. He had her throne brought across the sea by a servant given knowledge of the Book. When she saw it she said: "It is as if it were the same." Her conversion is one of the most quiet and dignified in the Qurʾān: "I have wronged myself — I submit, with Sulaymān, to Allah, Lord of all worlds" (27:44).',
+    lesson:'Power that listens before it strikes is wiser than power that conquers.'},
+  {id:'kahf', cat:'quranic', n:'42', ar:'أَصْحَابُ ٱلْكَهْف', en:'Aṣḥāb al-Kahf', title:'The People of the Cave',
+    era:'pre-Islamic', kunya:'"The Companions of the Cave" — the Sleepers of Ephesus',
+    summary:'Young believers in a city of idolaters — by tradition, in the Roman period, perhaps Ephesus — who refused to deny their faith in the One God and fled to a cave in the mountains. Their dog followed them. Allah caused them to sleep there for three hundred and nine years (Qurʾān 18:25), turning their bodies left and right to preserve them, the sun avoiding their faces. When they awoke, they thought they had slept a day — until the coins they took to buy bread were no longer in circulation. Their city, by then, had become a city of believers. The story is told in Surah al-Kahf, the chapter the Prophet ﷺ recommended reciting every Friday. Their precise number is unrecorded — Allah said "say: my Lord knows best their number" (18:22) — and the surah teaches us not to fight over what Allah has left in His own knowledge.',
+    lesson:'Sometimes faith means standing alone — and waking to find the world has caught up.'},
+  {id:'talut', cat:'quranic', n:'43', ar:'طَالُوت', en:'Ṭālūt (Saul)', title:'The First King of the Israelites',
+    era:'c. 11th century BCE', kunya:'Ṭālūt — by reference to his height',
+    summary:'When the Children of Israel asked their prophet Samuel for a king to lead them in battle, Allah chose Ṭālūt — a tall, strong, knowledgeable man, but not from a royal lineage. The elite of the Israelites objected: "How can he be king over us when we are more deserving — and he has no wealth?" The prophet replied: "Allah has chosen him over you, and increased him in knowledge and stature. Allah grants His kingdom to whomever He wills" (Qurʾān 2:247). Ṭālūt led his army to a river and tested them: only those who refrained from drinking would prove themselves. Most failed. With the small remainder he faced Goliath. Among them was a young shepherd-boy named Dāwūd, who killed Goliath with a sling. The future king of Israel was a boy with five stones — chosen by the king who had himself been an outsider.',
+    lesson:'Allah measures kings differently than councils do.'},
+  {id:'habib', cat:'quranic', n:'44', ar:'حَبِيب ٱلنَّجَّار', en:'Ḥabīb an-Najjār', title:'The Believer of Yāsīn',
+    era:'pre-Islamic', kunya:'an-Najjār — the carpenter',
+    summary:'In Surah Yāsīn (36:20-27), an unnamed man comes running from the farthest part of the city when his people reject the messengers Allah has sent. He pleads: "O my people, follow the messengers. Follow those who ask of you no payment, and who are guided. And why should I not worship the One who created me, and to whom you will all be returned?" His people kill him for it. As he dies, he is granted entry into Paradise — and his last words on earth are: "Would that my people knew with what my Lord has forgiven me, and made me of the honored." Tradition names him Ḥabīb the carpenter. He had no power, no rank, no following — just a sentence spoken in the moment it mattered most.',
+    lesson:'A believer\'s last sentence may travel further than a tyrant\'s armies.'},
+
+  /* WARRIORS — generals, liberators, defenders of Islam */
+  {id:'saladin', cat:'warrior', n:'45', ar:'صَلَاح ٱلدِّين ٱلْأَيُّوبِيّ', en:'Ṣalāḥ ad-Dīn al-Ayyūbī (Saladin) (rḥ)', title:'Liberator of Jerusalem',
+    era:'1137 – 1193 CE', kunya:'al-Malik an-Nāṣir — the victorious king',
+    summary:'Born in Tikrīt to a Kurdish family that served the Zangid sultans of Syria. He came to power slowly, first uniting Egypt and Syria under one banner, ending the Fāṭimid caliphate, then turning to face the Crusader kingdoms that had held Jerusalem for eighty-eight years. At the Battle of Ḥaṭṭīn in 1187, he routed the entire field army of the Crusaders — the True Cross relic was among the spoils. Three months later, on the anniversary of the Prophet\'s ﷺ Night Journey to that city, he entered Jerusalem peacefully. The Crusaders had massacred its inhabitants when they took it; he refused to do the same. He let the Christians ransom themselves, and quietly paid the ransom himself for those who could not pay. He returned the Holy Sepulchre to the Christians as a place of worship. When King Richard the Lionheart fell ill during the Third Crusade, Saladin sent his own physician and snow from the mountains. He died with no money in his treasury — he had given it all away.',
+    lesson:'The strongest victory is the one your enemies remember as mercy.'},
+  {id:'tariq', cat:'warrior', n:'46', ar:'طَارِق ٱبْن زِيَاد', en:'Ṭāriq ibn Ziyād', title:'Conqueror of Andalusia',
+    era:'c. 670 – 720 CE', kunya:'commander of the Berber army',
+    summary:'A Berber commander serving the Umayyad caliphate. In 711, he led seven thousand men across the strait between Africa and Iberia and landed at the rock that has carried his name ever since — Jabal Ṭāriq, the mountain of Ṭāriq, "Gibraltar." Tradition says he ordered the boats burned behind him. He addressed his army: "The enemy is in front of you, the sea behind you. By Allah, your only weapons are sincerity and patience." At the Battle of Guadalete he defeated King Roderic\'s Visigothic army, several times the size of his own. Within a year, he had taken Córdoba and Toledo; within seven years, the Muslims controlled most of the Iberian Peninsula, ushering in the eight-century-long civilization of al-Andalus — the bridge through which Greek philosophy, science, and medicine eventually returned to Europe.',
+    lesson:'Burn what you cannot afford to retreat to.'},
+  {id:'mehmed', cat:'warrior', n:'47', ar:'مُحَمَّد ٱلْفَاتِح', en:'Muḥammad al-Fātiḥ (Mehmed II)', title:'Conqueror of Constantinople',
+    era:'1432 – 1481 CE', kunya:'al-Fātiḥ — the conqueror',
+    summary:'The Prophet ﷺ said: "Constantinople will be conquered. What an excellent commander her commander will be, and what an excellent army that army will be." For eight hundred years, Muslim armies tried, and failed. Mehmed succeeded at twenty-one. He built a fortress at the narrowest point of the Bosphorus to choke supply lines. He commissioned the largest cannon ever cast, requiring sixty oxen to move it. When the great chain across the Golden Horn made naval entry impossible, he had ships dragged overland on greased logs at night, an entire fleet appearing in the harbor by morning. After a fifty-three-day siege, the city fell on 29 May 1453. He rode his white horse into the Hagia Sophia, dismounted, sprinkled earth on his head as a sign of humility, and prayed two rakʿas of thanks. He preserved the church as a mosque, allowed the patriarch to remain at the head of the Greek Orthodox community, and welcomed displaced Sephardic Jews fleeing Spanish persecution into his empire.',
+    lesson:'A young man with a clear vision and prophet\'s prayer in his pocket can change centuries.'},
+  {id:'baybars', cat:'warrior', n:'48', ar:'ٱلظَّاهِر بَيْبَرْس', en:'aẓ-Ẓāhir Baybars', title:'Defeater of the Mongols at ʿAyn Jālūt',
+    era:'1223 – 1277 CE', kunya:'al-Bunduqdārī — "the crossbowman"',
+    summary:'Born a Kipchak Turk on the steppes north of the Caspian Sea, sold as a slave to the Ayyubid sultan in Egypt, he rose through the Mamluk military ranks to lead the army. In 1260, the Mongol tide that had destroyed Baghdad two years earlier — burning libraries, the Tigris running black with ink and red with blood — swept toward Egypt. The Mongols were considered invincible. Baybars and his commander Quṭuz met them at ʿAyn Jālūt in Galilee on 3 September 1260. Through a feigned retreat, Baybars drew the Mongol vanguard into a trap. The Muslim army crushed them — the first major battlefield defeat the Mongols had suffered. The myth of invincibility broke. He went on to roll back the Crusaders, taking Antioch, and to rebuild what the Mongols had destroyed. He revived the Abbasid caliphate in Cairo as a symbolic continuity of the line.',
+    lesson:'A wave that has never been stopped can still be stopped.'},
+  {id:'qasim', cat:'warrior', n:'49', ar:'مُحَمَّد ٱبْن ٱلْقَاسِم', en:'Muḥammad ibn al-Qāsim', title:'The Young Conqueror of Sindh',
+    era:'695 – 715 CE', kunya:'commander at seventeen',
+    summary:'At seventeen years old, his uncle al-Ḥajjāj ibn Yūsuf entrusted him with an army to recover Muslim merchants taken hostage by the Hindu raja of Sindh. Within three years, with extraordinary discipline and tactical instinct, he had brought what is now Pakistan under Muslim rule — the foothold from which Islam would eventually reach a fifth of humanity. He was famously gentle with the conquered: he allowed Hindus and Buddhists to keep their temples and priests, ruled them as protected dhimmīs (a model later expanded by Akbar a thousand years later), and refused to let the army pillage. His career ended at twenty when he was recalled and unjustly executed in court intrigue back in Damascus.',
+    lesson:'The youngest hand can plant a tree whose fruit a billion mouths will share.'},
+  {id:'nuruddin', cat:'warrior', n:'50', ar:'نُور ٱلدِّين زَنْكِي', en:'Nūr ad-Dīn Zangī', title:'The Just · Mentor of Saladin',
+    era:'1118 – 1174 CE', kunya:'al-ʿĀdil — the just',
+    summary:'Sultan of Aleppo and Damascus, the man who united Syria against the Crusaders and laid the foundation Saladin would build on. Renowned not only as a soldier but as a ruler of unusual personal piety and justice — he opened a "house of justice" in Damascus where the lowest peasant could complain about a noble or a judge, and the sultan himself would hear the case. He restored hundreds of mosques, schools, and hospitals destroyed in earlier wars; the Bīmāristān al-Nūrī he founded in Damascus was a teaching hospital where Ibn al-Nafīs would later discover pulmonary circulation. He sponsored Saladin\'s rise. He was so worried about being unjust that he was once seen weeping in his tent over a complaint that turned out to be unfounded.',
+    lesson:'A king who fears injustice is rarer than a king who wins battles.'},
+
+  /* HISTORICAL — polymaths, rulers, explorers */
+  {id:'mansamusa', cat:'historical', n:'51', ar:'مَنْسَا مُوسَى', en:'Mansa Mūsā (Musa I of Mali)', title:'The Wealthiest Person in Recorded History',
+    era:'c. 1280 – 1337 CE', kunya:'Mansa — emperor of Mali',
+    summary:'Emperor of the Mali Empire at its height, controlling the salt and gold trade routes of West Africa. By modern estimates, his fortune in today\'s currency would dwarf that of any individual in history. In 1324, he made the ḥajj to Makkah with a caravan of 60,000 men, 12,000 personal attendants, 80 camels each carrying 300 pounds of gold, and an entourage of scholars, judges, and family. Passing through Cairo, he gave away so much gold to the poor and to merchants that the Egyptian gold market crashed for over a decade. On the way back, he brought architects, scholars, and astronomers to his capital Timbuktu — turning it into one of the great centers of learning of the medieval world, with Sankoré University at its heart. The library of Timbuktu held hundreds of thousands of manuscripts.',
+    lesson:'Wealth measured against eternity is what reaches Makkah and stays for centuries.'},
+  {id:'sulaiman', cat:'historical', n:'52', ar:'سُلَيْمَان ٱلْقَانُونِيّ', en:'Sulaymān the Magnificent', title:'Lawgiver of the Ottomans',
+    era:'1494 – 1566 CE', kunya:'al-Qānūnī — the lawgiver · Magnificent in Europe',
+    summary:'Tenth Ottoman sultan. His reign of forty-six years was the apex of the empire — Belgrade fell, Rhodes fell, the gates of Vienna were besieged, the Mediterranean became an Ottoman lake. But he is called al-Qānūnī, "the lawgiver," not for the lands he took but for the legal code he reformed — the Kanun, which sat alongside the Sharia and protected the rights of peasants, women, and minorities for the next four centuries. He was a poet of unusual quality (writing under the pen-name Muhibbi); his love letters to his wife Ḥurrem, an originally Ukrainian slave who became his queen, are still studied as Turkish literature. He commissioned the great architect Sinan, whose Süleymaniye Mosque still presides over Istanbul.',
+    lesson:'A great empire is built on books of law more than on bows.'},
+  {id:'ibnbattuta', cat:'historical', n:'53', ar:'ٱبْن بَطُّوطَة', en:'Ibn Baṭṭūṭa', title:'The Greatest Traveler of the Pre-Modern World',
+    era:'1304 – 1369 CE', kunya:'Shams ad-Dīn — sun of the religion',
+    summary:'Born in Tangier, Morocco. At twenty-one he set out for the ḥajj — and did not return for twenty-nine years. He traveled the entire Muslim world (and beyond): Egypt, Arabia, Iran, Iraq, Syria, East Africa, India, the Maldives, Sri Lanka, Bengal, Sumatra, China. He worked as a judge in Delhi for the Tughlaq sultan, and as a qadi in the Maldives. He met Mansa Mūsā\'s successor in Mali. By the time he returned, he had traveled an estimated 75,000 miles — three times more than Marco Polo, in an age before any printed map of the world existed. The Riḥla, dictated to a scribe back in Morocco, is one of the most extraordinary travel records ever produced — vivid, opinionated, by turns reverent and gossipy.',
+    lesson:'Set out to perform one duty — and find that the world has been waiting for your eyes.'},
+  {id:'haytham', cat:'historical', n:'54', ar:'ٱبْن ٱلْهَيْثَم', en:'Ibn al-Haytham (Alhazen) (rḥ)', title:'Father of Modern Optics · Father of the Scientific Method',
+    era:'c. 965 – 1040 CE', kunya:'al-Baṣrī — of Baṣra',
+    summary:'A polymath born in Basra. To escape the suspicious Fāṭimid caliph al-Ḥākim — who had ordered him to control the flooding of the Nile, an impossible task — he feigned madness and was placed under house arrest in Cairo for ten years. In that imprisonment he wrote his Kitāb al-Manāẓir (Book of Optics), demolishing the Greek theory that vision worked by rays going out from the eye, replacing it with the correct theory: light travels from objects into the eye. He explained the camera obscura, refraction, the rainbow, the moon illusion. He insisted that any theory must be tested by reproducible experiment — articulating, six hundred years before Bacon and Galileo, the modern scientific method. When the caliph died, he resumed teaching in Cairo until his death.',
+    lesson:'Truth survives the cell. The cell does not survive truth.'},
+  {id:'khwarizmi', cat:'historical', n:'55', ar:'ٱلْخَوَارِزْمِيّ', en:'al-Khwārizmī (rḥ)', title:'Father of Algebra · Namesake of the Algorithm',
+    era:'c. 780 – 850 CE', kunya:'Abū ʿAbdullāh Muḥammad',
+    summary:'Persian mathematician, astronomer, and geographer at the House of Wisdom in Baghdad under the caliph al-Maʾmūn. His book Kitāb al-mukhtaṣar fī ḥisāb al-jabr wa-l-muqābala — "The Compendious Book on Calculation by Restoration and Balancing" — gave its second word to the world: al-jabr → algebra. He developed the systematic method of solving linear and quadratic equations. His Latin name — Algoritmi — became the word algorithm. He brought the Hindu numeral system (including the zero) into Arabic mathematics, from which it eventually entered Europe — every digit you read on a screen is partly his inheritance.',
+    lesson:'Two words from his desk run the world a thousand years later.'},
+  {id:'biruni', cat:'historical', n:'56', ar:'ٱلْبِيرُونِيّ', en:'al-Bīrūnī (rḥ)', title:'The Universal Genius',
+    era:'973 – 1048 CE', kunya:'Abū al-Rayḥān',
+    summary:'A polymath whose breadth has rarely been equaled. He spoke Persian, Arabic, Sanskrit, Turkish, Hebrew, Syriac, and likely Greek. He calculated the radius of the earth to within 16 km of its true value, six hundred years before any European matched the accuracy. He measured longitude using lunar eclipses. His Kitāb al-Hind is the most careful, sympathetic, and accurate account of Indian religion, philosophy, and science any outsider produced for almost a millennium — written without polemic, simply trying to understand. He weighed eighteen substances and reported their specific gravities. He proposed that the Indus valley had once been a sea floor.',
+    lesson:'A truly curious mind builds bridges across centuries and oceans.'},
+  {id:'razi', cat:'historical', n:'57', ar:'أَبُو بَكْر ٱلرَّازِيّ', en:'Abū Bakr al-Rāzī (Rhazes) (rḥ)', title:'The Greatest Physician of His Age',
+    era:'c. 854 – 925 CE', kunya:'Rhazes in Latin',
+    summary:'Persian physician, alchemist, philosopher. Director of the Baghdad hospital and the hospital of Rayy. His al-Ḥāwī ("The Comprehensive") — twenty-three volumes — was the largest medical encyclopedia of its age, translated into Latin and used in European universities for five hundred years. He wrote the first clinical description of smallpox and measles, distinguishing them. The story is told that to choose the location for a new hospital in Baghdad, he hung pieces of meat in different neighborhoods and chose the area where the meat decayed slowest — a public-health insight ahead of its time. He is said to have refused payment from poor patients and to have given away most of what he earned.',
+    lesson:'Medicine is care wrapped in evidence — both halves matter.'},
+  {id:'nafis', cat:'historical', n:'58', ar:'ٱبْن ٱلنَّفِيس', en:'Ibn al-Nafīs (rḥ)', title:'Discoverer of Pulmonary Circulation',
+    era:'1213 – 1288 CE', kunya:'physician of Damascus and Cairo',
+    summary:'Damascus-born physician, jurist, theologian. While the rest of the medical world still followed the ancient Greek belief that blood passed from the right to the left side of the heart through invisible pores in the septum, Ibn al-Nafīs — three hundred years before Servetus and four hundred before Harvey — described the correct path: blood goes from the right ventricle, through the pulmonary artery, into the lungs (where it mixes with air), and back through the pulmonary vein to the left side of the heart. He published this in his commentary on Ibn Sīnā\'s Canon. He was also chief physician of the Mansuri Hospital in Cairo and a Shāfiʿī jurist of standing.',
+    lesson:'A single mind that questions a thousand-year assumption can move medicine forward by a millennium.'},
+  {id:'firnas', cat:'historical', n:'59', ar:'عَبَّاس ٱبْن فِرْنَاس', en:'ʿAbbās ibn Firnās (rḥ)', title:'The First Aviator',
+    era:'810 – 887 CE', kunya:'al-Andalusī — of Andalusia',
+    summary:'Andalusian polymath in the court of Córdoba: poet, musician, physician, astronomer, engineer. He built the first known glider — a wood frame covered with feathers and silk — and at sixty-five years old, in 875 CE, he leapt from a tower in Córdoba and flew, by witness accounts, for several minutes before crashing on landing (he had not made a tail to absorb impact). He survived. The crater on the moon called Ibn Firnas honors him. He also developed an early planetarium, water clocks, and a process for cutting rock crystal. The bridge over the Guadalquivir in Córdoba is named after him.',
+    lesson:'Sixty-five is not too old to fly. The crashing is the only thing that ages you.'}
 ];
 
 /* =================================================================
@@ -3282,8 +3380,10 @@ V.createApp({
     function loadSurah(id) {
       loadingVerses.value = true;
       versesError.value = false;
+      // Translation 20 = Saheeh International (clear, widely-trusted English).
+      // Khattab/Clear Quran (131) was withdrawn from the API in 2026.
       var url = 'https://api.quran.com/api/v4/verses/by_chapter/' + id +
-        '?translations=131&words=true&word_fields=text_uthmani,transliteration' +
+        '?translations=20&words=true&word_fields=text_uthmani,transliteration' +
         '&fields=text_uthmani,verse_key,verse_number' +
         '&translation_fields=text&per_page=286';
       fetch(url)
