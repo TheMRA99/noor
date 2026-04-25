@@ -1817,7 +1817,9 @@ var WISDOM_THEMES = [
   {id:"mercy",label:"Mercy",icon:"◆"},
   {id:"faith",label:"Faith",icon:"◆"},
   {id:"prayer",label:"Prayer",icon:"◆"},
-  {id:"hope",label:"Hope",icon:"◆"}
+  {id:"hope",label:"Hope",icon:"◆"},
+  {id:"knowledge",label:"Knowledge",icon:"◆"},
+  {id:"humility",label:"Humility",icon:"◆"}
 ];
 
 var WISDOM_DB = [
@@ -1838,7 +1840,41 @@ var WISDOM_DB = [
   {theme:"prayer",reference:"Quran 2:45",surahId:2,ayah:45,arabic:"وَٱسْتَعِينُوا۟ بِٱلصَّبْرِ وَٱلصَّلَوٰةِ",translation:"Seek help through patience and prayer."},
   {theme:"hope",reference:"Quran 93:3-5",surahId:93,ayah:3,arabic:"مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ ۝ وَلَلْءَاخِرَةُ خَيْرٌۭ لَّكَ مِنَ ٱلْأُولَىٰ ۝ وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ",translation:"Your Lord has not forsaken you, nor is He displeased. The Hereafter is better for you than the first. And your Lord will give you, and you shall be pleased."},
   {theme:"hope",reference:"Quran 12:87",surahId:12,ayah:87,arabic:"إِنَّهُۥ لَا يَا۟يْـَٔسُ مِن رَّوْحِ ٱللَّهِ إِلَّا ٱلْقَوْمُ ٱلْكَٰفِرُونَ",translation:"None despair of Allah's mercy except those who disbelieve."},
-  {theme:"hope",reference:"Quran 3:139",surahId:3,ayah:139,arabic:"وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ",translation:"Do not lose heart nor grieve — you are the superior, if you are true believers."}
+  {theme:"hope",reference:"Quran 3:139",surahId:3,ayah:139,arabic:"وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ",translation:"Do not lose heart nor grieve — you are the superior, if you are true believers."},
+
+  {theme:"patience",reference:"Quran 2:286",surahId:2,ayah:286,arabic:"لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا",translation:"Allah does not burden any soul beyond what it can bear."},
+  {theme:"patience",reference:"Quran 3:200",surahId:3,ayah:200,arabic:"يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ ٱصْبِرُوا۟ وَصَابِرُوا۟ وَرَابِطُوا۟ وَٱتَّقُوا۟ ٱللَّهَ لَعَلَّكُمْ تُفْلِحُونَ",translation:"O believers, be patient, persevere, stand watchful, and be mindful of Allah, that you may succeed."},
+  {theme:"patience",reference:"Quran 8:46",surahId:8,ayah:46,arabic:"وَٱصْبِرُوٓا۟ ۚ إِنَّ ٱللَّهَ مَعَ ٱلصَّٰبِرِينَ",translation:"Be patient — Allah is with those who are patient."},
+
+  {theme:"gratitude",reference:"Quran 31:12",surahId:31,ayah:12,arabic:"وَمَن يَشْكُرْ فَإِنَّمَا يَشْكُرُ لِنَفْسِهِۦ",translation:"Whoever gives thanks does so for the good of their own soul."},
+  {theme:"gratitude",reference:"Quran 27:40",surahId:27,ayah:40,arabic:"هَٰذَا مِن فَضْلِ رَبِّى لِيَبْلُوَنِىٓ ءَأَشْكُرُ أَمْ أَكْفُرُ",translation:"This is from the favor of my Lord — to test whether I am grateful or ungrateful."},
+  {theme:"gratitude",reference:"Quran 55:13",surahId:55,ayah:13,arabic:"فَبِأَىِّ ءَالَآءِ رَبِّكُمَا تُكَذِّبَانِ",translation:"Then which of the favors of your Lord will you deny?"},
+
+  {theme:"mercy",reference:"Quran 21:107",surahId:21,ayah:107,arabic:"وَمَآ أَرْسَلْنَٰكَ إِلَّا رَحْمَةًۭ لِّلْعَٰلَمِينَ",translation:"We sent you not but as a mercy to all the worlds."},
+  {theme:"mercy",reference:"Quran 1:1-3",surahId:1,ayah:1,arabic:"بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ۝ ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ ۝ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",translation:"In the name of Allah, the Most Compassionate, the Most Merciful. All praise is for Allah, Lord of all worlds — the Most Compassionate, the Most Merciful."},
+  {theme:"mercy",reference:"Quran 4:110",surahId:4,ayah:110,arabic:"وَمَن يَعْمَلْ سُوٓءًا أَوْ يَظْلِمْ نَفْسَهُۥ ثُمَّ يَسْتَغْفِرِ ٱللَّهَ يَجِدِ ٱللَّهَ غَفُورًۭا رَّحِيمًۭا",translation:"Whoever does wrong or wrongs themselves and then seeks Allah's forgiveness will find Him Most Forgiving, Most Merciful."},
+
+  {theme:"faith",reference:"Quran 49:13",surahId:49,ayah:13,arabic:"إِنَّ أَكْرَمَكُمْ عِندَ ٱللَّهِ أَتْقَىٰكُمْ",translation:"Truly the most honored of you in Allah's sight is the most righteous of you."},
+  {theme:"faith",reference:"Quran 13:28",surahId:13,ayah:28,arabic:"أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ",translation:"Surely in the remembrance of Allah hearts find rest."},
+  {theme:"faith",reference:"Quran 41:30",surahId:41,ayah:30,arabic:"إِنَّ ٱلَّذِينَ قَالُوا۟ رَبُّنَا ٱللَّهُ ثُمَّ ٱسْتَقَٰمُوا۟ تَتَنَزَّلُ عَلَيْهِمُ ٱلْمَلَٰٓئِكَةُ",translation:"Surely those who say 'Our Lord is Allah' and then remain steadfast — the angels descend upon them with peace."},
+
+  {theme:"prayer",reference:"Quran 11:114",surahId:11,ayah:114,arabic:"وَأَقِمِ ٱلصَّلَوٰةَ طَرَفَىِ ٱلنَّهَارِ وَزُلَفًۭا مِّنَ ٱلَّيْلِ ۚ إِنَّ ٱلْحَسَنَٰتِ يُذْهِبْنَ ٱلسَّيِّـَٔاتِ",translation:"Establish prayer at both ends of the day and during parts of the night. Surely good deeds erase evil ones."},
+  {theme:"prayer",reference:"Quran 17:78",surahId:17,ayah:78,arabic:"أَقِمِ ٱلصَّلَوٰةَ لِدُلُوكِ ٱلشَّمْسِ إِلَىٰ غَسَقِ ٱلَّيْلِ",translation:"Establish prayer from the decline of the sun until the darkness of night."},
+  {theme:"prayer",reference:"Quran 2:186",surahId:2,ayah:186,arabic:"وَإِذَا سَأَلَكَ عِبَادِى عَنِّى فَإِنِّى قَرِيبٌ ۖ أُجِيبُ دَعْوَةَ ٱلدَّاعِ إِذَا دَعَانِ",translation:"When My servants ask you about Me — truly I am near. I answer the call of the caller when they call upon Me."},
+
+  {theme:"hope",reference:"Quran 65:7",surahId:65,ayah:7,arabic:"سَيَجْعَلُ ٱللَّهُ بَعْدَ عُسْرٍۢ يُسْرًۭا",translation:"Allah will bring about ease after hardship."},
+  {theme:"hope",reference:"Quran 9:51",surahId:9,ayah:51,arabic:"قُل لَّن يُصِيبَنَآ إِلَّا مَا كَتَبَ ٱللَّهُ لَنَا هُوَ مَوْلَىٰنَا ۚ وَعَلَى ٱللَّهِ فَلْيَتَوَكَّلِ ٱلْمُؤْمِنُونَ",translation:"Say: nothing will ever befall us except what Allah has destined for us. He is our Protector — and in Allah let the believers place their trust."},
+  {theme:"hope",reference:"Quran 39:36",surahId:39,ayah:36,arabic:"أَلَيْسَ ٱللَّهُ بِكَافٍ عَبْدَهُۥ",translation:"Is Allah not enough for His servant?"},
+
+  {theme:"knowledge",reference:"Quran 96:1-5",surahId:96,ayah:1,arabic:"ٱقْرَأْ بِٱسْمِ رَبِّكَ ٱلَّذِى خَلَقَ ۝ خَلَقَ ٱلْإِنسَٰنَ مِنْ عَلَقٍ ۝ ٱقْرَأْ وَرَبُّكَ ٱلْأَكْرَمُ ۝ ٱلَّذِى عَلَّمَ بِٱلْقَلَمِ ۝ عَلَّمَ ٱلْإِنسَٰنَ مَا لَمْ يَعْلَمْ",translation:"Read in the name of your Lord who created — created humanity from a clinging clot. Read! Your Lord is the Most Generous, who taught by the pen — taught humanity what it did not know."},
+  {theme:"knowledge",reference:"Quran 39:9",surahId:39,ayah:9,arabic:"قُلْ هَلْ يَسْتَوِى ٱلَّذِينَ يَعْلَمُونَ وَٱلَّذِينَ لَا يَعْلَمُونَ",translation:"Say: are those who know equal to those who do not know?"},
+  {theme:"knowledge",reference:"Quran 20:114",surahId:20,ayah:114,arabic:"وَقُل رَّبِّ زِدْنِى عِلْمًا",translation:"And say: my Lord, increase me in knowledge."},
+  {theme:"knowledge",reference:"Quran 35:28",surahId:35,ayah:28,arabic:"إِنَّمَا يَخْشَى ٱللَّهَ مِنْ عِبَادِهِ ٱلْعُلَمَٰٓؤُا۟",translation:"It is only those of His servants who have knowledge that truly stand in awe of Allah."},
+
+  {theme:"humility",reference:"Quran 25:63",surahId:25,ayah:63,arabic:"وَعِبَادُ ٱلرَّحْمَٰنِ ٱلَّذِينَ يَمْشُونَ عَلَى ٱلْأَرْضِ هَوْنًۭا وَإِذَا خَاطَبَهُمُ ٱلْجَٰهِلُونَ قَالُوا۟ سَلَٰمًۭا",translation:"The servants of the Most Merciful are those who walk upon the earth gently, and who, when the ignorant address them, reply with peace."},
+  {theme:"humility",reference:"Quran 31:18",surahId:31,ayah:18,arabic:"وَلَا تُصَعِّرْ خَدَّكَ لِلنَّاسِ وَلَا تَمْشِ فِى ٱلْأَرْضِ مَرَحًا ۖ إِنَّ ٱللَّهَ لَا يُحِبُّ كُلَّ مُخْتَالٍۢ فَخُورٍۢ",translation:"Do not turn your face from people in arrogance, nor walk through the earth in pride. Allah does not love anyone who is self-conceited or boastful."},
+  {theme:"humility",reference:"Quran 17:37",surahId:17,ayah:37,arabic:"وَلَا تَمْشِ فِى ٱلْأَرْضِ مَرَحًا ۖ إِنَّكَ لَن تَخْرِقَ ٱلْأَرْضَ وَلَن تَبْلُغَ ٱلْجِبَالَ طُولًۭا",translation:"Do not walk upon the earth in pride — you will never split the earth, nor reach the mountains in height."},
+  {theme:"humility",reference:"Quran 28:83",surahId:28,ayah:83,arabic:"تِلْكَ ٱلدَّارُ ٱلْءَاخِرَةُ نَجْعَلُهَا لِلَّذِينَ لَا يُرِيدُونَ عُلُوًّۭا فِى ٱلْأَرْضِ وَلَا فَسَادًۭا",translation:"That home of the Hereafter We grant to those who do not seek superiority on earth nor corruption."}
 ];
 
 /* =================================================================
