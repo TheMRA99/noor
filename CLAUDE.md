@@ -102,28 +102,36 @@ Motion tokens: `--ease-out-expo`, `--ease-in-out-expo`, `--ease-smooth`, `--ease
 ## App Structure (inside `index.html`)
 
 ### Pages (`page` reactive ref)
-- `onboarding` — name capture, first-run
-- `home` — greeting, daily verse, continue reading, quick entries
+- `onboarding` / `setup-name` — first-run name capture
+- `home` — greeting, daily verse, random-verse + solace shortcuts, continue reading, quick entries, daily reflection
 - `quran` — surah list with search + Meccan/Medinan filter
-- `reader` — ayah-by-ayah Arabic + Khattab translation + audio + bookmark
+- `reader` — ayah-by-ayah Arabic + transliteration (toggle) + Khattab translation + audio + bookmark
 - `bookmarks` — saved verses
 - `names` — the 99 Names of Allah (grid)
-- `wisdom` — themed Quranic verses
-- `hadith` — placeholder (Phase 3)
-- `stories` — placeholder (Phase 4)
-- `settings` — theme, reciter, Arabic size, export/import, clear data
+- `wisdom` — themed Quranic verses (patience / gratitude / mercy / faith / prayer / hope)
+- `hadith` — 25 selections from An-Nawawi's Forty Hadith with Arabic, transliteration, English, narrator, source
+- `stories` — 25 prophets from Ādam to Muḥammad ﷺ — short summary + lesson
+- `solace` — verses for the heart, grouped by emotional state (anxiety / grief / hardship / forgiveness / trust / fear / gratitude / nearness)
+- `library` — entry tiles to Names · Wisdom · Hadith · Stories · Solace
+- `profile` — theme, reciter, name edit, clear data
 
 ### Reactive state (all in the Vue `setup()` function)
 - `page`, `isDark`, `profile`, `bookmarks`, `lastPosition`
 - `currentSurah`, `verses`, `loadingVerses`, `versesError`
 - `surahSearch`, `revFilter`, `arabicSize`
-- `wisdomTheme`, `selectedName`, `selectedVerse`
-- `audio { isPlaying, currentAyah, el, ... }`, `prefs`, `toast`
+- `wisdomTheme`, `solaceTheme`
+- `selectedName`, `selectedVerse`, `selectedHadith`, `selectedStory`
+- `audio { isPlaying, currentAyah, label }`, `prefs { reciterId, showTranslit }`, `toast`
+
+### Built-in data (no API needed)
+- `SURAHS_DB` (114), `ASMA_DB` (99), `DAILY_VERSES` (~30), `DAILY_REFLECTIONS` (10)
+- `WISDOM_THEMES` + `WISDOM_DB`, `RECITERS` (5)
+- `HADITH_DB` (25), `STORIES_DB` (25), `SOLACE_THEMES` (8) + `SOLACE_DB` (~30)
 
 ### API & audio
-- Surahs + ayahs: `https://api.quran.com/api/v4/verses/by_chapter/{id}?translations=131&fields=text_uthmani,verse_key,verse_number`
-- Translation 131 = The Clear Quran (Dr. Mustafa Khattab).
-- Audio: `https://everyayah.com/data/Alafasy_128kbps/{SSS}{AAA}.mp3` with fallback reciters (user-toggleable). A single `<audio>` element is driven imperatively from `playAyah` / `toggleAudio` / `stopAudio`.
+- Surahs + ayahs: `https://api.quran.com/api/v4/verses/by_chapter/{id}?translations=131&words=true&word_fields=text_uthmani,transliteration&fields=text_uthmani,verse_key,verse_number`
+- Translation 131 = The Clear Quran (Dr. Mustafa Khattab); transliteration is built per-verse from `words[].transliteration.text`.
+- Audio: `https://everyayah.com/data/{subfolder}/{SSS}{AAA}.mp3` — five reciter choices (Alafasy default). One `<audio>` element driven imperatively by `playAyah` / `toggleAudio` / `stopAudio`.
 
 ---
 

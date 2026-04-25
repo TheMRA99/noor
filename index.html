@@ -16,7 +16,7 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     /* =================================================================
@@ -176,6 +176,17 @@
     .sacred-text.size-md { font-size: 28px; line-height: 2.2; }
     .sacred-text.size-lg { font-size: 34px; line-height: 2.3; }
     .sacred-text.size-xl { font-size: 40px; line-height: 2.4; }
+
+    /* Romanized Arabic for non-Arabic readers — italic, soft, distinct from translation */
+    .translit-text {
+      font-family: 'Cormorant Garamond', 'Amiri', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 1.55;
+      letter-spacing: 0.005em;
+      color: var(--text-3);
+    }
 
     .bismillah {
       text-align: center;
@@ -711,7 +722,6 @@
           <span class="f-ar text-accent" style="font-size:15px;direction:rtl">نور</span>
         </button>
         <div class="flex items-center gap-2">
-          <span class="kicker num" style="color:var(--text-3)">{{currentTick}}</span>
           <div class="toggle" :class="{'is-on':isDark}" @click="toggleTheme"><div class="knob"></div></div>
         </div>
       </div>
@@ -827,6 +837,22 @@
             <span class="label">OPEN IN READER</span>
             <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
           </div>
+        </div>
+
+        <!-- Random verse + Solace shortcut -->
+        <div class="grid grid-cols-2 gap-3 mb-7">
+          <button @click="openRandomVerse" class="tile">
+            <p class="tile-index">↺ / RANDOM</p>
+            <p class="tile-title">Open the<br>Book<span class="text-accent">.</span></p>
+            <p class="tile-sub num">A VERSE FOR THIS MOMENT</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M4 4v6h6M20 20v-6h-6M4 20a8 8 0 0014-5M20 4a8 8 0 00-14 5"/></svg>
+          </button>
+          <button @click="go('solace')" class="tile" style="background:var(--bg-invert);color:var(--fg-invert);border-color:var(--bg-invert)">
+            <p class="tile-index" style="color:var(--accent)">♡ / SOLACE</p>
+            <p class="tile-title" style="color:var(--fg-invert)">For the<br>Heart<span class="text-accent">.</span></p>
+            <p class="tile-sub num" style="color:rgba(245,240,225,0.6)">VERSES BY FEELING</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--accent)"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
         </div>
 
         <!-- Continue reading -->
@@ -948,13 +974,21 @@
           <div class="rule-thick mb-4"></div>
 
           <!-- Font size controls -->
-          <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center justify-between mb-3">
             <p class="kicker" style="color:var(--text-3)">TEXT SIZE</p>
             <div class="flex gap-1.5">
               <button v-for="sz in ['sm','md','lg','xl']" :key="sz" @click="arabicSize=sz;savePrefs()" class="w-9 h-9 rounded-full border text-xs font-bold transition-all" :style="arabicSize===sz?{background:'var(--text)',color:'var(--bg)',borderColor:'var(--text)'}:{background:'transparent',color:'var(--text-3)',borderColor:'var(--surface-border)'}">
                 {{sz.toUpperCase()}}
               </button>
             </div>
+          </div>
+          <!-- Transliteration toggle -->
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex-1 min-w-0">
+              <p class="kicker" style="color:var(--text-3)">TRANSLITERATION</p>
+              <p class="text-xs mt-1" style="color:var(--text-4)">{{prefs.showTranslit?'SHOWING ROMANIZED ARABIC':'HIDDEN'}}</p>
+            </div>
+            <div class="toggle" :class="{'is-on':prefs.showTranslit}" @click="prefs.showTranslit=!prefs.showTranslit;savePrefs()"><div class="knob"></div></div>
           </div>
 
           <!-- Bismillah -->
@@ -991,6 +1025,7 @@
             <p class="sacred-text" :class="'size-'+arabicSize" :dir="'rtl'" :lang="'ar'">
               {{v.text_uthmani}} <span class="ayah-marker mx-1">{{toArabicDigits(v.verse_number)}}</span>
             </p>
+            <p v-if="prefs.showTranslit && v.transliteration" class="translit-text mt-3">{{v.transliteration}}</p>
             <div class="rule-gold w-12 my-4"></div>
             <p class="f-display leading-snug" style="font-size:16px;font-weight:500;letter-spacing:-0.01em;color:var(--text-2)">{{stripHtml(v.translation)}}</p>
 
@@ -1115,37 +1150,106 @@
         </div>
       </div>
 
-      <!-- ================= HADITH PLACEHOLDER ================= -->
+      <!-- ================= HADITH ================= -->
       <div v-if="page==='hadith'" class="page-enter">
         <div class="masthead">
-          <p class="kicker" style="color:var(--text-3)">PHASE 03 / FORTHCOMING</p>
-          <h2 class="display display-lg mt-2" style="color:var(--text)">Hadith<span class="text-accent">.</span></h2>
+          <p class="kicker" style="color:var(--text-3)">PROPHETIC TRADITION / SAYINGS</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Forty<br>Hadith<span class="text-accent">.</span></h2>
           <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْحَدِيث</p>
         </div>
-        <div class="rule-thick mb-6"></div>
-        <div class="brackets p-6 surface" style="border-radius:4px">
-          <p class="kicker mb-3 text-accent">COMING SOON</p>
-          <p class="f-display" style="font-size:20px;font-weight:500;letter-spacing:-0.015em;color:var(--text-2);line-height:1.45">
-            Authentic collections — Bukhari, Muslim, and the four Sunan — arriving in the next chapter,
-            <span class="text-accent">in shā'a Allāh</span>.
-          </p>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-6" style="color:var(--text-3)">SELECTIONS — AN-NAWAWĪ · BUKHĀRĪ · MUSLIM</p>
+
+        <div class="space-y-3 stagger">
+          <div v-for="(h,hi) in HADITH_DB" :key="h.n" @click="selectedHadith=h" class="verse-card" style="cursor:pointer">
+            <span class="verse-index">HADITH</span>
+            <span class="verse-num num">{{h.n}} / {{String(HADITH_DB.length).padStart(2,'0')}}</span>
+            <div class="rule-soft mt-6 mb-4"></div>
+            <p class="kicker text-accent mb-2">{{h.theme}}</p>
+            <p class="sacred-text size-sm mb-3">{{h.arabic}}</p>
+            <div class="rule-gold w-12 mb-3"></div>
+            <p class="f-display leading-snug mb-4" style="font-size:16px;font-weight:500;color:var(--text-2)">"{{h.english}}"</p>
+            <div class="rule-soft mb-3"></div>
+            <div class="flex items-center justify-between">
+              <p class="kicker num" style="color:var(--text-3)">{{h.narrator.toUpperCase()}}</p>
+              <p class="kicker" style="color:var(--text-4)">{{h.source.toUpperCase()}}</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- ================= STORIES PLACEHOLDER ================= -->
+      <!-- ================= STORIES ================= -->
       <div v-if="page==='stories'" class="page-enter">
         <div class="masthead">
-          <p class="kicker" style="color:var(--text-3)">PHASE 04 / FORTHCOMING</p>
-          <h2 class="display display-lg mt-2" style="color:var(--text)">Stories<span class="text-accent">.</span></h2>
+          <p class="kicker" style="color:var(--text-3)">THE PROPHETS / 25 MESSENGERS</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Prophet<br>Stories<span class="text-accent">.</span></h2>
           <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْقَصَص</p>
         </div>
-        <div class="rule-thick mb-6"></div>
-        <div class="brackets p-6 surface" style="border-radius:4px">
-          <p class="kicker mb-3 text-accent">COMING SOON</p>
-          <p class="f-display" style="font-size:20px;font-weight:500;letter-spacing:-0.015em;color:var(--text-2);line-height:1.45">
-            The Prophets, the Sahaba, and lessons from the Seerah — coming soon,
-            <span class="text-accent">in shā'a Allāh</span>.
-          </p>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-6" style="color:var(--text-3)">FROM ĀDAM (AS) TO MUḤAMMAD ﷺ</p>
+
+        <div class="space-y-3 stagger">
+          <button v-for="p in STORIES_DB" :key="p.id" @click="selectedStory=p" class="ed-row w-full text-left">
+            <span class="ed-num num">{{p.n}}</span>
+            <div class="flex-1 min-w-0">
+              <p class="f-display truncate" style="font-size:19px;font-weight:700;letter-spacing:-0.02em">{{p.en}}</p>
+              <p class="text-xs mt-1 truncate" style="color:var(--text-3)">{{p.title.toUpperCase()}}</p>
+            </div>
+            <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:22px">{{p.ar}}</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= SOLACE ================= -->
+      <div v-if="page==='solace'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">FOR THE HEART / BY EMOTION</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Solace<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلسَّكِينَة</p>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-6" style="color:var(--text-3)">VERSES TO READ WHEN — CHOOSE A FEELING</p>
+
+        <!-- Theme chips -->
+        <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
+          <button @click="solaceTheme='all'" class="chip" :class="{active:solaceTheme==='all'}">ALL</button>
+          <button v-for="t in SOLACE_THEMES" :key="t.id" @click="solaceTheme=t.id" class="chip" :class="{active:solaceTheme===t.id}">
+            {{t.label.toUpperCase()}}
+          </button>
+        </div>
+
+        <!-- Theme banner when one is selected -->
+        <div v-if="solaceTheme!=='all' && currentSolaceTheme" class="block-invert mb-6">
+          <p class="kicker" style="color:var(--accent)">{{currentSolaceTheme.kicker}}</p>
+          <div class="flex items-end justify-between mt-2">
+            <h3 class="display display-md" style="color:var(--fg-invert)">{{currentSolaceTheme.label}}<span class="text-accent">.</span></h3>
+            <p class="f-ar text-accent" style="direction:rtl;font-size:34px;line-height:1">{{currentSolaceTheme.ar}}</p>
+          </div>
+        </div>
+
+        <!-- Verses -->
+        <div class="space-y-3 stagger">
+          <div v-for="(s,si) in filteredSolace" :key="s.reference+si" class="verse-card">
+            <span class="verse-index">{{(SOLACE_THEMES.find(function(t){return t.id===s.theme})||{}).label.toUpperCase()}}</span>
+            <span class="verse-num num">{{s.reference.replace('Quran ','').toUpperCase()}}</span>
+            <div class="rule-soft mt-6 mb-4"></div>
+            <p class="sacred-text size-sm mb-3" :dir="'rtl'" :lang="'ar'">{{s.arabic}}</p>
+            <p class="translit-text mb-3">{{s.translit}}</p>
+            <div class="rule-gold w-12 mb-3"></div>
+            <p class="f-display leading-snug mb-4" style="font-size:16px;font-weight:500;color:var(--text-2)">"{{s.translation}}"</p>
+            <div class="rule-soft mb-3"></div>
+            <div class="flex items-start gap-3">
+              <span class="text-accent" style="font-size:24px;line-height:1;font-family:'Cormorant Garamond',serif">"</span>
+              <p class="text-sm italic" style="color:var(--text-3);line-height:1.5">{{s.note}}</p>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <button v-if="s.surahId" @click="openReaderAt(s.surahId, s.ayah)" class="label hv-strike text-accent flex items-center gap-1.5">
+                OPEN IN READER
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </button>
+              <button @click="openVerseDetail(s)" class="label hv-strike" style="color:var(--text-3)">DETAIL ↗</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1173,14 +1277,20 @@
           </button>
           <button @click="go('hadith')" class="tile">
             <p class="tile-index">03 / HADITH</p>
-            <p class="tile-title">Hadith</p>
-            <p class="tile-sub num">COMING PHASE 03</p>
+            <p class="tile-title">Forty<br>Hadith</p>
+            <p class="tile-sub num">{{String(HADITH_DB.length).padStart(2,'0')}} TRADITIONS</p>
             <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
           </button>
           <button @click="go('stories')" class="tile">
             <p class="tile-index">04 / STORIES</p>
             <p class="tile-title">Prophet<br>Stories</p>
-            <p class="tile-sub num">COMING PHASE 04</p>
+            <p class="tile-sub num">{{String(STORIES_DB.length).padStart(2,'0')}} MESSENGERS</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('solace')" class="tile" style="grid-column:span 2">
+            <p class="tile-index">05 / SOLACE</p>
+            <p class="tile-title">For the<br>Heart<span class="text-accent">.</span></p>
+            <p class="tile-sub num">VERSES BY EMOTION · ANXIETY · GRIEF · TRUST</p>
             <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
           </button>
         </div>
@@ -1231,26 +1341,6 @@
           </button>
         </div>
 
-        <!-- Data section -->
-        <p class="kicker mb-3 mt-8" style="color:var(--text-3)">DATA</p>
-        <div class="divide-y-rules" style="border-top:1px solid var(--rule);border-bottom:1px solid var(--rule-soft)">
-          <button @click="exportData" class="w-full flex items-center gap-4 py-4 text-left hv-strike">
-            <div class="flex-1 min-w-0">
-              <p class="f-display" style="font-size:16px;font-weight:600;color:var(--text)">Export bookmarks</p>
-              <p class="text-xs mt-1" style="color:var(--text-3)">DOWNLOAD AS .JSON</p>
-            </div>
-            <svg class="w-4 h-4" style="color:var(--text-3)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
-          </button>
-          <label class="w-full flex items-center gap-4 py-4 text-left cursor-pointer hv-strike">
-            <div class="flex-1 min-w-0">
-              <p class="f-display" style="font-size:16px;font-weight:600;color:var(--text)">Import bookmarks</p>
-              <p class="text-xs mt-1" style="color:var(--text-3)">FROM .JSON BACKUP</p>
-            </div>
-            <svg class="w-4 h-4" style="color:var(--text-3)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M17 7l-10 10M7 7h10v10"/></svg>
-            <input type="file" accept=".json" @change="importData" class="hidden">
-          </label>
-        </div>
-
         <button @click="showDeleteConfirm=true" class="mt-8 btn btn-block" style="background:transparent;color:#E15554;border-color:#E15554">
           CLEAR ALL DATA
         </button>
@@ -1288,7 +1378,7 @@
     <!-- ================= BOTTOM NAV ================= -->
     <nav v-if="showHeader" class="glass fixed bottom-0 left-0 right-0 z-40" style="padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--rule)">
       <div class="max-w-xl mx-auto grid grid-cols-4">
-        <button v-for="(tab,ti) in [{id:'home',label:'HOME',match:['home']},{id:'quran',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories']},{id:'profile',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-3" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
+        <button v-for="(tab,ti) in [{id:'home',label:'HOME',match:['home']},{id:'quran',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','solace']},{id:'profile',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-3" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
           <span class="mono-num" style="font-size:10px;letter-spacing:0.14em;opacity:0.6">0{{ti+1}}</span>
           <span class="label mt-1" style="font-size:10px">{{tab.label}}</span>
           <div class="tab-underline mt-2" style="height:2px;width:24px;background:transparent"></div>
@@ -1339,7 +1429,7 @@
 
     <!-- Verse detail -->
     <div v-if="selectedVerse" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedVerse=null">
-      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4}">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
         <div class="p-6">
           <div class="flex items-center justify-between mb-5">
             <p class="kicker text-accent">VERSE · {{selectedVerse.reference.replace('Quran ','').toUpperCase()}}</p>
@@ -1348,13 +1438,76 @@
             </button>
           </div>
           <div class="rule-thick mb-5"></div>
-          <p class="sacred-text size-md mb-5">{{selectedVerse.arabic}}</p>
+          <p class="sacred-text size-md mb-4" :dir="'rtl'" :lang="'ar'">{{selectedVerse.arabic}}</p>
+          <p v-if="selectedVerse.translit" class="translit-text mb-4">{{selectedVerse.translit}}</p>
           <div class="rule-gold w-16 mb-4"></div>
-          <p class="f-display leading-snug mb-6" style="font-size:19px;font-weight:500;letter-spacing:-0.015em;color:var(--text)">"{{selectedVerse.translation}}"</p>
+          <p class="f-display leading-snug mb-5" style="font-size:19px;font-weight:500;letter-spacing:-0.015em;color:var(--text)">"{{selectedVerse.translation}}"</p>
+          <p v-if="selectedVerse.note" class="text-sm italic mb-6" style="color:var(--text-3);line-height:1.55;border-left:2px solid var(--accent);padding-left:14px">{{selectedVerse.note}}</p>
           <button v-if="selectedVerse.surahId" @click="openReaderAt(selectedVerse.surahId, selectedVerse.ayah);selectedVerse=null" class="btn btn-block">
             OPEN IN READER
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hadith detail -->
+    <div v-if="selectedHadith" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedHadith=null">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
+        <div class="invert p-6 pb-7 relative">
+          <div class="flex items-center justify-between mb-3">
+            <span class="kicker" style="color:var(--accent)">HADITH · <span class="num">{{selectedHadith.n}} OF {{String(HADITH_DB.length).padStart(2,'0')}}</span></span>
+            <button @click="selectedHadith=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="kicker mt-3" style="color:rgba(245,240,225,0.7)">{{selectedHadith.theme}}</p>
+        </div>
+        <div class="p-6">
+          <p class="sacred-text size-md mb-4" :dir="'rtl'" :lang="'ar'">{{selectedHadith.arabic}}</p>
+          <p class="translit-text mb-4">{{selectedHadith.translit}}</p>
+          <div class="rule-gold w-16 mb-4"></div>
+          <p class="f-display leading-snug mb-5" style="font-size:18px;font-weight:500;letter-spacing:-0.01em;color:var(--text)">"{{selectedHadith.english}}"</p>
+          <p v-if="selectedHadith.note" class="text-sm italic mb-6" style="color:var(--text-3);line-height:1.55;border-left:2px solid var(--accent);padding-left:14px">{{selectedHadith.note}}</p>
+          <div class="rule-soft mb-4"></div>
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <p class="kicker" style="color:var(--text-4)">NARRATED BY</p>
+              <p class="f-display mt-1" style="font-size:15px;font-weight:600;color:var(--text)">{{selectedHadith.narrator}}</p>
+            </div>
+            <div class="text-right">
+              <p class="kicker" style="color:var(--text-4)">SOURCE</p>
+              <p class="f-display mt-1" style="font-size:15px;font-weight:600;color:var(--text)">{{selectedHadith.source}}</p>
+            </div>
+          </div>
+          <button @click="selectedHadith=null" class="btn btn-ghost btn-block">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Story detail -->
+    <div v-if="selectedStory" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedStory=null">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
+        <div class="invert p-6 pb-7 relative">
+          <div class="flex items-center justify-between mb-5">
+            <span class="kicker" style="color:var(--accent)">PROPHET · <span class="num">{{selectedStory.n}} OF 25</span></span>
+            <button @click="selectedStory=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="f-ar" style="color:var(--accent);font-size:60px;direction:rtl;line-height:1;margin-bottom:12px;text-align:right">{{selectedStory.ar}}</p>
+          <h3 class="display display-md" style="color:var(--fg-invert)">{{selectedStory.en}}</h3>
+          <p class="kicker mt-3" style="color:rgba(245,240,225,0.7)">{{selectedStory.title.toUpperCase()}}</p>
+        </div>
+        <div class="p-6">
+          <p class="kicker mb-2" style="color:var(--text-3)">FOUND IN</p>
+          <p class="f-body mb-5" style="font-size:14px;color:var(--text-2)">{{selectedStory.surahs}}</p>
+          <div class="rule-gold w-16 mb-4"></div>
+          <p class="f-display leading-snug mb-5" style="font-size:17px;font-weight:500;letter-spacing:-0.005em;color:var(--text);line-height:1.55">{{selectedStory.summary}}</p>
+          <div class="rule-soft mb-4"></div>
+          <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
+          <p class="f-display italic mb-6" style="font-size:18px;font-weight:500;color:var(--text-2);line-height:1.5">"{{selectedStory.lesson}}"</p>
+          <button @click="selectedStory=null" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
@@ -1688,6 +1841,424 @@ var WISDOM_DB = [
   {theme:"hope",reference:"Quran 3:139",surahId:3,ayah:139,arabic:"وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ",translation:"Do not lose heart nor grieve — you are the superior, if you are true believers."}
 ];
 
+/* =================================================================
+   HADITH — Selections from An-Nawawi's Forty Hadith.
+   All from Saḥīḥ Bukhārī / Saḥīḥ Muslim unless noted. English is
+   plain summary — for study, consult a vetted scholarly translation.
+   ================================================================= */
+var HADITH_DB = [
+  {n:'01', theme:'INTENTION', narrator:'ʿUmar ibn al-Khaṭṭāb', source:'Bukhārī & Muslim',
+    arabic:'إِنَّمَا ٱلْأَعْمَالُ بِٱلنِّيَّاتِ، وَإِنَّمَا لِكُلِّ ٱمْرِئٍ مَا نَوَىٰ',
+    translit:'Innamā al-aʿmālu bin-niyyāti, wa innamā li-kulli imriʾin mā nawā.',
+    english:'Actions are judged by intentions, and every person is rewarded according to what they intended.',
+    note:'The opening hadith — every deed begins in the heart.'},
+  {n:'02', theme:'IMĀN · ISLAM · IḤSĀN', narrator:'ʿUmar ibn al-Khaṭṭāb', source:'Muslim',
+    arabic:'أَنْ تَعْبُدَ ٱللَّهَ كَأَنَّكَ تَرَاهُ، فَإِنْ لَمْ تَكُنْ تَرَاهُ فَإِنَّهُ يَرَاكَ',
+    translit:'An taʿbuda Allāha ka-annaka tarāhu, fa-in lam takun tarāhu fa-innahu yarāk.',
+    english:'Worship Allah as if you see Him; for though you do not see Him, He sees you.',
+    note:'The definition of iḥsān — to live in awareness of God.'},
+  {n:'03', theme:'PILLARS', narrator:'Ibn ʿUmar', source:'Bukhārī & Muslim',
+    arabic:'بُنِيَ ٱلْإِسْلَامُ عَلَىٰ خَمْسٍ',
+    translit:'Buniya al-Islāmu ʿalā khams.',
+    english:'Islam is built on five: testimony of faith, prayer, zakāt, fasting Ramaḍān, and pilgrimage for whoever is able.',
+    note:'The structure of a believing life.'},
+  {n:'04', theme:'DESTINY', narrator:'ʿAbdullāh ibn Masʿūd', source:'Bukhārī & Muslim',
+    arabic:'إِنَّ أَحَدَكُمْ يُجْمَعُ خَلْقُهُ فِي بَطْنِ أُمِّهِ أَرْبَعِينَ يَوْمًا نُطْفَةً',
+    translit:'Inna aḥadakum yujmaʿu khalquhu fī baṭni ummihi arbaʿīna yawman nuṭfah.',
+    english:'Each of you is formed in the womb in stages — and the angel writes for them their provision, lifespan, and deeds.',
+    note:'Trust the unseen pen — your matter is already written.'},
+  {n:'05', theme:'INNOVATION', narrator:'ʿĀʾisha', source:'Bukhārī & Muslim',
+    arabic:'مَنْ أَحْدَثَ فِي أَمْرِنَا هَٰذَا مَا لَيْسَ مِنْهُ فَهُوَ رَدٌّ',
+    translit:'Man aḥdatha fī amrinā hādhā mā laysa minhu fa-huwa radd.',
+    english:'Whoever introduces into this matter of ours something that is not from it — it is rejected.',
+    note:'Worship is taught, not invented.'},
+  {n:'06', theme:'LAWFUL · UNLAWFUL', narrator:'al-Nuʿmān ibn Bashīr', source:'Bukhārī & Muslim',
+    arabic:'ٱلْحَلَالُ بَيِّنٌ، وَٱلْحَرَامُ بَيِّنٌ، وَبَيْنَهُمَا أُمُورٌ مُشْتَبِهَاتٌ',
+    translit:'Al-ḥalālu bayyinun, wal-ḥarāmu bayyinun, wa baynahumā umūrun mushtabihāt.',
+    english:'The lawful is clear and the unlawful is clear; between them are doubtful matters. Whoever guards against them protects their faith.',
+    note:'Caution preserves the heart.'},
+  {n:'07', theme:'SINCERITY', narrator:'Tamīm al-Dārī', source:'Muslim',
+    arabic:'ٱلدِّينُ ٱلنَّصِيحَةُ',
+    translit:'Al-dīnu al-naṣīḥah.',
+    english:'The religion is sincere counsel — to Allah, His Book, His Messenger, the leaders of the Muslims, and their common folk.',
+    note:'Faith is honest goodwill, lived outward.'},
+  {n:'08', theme:'SANCTITY OF LIFE', narrator:'Ibn ʿUmar', source:'Bukhārī & Muslim',
+    arabic:'أُمِرْتُ أَنْ أُقَاتِلَ ٱلنَّاسَ حَتَّىٰ يَشْهَدُوا',
+    translit:'Umirtu an uqātila an-nāsa ḥattā yashhadū.',
+    english:'I was commanded to fight people until they bear witness that there is no god but Allah and that Muḥammad is His Messenger — when they do, their lives and property are protected.',
+    note:'The shahāda is the sanctuary.'},
+  {n:'09', theme:'CAPACITY', narrator:'Abū Hurayra', source:'Bukhārī & Muslim',
+    arabic:'إِذَا أَمَرْتُكُمْ بِأَمْرٍ فَأْتُوا مِنْهُ مَا ٱسْتَطَعْتُمْ',
+    translit:'Idhā amartukum bi-amrin fa-ʾtū minhu mā istataʿtum.',
+    english:'What I have forbidden, leave it. What I have commanded, do as much of it as you are able.',
+    note:'God does not burden you beyond your strength.'},
+  {n:'10', theme:'PURE PROVISION', narrator:'Abū Hurayra', source:'Muslim',
+    arabic:'إِنَّ ٱللَّهَ طَيِّبٌ لَا يَقْبَلُ إِلَّا طَيِّبًا',
+    translit:'Inna Allāha ṭayyibun lā yaqbalu illā ṭayyibā.',
+    english:'Allah is pure and accepts only what is pure. He has commanded the believers what He commanded the messengers.',
+    note:'Pure earnings, pure offerings, pure heart.'},
+  {n:'11', theme:'DOUBT', narrator:'al-Ḥasan ibn ʿAlī', source:'Tirmidhī (ḥasan ṣaḥīḥ)',
+    arabic:'دَعْ مَا يَرِيبُكَ إِلَىٰ مَا لَا يَرِيبُكَ',
+    translit:'Daʿ mā yarībuka ilā mā lā yarībuk.',
+    english:'Leave what makes you doubt for what does not make you doubt.',
+    note:'A clear conscience is a precious shelter.'},
+  {n:'12', theme:'PURPOSE', narrator:'Abū Hurayra', source:'Tirmidhī (ḥasan)',
+    arabic:'مِنْ حُسْنِ إِسْلَامِ ٱلْمَرْءِ تَرْكُهُ مَا لَا يَعْنِيهِ',
+    translit:'Min ḥusni islāmi al-marʾi tarkuhu mā lā yaʿnīh.',
+    english:'Part of the beauty of one\'s Islam is leaving what does not concern them.',
+    note:'Free yourself from what is none of your business.'},
+  {n:'13', theme:'BROTHERHOOD', narrator:'Anas ibn Mālik', source:'Bukhārī & Muslim',
+    arabic:'لَا يُؤْمِنُ أَحَدُكُمْ حَتَّىٰ يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ',
+    translit:'Lā yuʾminu aḥadukum ḥattā yuḥibba li-akhīhi mā yuḥibbu li-nafsih.',
+    english:'None of you truly believes until they love for their brother what they love for themselves.',
+    note:'The whole religion is woven from this thread.'},
+  {n:'14', theme:'PROHIBITIONS', narrator:'Ibn Masʿūd', source:'Bukhārī & Muslim',
+    arabic:'لَا يَحِلُّ دَمُ ٱمْرِئٍ مُسْلِمٍ إِلَّا بِإِحْدَىٰ ثَلَاثٍ',
+    translit:'Lā yaḥillu damu imriʾin muslimin illā bi-iḥdā thalāth.',
+    english:'The blood of a Muslim is not lawful except by three: a life for a life, an adulterer who was married, and one who abandons their religion and the community.',
+    note:'A guard around the sanctity of life.'},
+  {n:'15', theme:'GOOD SPEECH', narrator:'Abū Hurayra', source:'Bukhārī & Muslim',
+    arabic:'مَنْ كَانَ يُؤْمِنُ بِٱللَّهِ وَٱلْيَوْمِ ٱلْآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ',
+    translit:'Man kāna yuʾminu billāhi wal-yawmi al-ākhiri fal-yaqul khayran aw li-yaṣmut.',
+    english:'Whoever believes in Allah and the Last Day, let them speak good or remain silent — honor their guest, and treat their neighbor kindly.',
+    note:'Faith is measured at the lips and the doorstep.'},
+  {n:'16', theme:'ANGER', narrator:'Abū Hurayra', source:'Bukhārī',
+    arabic:'لَا تَغْضَبْ',
+    translit:'Lā taghḍab.',
+    english:'Do not be angry.',
+    note:'A man asked for advice. The Prophet ﷺ repeated, three times: do not be angry.'},
+  {n:'17', theme:'EXCELLENCE', narrator:'Shaddād ibn Aws', source:'Muslim',
+    arabic:'إِنَّ ٱللَّهَ كَتَبَ ٱلْإِحْسَانَ عَلَىٰ كُلِّ شَيْءٍ',
+    translit:'Inna Allāha kataba al-iḥsāna ʿalā kulli shayʾ.',
+    english:'Allah has prescribed excellence in everything. Even when you slaughter, do it with mercy.',
+    note:'Goodness reaches into every gesture.'},
+  {n:'18', theme:'PIETY', narrator:'Abū Dharr & Muʿādh', source:'Tirmidhī (ḥasan)',
+    arabic:'ٱتَّقِ ٱللَّهَ حَيْثُمَا كُنْتَ',
+    translit:'Ittaqi Allāha ḥaythumā kunt.',
+    english:'Fear Allah wherever you are. Follow a wrong with a right that erases it. And meet people with beautiful character.',
+    note:'A complete map of the inward and outward life.'},
+  {n:'19', theme:'TRUST IN ALLAH', narrator:'Ibn ʿAbbās', source:'Tirmidhī (ḥasan ṣaḥīḥ)',
+    arabic:'ٱحْفَظِ ٱللَّهَ يَحْفَظْكَ، ٱحْفَظِ ٱللَّهَ تَجِدْهُ تُجَاهَكَ',
+    translit:'Iḥfaẓi Allāha yaḥfaẓk, iḥfaẓi Allāha tajidhu tujāhak.',
+    english:'Be mindful of Allah and He will protect you. Be mindful of Allah and you will find Him before you. When you ask, ask of Allah; when you seek help, seek it from Allah.',
+    note:'Words to the young — and to anyone who feels alone.'},
+  {n:'20', theme:'SHAME · ḤAYĀʾ', narrator:'Abū Masʿūd', source:'Bukhārī',
+    arabic:'إِذَا لَمْ تَسْتَحِ فَٱصْنَعْ مَا شِئْتَ',
+    translit:'Idhā lam tastaḥi fa-iṣnaʿ mā shiʾt.',
+    english:'If you have no shame, do as you wish.',
+    note:'A line that shapes a life.'},
+  {n:'21', theme:'STEADFASTNESS', narrator:'Sufyān ibn ʿAbdillāh', source:'Muslim',
+    arabic:'قُلْ آمَنْتُ بِٱللَّهِ ثُمَّ ٱسْتَقِمْ',
+    translit:'Qul āmantu billāhi thumma istaqim.',
+    english:'Say: I believe in Allah — then stand firm.',
+    note:'Profession is easy; perseverance is the work.'},
+  {n:'22', theme:'PARADISE', narrator:'Jābir ibn ʿAbdillāh', source:'Muslim',
+    arabic:'إِذَا صَلَّيْتُ ٱلْمَكْتُوبَاتِ وَصُمْتُ رَمَضَانَ',
+    translit:'Idhā ṣallaytu al-maktūbāt wa ṣumtu Ramaḍān.',
+    english:'A man asked: if I pray the obligatory prayers, fast Ramaḍān, treat lawful as lawful and unlawful as unlawful — will I enter Paradise? He ﷺ said: yes.',
+    note:'A faithful, ordinary life is enough.'},
+  {n:'23', theme:'PURITY', narrator:'Abū Mālik al-Ashʿarī', source:'Muslim',
+    arabic:'ٱلطُّهُورُ شَطْرُ ٱلْإِيمَانِ',
+    translit:'Al-ṭuhūru shaṭru al-īmān.',
+    english:'Purity is half of faith. Saying al-ḥamdulillāh fills the scale; saying subḥān-Allāh and al-ḥamdulillāh fill all that is between heavens and earth.',
+    note:'Cleanliness, gratitude, glorification — three lights.'},
+  {n:'24', theme:'OPPRESSION', narrator:'Abū Dharr', source:'Muslim',
+    arabic:'يَا عِبَادِي إِنِّي حَرَّمْتُ ٱلظُّلْمَ عَلَىٰ نَفْسِي',
+    translit:'Yā ʿibādī innī ḥarramtu al-ẓulma ʿalā nafsī.',
+    english:'My servants, I have forbidden injustice for Myself and made it forbidden among you. Do not wrong one another.',
+    note:'A divine ḥadīth — quoted from the Lord Himself.'},
+  {n:'25', theme:'GENEROSITY', narrator:'Abū Dharr', source:'Muslim',
+    arabic:'تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ لَكَ صَدَقَةٌ',
+    translit:'Tabassumuka fī wajhi akhīka laka ṣadaqah.',
+    english:'Your smile in your brother\'s face is charity — every day the sun rises is a chance for ṣadaqa.',
+    note:'Even your face can be a gift.'}
+];
+
+/* =================================================================
+   STORIES OF THE PROPHETS — 25 messengers named in the Qur'an.
+   Brief sketches; for the full account, the Qur'an itself is source.
+   ================================================================= */
+var STORIES_DB = [
+  {id:'adam', n:'01', ar:'آدَم', en:'Ādam', title:'The First Human',
+    surahs:'Al-Baqara · Al-Aʿrāf · Ṭāhā',
+    summary:'Created by Allah\'s own hand and breathed with His spirit. Honored above the angels — taught the names of all things. Ate from the forbidden tree, repented, and was answered with mercy.',
+    lesson:'No fall is final to a heart that returns.'},
+  {id:'idris', n:'02', ar:'إِدْرِيس', en:'Idrīs', title:'The Truthful Scribe',
+    surahs:'Maryam · Al-Anbiyāʾ',
+    summary:'A man of patience and elevated rank. Mentioned briefly but praised highly — raised by Allah to a high station.',
+    lesson:'Quiet integrity has its own ascent.'},
+  {id:'nuh', n:'03', ar:'نُوح', en:'Nūḥ', title:'The Patient Caller',
+    surahs:'Hūd · Nūḥ',
+    summary:'Called his people for nine hundred and fifty years. Built the ark on dry land while his neighbors mocked. The flood came — and so did mercy, in a single boat.',
+    lesson:'Some seeds take a lifetime; plant anyway.'},
+  {id:'hud', n:'04', ar:'هُود', en:'Hūd', title:'Sent to ʿĀd',
+    surahs:'Hūd · Al-Aʿrāf · Ash-Shuʿarāʾ',
+    summary:'Sent to ʿĀd, a people of towering pillars and forgotten gratitude. He warned them; they laughed. The wind came for seven nights and eight days.',
+    lesson:'No power is greater than the One who lent it.'},
+  {id:'salih', n:'05', ar:'صَالِح', en:'Ṣāliḥ', title:'The Camel Sign',
+    surahs:'Al-Aʿrāf · Hūd · Ash-Shuʿarāʾ',
+    summary:'Sent to Thamūd, who carved palaces from mountains. They demanded a sign; he gave them a she-camel. They slaughtered her — and the earth answered with a quake.',
+    lesson:'Cruelty to a creature is cruelty to its Creator.'},
+  {id:'ibrahim', n:'06', ar:'إِبْرَاهِيم', en:'Ibrāhīm', title:'Friend of Allah · Khalīlullāh',
+    surahs:'Al-Anʿām · Hūd · Ibrāhīm · Aṣ-Ṣāffāt',
+    summary:'Looked at the stars and the sun and recognized none of them as Lord. Smashed his people\'s idols. Walked into a fire that became coolness and peace. Was asked for his son — and obeyed.',
+    lesson:'A heart that loves Allah loses fear of fire.'},
+  {id:'lut', n:'07', ar:'لُوط', en:'Lūṭ', title:'Caller of Sodom',
+    surahs:'Hūd · Al-ʿAnkabūt · Adh-Dhāriyāt',
+    summary:'Nephew of Ibrāhīm. Sent to a city that flaunted its sin and mocked its caller. He and his believing family were saved at dawn — the city was inverted upon itself.',
+    lesson:'Hold to the truth even when alone in your home.'},
+  {id:'ismail', n:'08', ar:'إِسْمَاعِيل', en:'Ismāʿīl', title:'The Trusting Son',
+    surahs:'Aṣ-Ṣāffāt · Al-Baqara · Maryam',
+    summary:'Left in a barren valley as an infant — the rains of Zamzam answered. Helped his father raise the Kaʿba. Offered himself to the sacrifice with calm: "Do as you are commanded."',
+    lesson:'Submission is its own reward.'},
+  {id:'ishaq', n:'09', ar:'إِسْحَاق', en:'Isḥāq', title:'The Promised Boy',
+    surahs:'Hūd · Aṣ-Ṣāffāt',
+    summary:'Born to Sāra in old age — the laughter of an answered prayer. Father of Yaʿqūb, grandfather of an entire lineage of prophets.',
+    lesson:'God\'s timing exceeds the body\'s clock.'},
+  {id:'yaqub', n:'10', ar:'يَعْقُوب', en:'Yaʿqūb', title:'Israel · Father of Yūsuf',
+    surahs:'Yūsuf · Al-Baqara',
+    summary:'Wept for Yūsuf until his eyes turned white with grief. Refused despair — "I complain of my sorrow only to Allah." Lived to see his son again.',
+    lesson:'Grief held with God is not grief lost.'},
+  {id:'yusuf', n:'11', ar:'يُوسُف', en:'Yūsuf', title:'The Beautiful Patient',
+    surahs:'Yūsuf (entire surah)',
+    summary:'Cast into a well by his brothers. Sold as a slave. Imprisoned for refusing what was forbidden. Read a king\'s dream and rose to govern Egypt. Faced his brothers — and forgave.',
+    lesson:'No injustice can outrun God\'s plan.'},
+  {id:'ayyub', n:'12', ar:'أَيُّوب', en:'Ayyūb', title:'The Patient Trial',
+    surahs:'Al-Anbiyāʾ · Ṣād',
+    summary:'Lost his wealth, his children, and his health. Did not curse, did not despair. Called: "Harm has touched me, and You are the Most Merciful." Was healed and given more than he lost.',
+    lesson:'Cry out to Him — never instead of Him.'},
+  {id:'shuayb', n:'13', ar:'شُعَيْب', en:'Shuʿayb', title:'The Eloquent of Madyan',
+    surahs:'Al-Aʿrāf · Hūd · Ash-Shuʿarāʾ',
+    summary:'Sent to Madyan, a people who shaved coins and shorted scales. Spoke with such kindness he was called "the speaker of the prophets." They refused; the earthquake came.',
+    lesson:'Honest weights are an act of worship.'},
+  {id:'musa', n:'14', ar:'مُوسَى', en:'Mūsā', title:'Kalīmullāh — Spoke to Allah',
+    surahs:'Al-Baqara · Ṭāhā · Al-Qaṣaṣ',
+    summary:'Found in a basket by Pharaoh\'s wife. Fled, married, returned with a staff and a brother. Split the sea. Climbed the mountain. Heard Allah speak.',
+    lesson:'God meets you in the wilderness.'},
+  {id:'harun', n:'15', ar:'هَارُون', en:'Hārūn', title:'Brother of Mūsā',
+    surahs:'Ṭāhā · Al-Aʿrāf',
+    summary:'Granted as Mūsā\'s helper at his brother\'s prayer. Eloquent, gentle, beloved. Held the people while Mūsā met his Lord on the mountain.',
+    lesson:'Sometimes the prophet beside the prophet is the answer.'},
+  {id:'dhulkifl', n:'16', ar:'ذُو ٱلْكِفْل', en:'Dhū al-Kifl', title:'The Steadfast',
+    surahs:'Al-Anbiyāʾ · Ṣād',
+    summary:'Mentioned briefly among the patient and the righteous. The name itself means "the one who took on responsibility."',
+    lesson:'Bearing what others will not bear is its own prophethood.'},
+  {id:'dawud', n:'17', ar:'دَاوُد', en:'Dāwūd', title:'King and Reciter',
+    surahs:'Ṣād · Al-Anbiyāʾ',
+    summary:'Slew Goliath as a young shepherd. Was given the Zabūr. Mountains and birds joined his praise. A king who fasted alternate days and prayed half the night.',
+    lesson:'Power tempered by humility is real strength.'},
+  {id:'sulayman', n:'18', ar:'سُلَيْمَان', en:'Sulaymān', title:'King of Wind and Jinn',
+    surahs:'An-Naml · Saba · Ṣād',
+    summary:'Son of Dāwūd. Ruled humans, jinn, wind, and beasts. Spoke with an ant and corresponded with the Queen of Sheba. Asked Allah only for a kingdom no one after him would have — and was given it.',
+    lesson:'The largest kingdom still bows in prayer.'},
+  {id:'ilyas', n:'19', ar:'إِلْيَاس', en:'Ilyās', title:'Caller Against Idols',
+    surahs:'Aṣ-Ṣāffāt · Al-Anʿām',
+    summary:'Stood against the idol Baʿl. His people resisted; his name endured among the upright.',
+    lesson:'A truthful word outlives its hearers.'},
+  {id:'alyasa', n:'20', ar:'ٱلْيَسَع', en:'al-Yasaʿ', title:'Successor to Ilyās',
+    surahs:'Al-Anʿām · Ṣād',
+    summary:'Mentioned among the chosen and the favored — the line of guidance continued through him.',
+    lesson:'You inherit what your forebears\' hearts left for you.'},
+  {id:'yunus', n:'21', ar:'يُونُس', en:'Yūnus', title:'Companion of the Whale',
+    surahs:'Yūnus · Al-Anbiyāʾ · Aṣ-Ṣāffāt',
+    summary:'Left his people in anger. The sea swallowed his ship; the whale swallowed him. In three layers of darkness he called: "There is no god but You — glory be to You — I have wronged myself." He was answered.',
+    lesson:'No darkness is too deep for that prayer.'},
+  {id:'zakariyya', n:'22', ar:'زَكَرِيَّا', en:'Zakariyyā', title:'Father of Yaḥyā',
+    surahs:'Maryam · Āl ʿImrān',
+    summary:'An old man with no son and a withered wife. Saw fruit out of season in Maryam\'s chamber and was reminded: nothing is too late. Whispered a prayer — was given Yaḥyā.',
+    lesson:'Hope is never disqualified by age.'},
+  {id:'yahya', n:'23', ar:'يَحْيَىٰ', en:'Yaḥyā', title:'The Pure Boy',
+    surahs:'Maryam · Al-Anʿām',
+    summary:'Given wisdom while still a child. Pure, dutiful, gentle to his parents. "Peace be upon him the day he was born, the day he dies, and the day he is raised."',
+    lesson:'Youth is no excuse — it is a possibility.'},
+  {id:'isa', n:'24', ar:'عِيسَى', en:'ʿĪsā', title:'Spirit from Allah',
+    surahs:'Maryam · Āl ʿImrān · Al-Māʾida',
+    summary:'Born to Maryam without a father — a sign and a mercy. Spoke from the cradle. Healed the blind, the leper, raised the dead by Allah\'s leave. Was raised to Allah; will return.',
+    lesson:'Every miracle was by his Lord\'s leave — never his own.'},
+  {id:'muhammad', n:'25', ar:'مُحَمَّد', en:'Muḥammad ﷺ', title:'The Final Messenger',
+    surahs:'Muḥammad · Al-Aḥzāb · entire Qur\'an',
+    summary:'Born in Mecca, orphaned young. Known as al-Amīn — the trustworthy — before any verse was revealed. Received the Qurʾān over twenty-three years. Mercy to the worlds, seal of the prophets.',
+    lesson:'His ﷺ life is the Qurʾān walking.'}
+];
+
+/* =================================================================
+   SOLACE — Verses for the heart, grouped by emotional state.
+   The Qur'an speaks closest at the moments we feel furthest.
+   ================================================================= */
+var SOLACE_THEMES = [
+  {id:'anxiety',    label:'Anxiety',     ar:'ٱلْقَلَق',         kicker:'WHEN WORRY OVERWHELMS'},
+  {id:'grief',      label:'Grief',       ar:'ٱلْحُزْن',         kicker:'WHEN THE HEART IS HEAVY'},
+  {id:'hardship',   label:'Hardship',    ar:'ٱلشِّدَّة',         kicker:'WHEN THE TRIAL COMES'},
+  {id:'forgiveness',label:'Forgiveness', ar:'ٱلِٱسْتِغْفَار',     kicker:'WHEN YOU HAVE ERRED'},
+  {id:'tawakkul',   label:'Trust',       ar:'ٱلتَّوَكُّل',       kicker:'WHEN YOU MUST LET GO'},
+  {id:'fear',       label:'Fear',        ar:'ٱلْخَوْف',          kicker:'WHEN YOU ARE AFRAID'},
+  {id:'gratitude',  label:'Gratitude',   ar:'ٱلشُّكْر',           kicker:'WHEN BLESSED'},
+  {id:'nearness',   label:'Nearness',    ar:'ٱلْقُرْب',          kicker:'WHEN YOU FEEL ALONE'}
+];
+
+var SOLACE_DB = [
+  /* ANXIETY */
+  {theme:'anxiety', reference:'Quran 13:28', surahId:13, ayah:28,
+    arabic:'أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ',
+    translit:'Alā bi-dhikri Allāhi taṭmaʾinnu al-qulūb.',
+    translation:'Truly — in the remembrance of Allah hearts find their rest.',
+    note:'Begin with His name. The breath slows; the room expands.'},
+  {theme:'anxiety', reference:'Quran 2:286', surahId:2, ayah:286,
+    arabic:'لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا',
+    translit:'Lā yukallifu Allāhu nafsan illā wusʿahā.',
+    translation:'Allah does not burden a soul beyond what it can bear.',
+    note:'If it is in your hands, He has trusted you with it.'},
+  {theme:'anxiety', reference:'Quran 65:3', surahId:65, ayah:3,
+    arabic:'وَمَن يَتَوَكَّلْ عَلَى ٱللَّهِ فَهُوَ حَسْبُهُۥ',
+    translit:'Wa man yatawakkal ʿalā Allāhi fa-huwa ḥasbuh.',
+    translation:'Whoever places their trust in Allah — He is enough for them.',
+    note:'Sufficient. Not "almost." Enough.'},
+  {theme:'anxiety', reference:'Quran 94:5-6', surahId:94, ayah:5,
+    arabic:'فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا ۝ إِنَّ مَعَ ٱلْعُسْرِ يُسْرًا',
+    translit:'Fa-inna maʿa al-ʿusri yusrā. Inna maʿa al-ʿusri yusrā.',
+    translation:'So surely — with hardship comes ease. Surely — with hardship comes ease.',
+    note:'Said twice. Read twice. Trust the doubling.'},
+
+  /* GRIEF */
+  {theme:'grief', reference:'Quran 93:3', surahId:93, ayah:3,
+    arabic:'مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ',
+    translit:'Mā waddaʿaka Rabbuka wa mā qalā.',
+    translation:'Your Lord has not abandoned you, nor has He turned away.',
+    note:'Revealed when the Prophet ﷺ feared the silence.'},
+  {theme:'grief', reference:'Quran 12:86', surahId:12, ayah:86,
+    arabic:'إِنَّمَآ أَشْكُو بَثِّى وَحُزْنِىٓ إِلَى ٱللَّهِ',
+    translit:'Innamā ashkū baththī wa ḥuznī ilā Allāh.',
+    translation:'I only complain of my anguish and sorrow to Allah.',
+    note:'Yaʿqūb\'s words for those who weep alone.'},
+  {theme:'grief', reference:'Quran 2:155-156', surahId:2, ayah:155,
+    arabic:'وَبَشِّرِ ٱلصَّـٰبِرِينَ ۝ ٱلَّذِينَ إِذَآ أَصَـٰبَتْهُم مُّصِيبَةٌۭ قَالُوٓا۟ إِنَّا لِلَّهِ وَإِنَّآ إِلَيْهِ رَٰجِعُونَ',
+    translit:'Wa bashshiri aṣ-ṣābirīn. Alladhīna idhā aṣābathum muṣībatun qālū innā lillāhi wa innā ilayhi rājiʿūn.',
+    translation:'Give glad tidings to the patient — those who, when struck by loss, say: To Allah we belong, and to Him we return.',
+    note:'A return — not an ending.'},
+  {theme:'grief', reference:'Quran 39:53', surahId:39, ayah:53,
+    arabic:'لَا تَقْنَطُوا۟ مِن رَّحْمَةِ ٱللَّهِ',
+    translit:'Lā taqnaṭū min raḥmati Allāh.',
+    translation:'Do not despair of the mercy of Allah.',
+    note:'However heavy the door — it has not closed.'},
+
+  /* HARDSHIP */
+  {theme:'hardship', reference:'Quran 2:153', surahId:2, ayah:153,
+    arabic:'يَـٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ ٱسْتَعِينُوا۟ بِٱلصَّبْرِ وَٱلصَّلَوٰةِ',
+    translit:'Yā ayyuhā alladhīna āmanū istaʿīnū biṣ-ṣabri waṣ-ṣalāh.',
+    translation:'Believers — seek help through patience and prayer.',
+    note:'Two ropes. Hold both.'},
+  {theme:'hardship', reference:'Quran 3:139', surahId:3, ayah:139,
+    arabic:'وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ',
+    translit:'Wa lā tahinū wa lā taḥzanū wa antumu al-aʿlawna in kuntum muʾminīn.',
+    translation:'Do not weaken, do not grieve — you are the higher, if you are believers.',
+    note:'A king\'s posture for an aching heart.'},
+  {theme:'hardship', reference:'Quran 21:83-84', surahId:21, ayah:83,
+    arabic:'أَنِّى مَسَّنِىَ ٱلضُّرُّ وَأَنتَ أَرْحَمُ ٱلرَّٰحِمِينَ',
+    translit:'Annī massaniyaḍ-ḍurru wa anta arḥamu ar-rāḥimīn.',
+    translation:'Harm has touched me — and You are the Most Merciful of the merciful.',
+    note:'Ayyūb\'s prayer. Short. Honest. Answered.'},
+  {theme:'hardship', reference:'Quran 39:10', surahId:39, ayah:10,
+    arabic:'إِنَّمَا يُوَفَّى ٱلصَّـٰبِرُونَ أَجْرَهُم بِغَيْرِ حِسَابٍۢ',
+    translit:'Innamā yuwaffā aṣ-ṣābirūna ajrahum bi-ghayri ḥisāb.',
+    translation:'The patient will be paid their reward without measure.',
+    note:'Without measure. Beyond what you can count.'},
+
+  /* FORGIVENESS */
+  {theme:'forgiveness', reference:'Quran 39:53', surahId:39, ayah:53,
+    arabic:'إِنَّ ٱللَّهَ يَغْفِرُ ٱلذُّنُوبَ جَمِيعًا',
+    translit:'Inna Allāha yaghfiru adh-dhunūba jamīʿā.',
+    translation:'Surely Allah forgives all sins.',
+    note:'All. The word is unconditional.'},
+  {theme:'forgiveness', reference:'Quran 7:23', surahId:7, ayah:23,
+    arabic:'رَبَّنَا ظَلَمْنَآ أَنفُسَنَا وَإِن لَّمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ ٱلْخَـٰسِرِينَ',
+    translit:'Rabbanā ẓalamnā anfusanā wa in lam taghfir lanā wa tarḥamnā la-nakūnanna min al-khāsirīn.',
+    translation:'Our Lord — we have wronged ourselves. If You do not forgive us and have mercy on us, we will be among the lost.',
+    note:'The first prayer of the first man.'},
+  {theme:'forgiveness', reference:'Quran 11:114', surahId:11, ayah:114,
+    arabic:'إِنَّ ٱلْحَسَنَـٰتِ يُذْهِبْنَ ٱلسَّيِّـَٔاتِ',
+    translit:'Inna al-ḥasanāti yudhhibna as-sayyiʾāt.',
+    translation:'Surely good deeds wipe away the bad.',
+    note:'Begin again — and again, if needed.'},
+  {theme:'forgiveness', reference:'Quran 2:222', surahId:2, ayah:222,
+    arabic:'إِنَّ ٱللَّهَ يُحِبُّ ٱلتَّوَّٰبِينَ',
+    translit:'Inna Allāha yuḥibbu at-tawwābīn.',
+    translation:'Allah loves those who turn back to Him.',
+    note:'Repenting is not a weakness — it is being loved.'},
+
+  /* TAWAKKUL */
+  {theme:'tawakkul', reference:'Quran 3:159', surahId:3, ayah:159,
+    arabic:'فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى ٱللَّهِ ۚ إِنَّ ٱللَّهَ يُحِبُّ ٱلْمُتَوَكِّلِينَ',
+    translit:'Fa-idhā ʿazamta fa-tawakkal ʿalā Allāh. Inna Allāha yuḥibbu al-mutawakkilīn.',
+    translation:'Once you have decided, place your trust in Allah. He loves those who trust Him.',
+    note:'Tie the camel — then let go of the rope.'},
+  {theme:'tawakkul', reference:'Quran 9:51', surahId:9, ayah:51,
+    arabic:'قُل لَّن يُصِيبَنَآ إِلَّا مَا كَتَبَ ٱللَّهُ لَنَا',
+    translit:'Qul lan yuṣībanā illā mā kataba Allāhu lanā.',
+    translation:'Say: Nothing will reach us except what Allah has written for us.',
+    note:'Whatever found you — was looking for you.'},
+  {theme:'tawakkul', reference:'Quran 11:88', surahId:11, ayah:88,
+    arabic:'وَمَا تَوْفِيقِىٓ إِلَّا بِٱللَّهِ ۚ عَلَيْهِ تَوَكَّلْتُ وَإِلَيْهِ أُنِيبُ',
+    translit:'Wa mā tawfīqī illā billāh. ʿAlayhi tawakkaltu wa ilayhi unīb.',
+    translation:'My success is only by Allah. In Him I trust, and to Him I turn.',
+    note:'Shuʿayb\'s prayer for any work that matters.'},
+
+  /* FEAR */
+  {theme:'fear', reference:'Quran 2:255', surahId:2, ayah:255,
+    arabic:'ٱللَّهُ لَآ إِلَـٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ',
+    translit:'Allāhu lā ilāha illā huwa al-Ḥayyu al-Qayyūm.',
+    translation:'Allah — there is no god but He, the Living, the Sustainer.',
+    note:'Āyat al-Kursī — recite it before sleep, before fear.'},
+  {theme:'fear', reference:'Quran 3:173', surahId:3, ayah:173,
+    arabic:'حَسْبُنَا ٱللَّهُ وَنِعْمَ ٱلْوَكِيلُ',
+    translit:'Ḥasbunā Allāhu wa niʿma al-wakīl.',
+    translation:'Allah is sufficient for us — and the best of Guardians.',
+    note:'Said by Ibrāhīm in the fire. Said by the Prophet ﷺ before battle.'},
+  {theme:'fear', reference:'Quran 41:30', surahId:41, ayah:30,
+    arabic:'أَلَّا تَخَافُوا۟ وَلَا تَحْزَنُوا۟ وَأَبْشِرُوا۟ بِٱلْجَنَّةِ',
+    translit:'Allā takhāfū wa lā taḥzanū wa abshirū bil-jannah.',
+    translation:'Do not fear, do not grieve — receive good news of the Garden.',
+    note:'The angels speak this to those who stayed firm.'},
+
+  /* GRATITUDE */
+  {theme:'gratitude', reference:'Quran 14:7', surahId:14, ayah:7,
+    arabic:'لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ',
+    translit:'La-in shakartum la-azīdannakum.',
+    translation:'If you are thankful — I will surely give you more.',
+    note:'Gratitude is a door. Walk through.'},
+  {theme:'gratitude', reference:'Quran 16:18', surahId:16, ayah:18,
+    arabic:'وَإِن تَعُدُّوا۟ نِعْمَةَ ٱللَّهِ لَا تُحْصُوهَآ',
+    translit:'Wa in taʿuddū niʿmata Allāhi lā tuḥṣūhā.',
+    translation:'If you tried to count Allah\'s blessings, you could never count them.',
+    note:'Begin with the breath you are taking now.'},
+  {theme:'gratitude', reference:'Quran 2:152', surahId:2, ayah:152,
+    arabic:'فَٱذْكُرُونِىٓ أَذْكُرْكُمْ',
+    translit:'Fadhkurūnī adhkurkum.',
+    translation:'Remember Me — I will remember you.',
+    note:'A trade you cannot lose.'},
+
+  /* NEARNESS */
+  {theme:'nearness', reference:'Quran 2:186', surahId:2, ayah:186,
+    arabic:'وَإِذَا سَأَلَكَ عِبَادِى عَنِّى فَإِنِّى قَرِيبٌ',
+    translit:'Wa idhā saʾalaka ʿibādī ʿannī fa-innī qarīb.',
+    translation:'When My servants ask about Me — I am near.',
+    note:'Nearer than your nearest. He answers when called.'},
+  {theme:'nearness', reference:'Quran 50:16', surahId:50, ayah:16,
+    arabic:'وَنَحْنُ أَقْرَبُ إِلَيْهِ مِنْ حَبْلِ ٱلْوَرِيدِ',
+    translit:'Wa naḥnu aqrabu ilayhi min ḥabli al-warīd.',
+    translation:'We are closer to him than his jugular vein.',
+    note:'Closer than the pulse you can feel.'},
+  {theme:'nearness', reference:'Quran 57:4', surahId:57, ayah:4,
+    arabic:'وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ',
+    translit:'Wa huwa maʿakum ayna mā kuntum.',
+    translation:'He is with you wherever you are.',
+    note:'No room is empty.'},
+  {theme:'nearness', reference:'Quran 8:24', surahId:8, ayah:24,
+    arabic:'وَٱعْلَمُوٓا۟ أَنَّ ٱللَّهَ يَحُولُ بَيْنَ ٱلْمَرْءِ وَقَلْبِهِۦ',
+    translit:'Waʿlamū anna Allāha yaḥūlu bayna al-marʾi wa qalbih.',
+    translation:'Know that Allah comes between a person and their heart.',
+    note:'He knows what you cannot say.'}
+];
+
 /* Reciters */
 var RECITERS = [
   {id:7,name:"Mishary Alafasy",subfolder:"Alafasy_128kbps"},
@@ -1718,19 +2289,19 @@ V.createApp({
     var arabicSize = V.ref('md');
 
     var wisdomTheme = V.ref('all');
+    var solaceTheme = V.ref('all');
     var selectedName = V.ref(null);
     var selectedVerse = V.ref(null);
+    var selectedHadith = V.ref(null);
+    var selectedStory = V.ref(null);
     var showNameEdit = V.ref(false);
     var showDeleteConfirm = V.ref(false);
 
     var audio = V.ref({ currentAyah: null, isPlaying: false, label: '' });
     var audioEl = null;
 
-    var prefs = V.ref({ reciterId: 7 });
+    var prefs = V.ref({ reciterId: 7, showTranslit: true });
     var toast = V.ref({ show: false, message: '' });
-
-    var currentTick = V.ref('');
-    var tickerTimer = null;
 
     /* ===== COMPUTED ===== */
     var showHeader = V.computed(function () {
@@ -1785,6 +2356,16 @@ V.createApp({
     var filteredWisdom = V.computed(function () {
       if (wisdomTheme.value === 'all') return WISDOM_DB;
       return WISDOM_DB.filter(function (w) { return w.theme === wisdomTheme.value; });
+    });
+
+    var filteredSolace = V.computed(function () {
+      if (solaceTheme.value === 'all') return SOLACE_DB;
+      return SOLACE_DB.filter(function (s) { return s.theme === solaceTheme.value; });
+    });
+
+    var currentSolaceTheme = V.computed(function () {
+      if (solaceTheme.value === 'all') return null;
+      return SOLACE_THEMES.find(function (t) { return t.id === solaceTheme.value; }) || null;
     });
 
     var bookmarksSorted = V.computed(function () {
@@ -1867,16 +2448,26 @@ V.createApp({
       loadingVerses.value = true;
       versesError.value = false;
       var url = 'https://api.quran.com/api/v4/verses/by_chapter/' + id +
-        '?translations=131&fields=text_uthmani,verse_key,verse_number' +
+        '?translations=131&words=true&word_fields=text_uthmani,transliteration' +
+        '&fields=text_uthmani,verse_key,verse_number' +
         '&translation_fields=text&per_page=286';
       fetch(url)
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (d) {
           verses.value = (d.verses || []).map(function (v) {
+            // Build transliteration from words array (skip word-type 'end' / ayah marker)
+            var translit = '';
+            if (Array.isArray(v.words)) {
+              translit = v.words
+                .filter(function (w) { return w && w.transliteration && w.transliteration.text && w.char_type_name !== 'end'; })
+                .map(function (w) { return w.transliteration.text; })
+                .join(' ');
+            }
             return {
               verse_key: v.verse_key,
               verse_number: v.verse_number,
               text_uthmani: v.text_uthmani,
+              transliteration: translit,
               translation: v.translations && v.translations[0] ? v.translations[0].text : ''
             };
           });
@@ -1966,6 +2557,13 @@ V.createApp({
 
     function openVerseDetail(w) { selectedVerse.value = w; }
 
+    function openRandomVerse() {
+      // Curated pool of meaningful verses (drawn from Daily, Wisdom, and Solace)
+      var pool = DAILY_VERSES.concat(WISDOM_DB).concat(SOLACE_DB);
+      var pick = pool[Math.floor(Math.random() * pool.length)];
+      selectedVerse.value = pick;
+    }
+
     function shareAyah(v) {
       var s = currentSurah.value;
       var text = v.text_uthmani + '\n\n"' + stripHtml(v.translation) + '"\n\n— Quran ' + v.verse_key + (s ? ' · ' + s.nameEn : '') + '\n\nvia Noor';
@@ -2002,7 +2600,10 @@ V.createApp({
         if (t === 'light') isDark.value = false;
         else isDark.value = true;
         var pr = JSON.parse(localStorage.getItem('noor_prefs'));
-        if (pr && pr.reciterId) prefs.value.reciterId = pr.reciterId;
+        if (pr) {
+          if (pr.reciterId) prefs.value.reciterId = pr.reciterId;
+          if (typeof pr.showTranslit === 'boolean') prefs.value.showTranslit = pr.showTranslit;
+        }
         var sz = localStorage.getItem('noor_arabic_size');
         if (sz) arabicSize.value = sz;
       } catch (e) {}
@@ -2016,34 +2617,6 @@ V.createApp({
       save();
       go('home');
       showMsg('AHLAN WA SAHLAN · ' + profile.value.name.split(' ')[0].toUpperCase());
-    }
-
-    function exportData() {
-      var d = { profile: profile.value, bookmarks: bookmarks.value, lastPosition: lastPosition.value, prefs: prefs.value };
-      var b = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(b);
-      a.download = 'noor-backup.json';
-      a.click();
-      showMsg('EXPORTED');
-    }
-    function importData(evt) {
-      var file = evt.target.files[0];
-      if (!file) return;
-      var r = new FileReader();
-      r.onload = function (e) {
-        try {
-          var d = JSON.parse(e.target.result);
-          if (d.bookmarks && Array.isArray(d.bookmarks)) bookmarks.value = d.bookmarks;
-          if (d.profile && d.profile.name) profile.value.name = d.profile.name;
-          if (d.lastPosition) lastPosition.value = d.lastPosition;
-          if (d.prefs) prefs.value = Object.assign({}, prefs.value, d.prefs);
-          save();
-          showMsg('IMPORTED');
-        } catch (err) { showMsg('INVALID FILE'); }
-      };
-      r.readAsText(file);
-      evt.target.value = '';
     }
 
     function clearAll() {
@@ -2067,36 +2640,31 @@ V.createApp({
       setTimeout(function () { toast.value.show = false; }, 2600);
     }
 
-    /* Header ticker (HH·MM) */
-    function updateTick() {
-      var d = new Date();
-      currentTick.value = String(d.getHours()).padStart(2,'0') + '·' + String(d.getMinutes()).padStart(2,'0');
-    }
-
     V.onMounted(function () {
       load();
-      updateTick();
-      tickerTimer = setInterval(updateTick, 20000);
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(function () {});
       }
     });
 
-    V.onUnmounted(function () { if (tickerTimer) clearInterval(tickerTimer); });
-
     return {
       page: page, isDark: isDark, profile: profile, bookmarks: bookmarks, bookmarksSorted: bookmarksSorted,
       lastPosition: lastPosition, currentSurah: currentSurah, verses: verses, loadingVerses: loadingVerses,
       versesError: versesError, surahSearch: surahSearch, revFilter: revFilter, arabicSize: arabicSize,
-      wisdomTheme: wisdomTheme, selectedName: selectedName, selectedVerse: selectedVerse,
+      wisdomTheme: wisdomTheme, solaceTheme: solaceTheme,
+      selectedName: selectedName, selectedVerse: selectedVerse,
+      selectedHadith: selectedHadith, selectedStory: selectedStory,
       showNameEdit: showNameEdit, showDeleteConfirm: showDeleteConfirm,
       audio: audio, prefs: prefs, toast: toast,
       showHeader: showHeader, avatarInitial: avatarInitial, greeting: greeting,
-      todayLabel: todayLabel, todayYear: todayYear, currentTick: currentTick,
+      todayLabel: todayLabel, todayYear: todayYear,
       filteredSurahs: filteredSurahs, filteredWisdom: filteredWisdom,
+      filteredSolace: filteredSolace, currentSolaceTheme: currentSolaceTheme,
       dailyVerse: dailyVerse, dailyReflection: dailyReflection,
       asmaUlHusna: asmaUlHusna, wisdomThemes: wisdomThemes, surahs: surahs,
       WISDOM_COUNT: WISDOM_COUNT,
+      HADITH_DB: HADITH_DB, STORIES_DB: STORIES_DB,
+      SOLACE_THEMES: SOLACE_THEMES, SOLACE_DB: SOLACE_DB,
       go: go, toggleTheme: toggleTheme, getSurah: getSurah,
       toArabicDigits: toArabicDigits, stripHtml: stripHtml, getThemeLabel: getThemeLabel,
       getReciterName: getReciterName, cyclePreferredReciter: cyclePreferredReciter,
@@ -2104,9 +2672,9 @@ V.createApp({
       loadSurah: loadSurah,
       playAyah: playAyah, toggleAudio: toggleAudio, stopAudio: stopAudio,
       isBookmarked: isBookmarked, toggleBookmark: toggleBookmark, removeBookmark: removeBookmark,
-      jumpToBookmark: jumpToBookmark, openVerseDetail: openVerseDetail, shareAyah: shareAyah,
-      save: save, savePrefs: savePrefs, finishSetup: finishSetup,
-      exportData: exportData, importData: importData, clearAll: clearAll
+      jumpToBookmark: jumpToBookmark, openVerseDetail: openVerseDetail,
+      openRandomVerse: openRandomVerse, shareAyah: shareAyah,
+      save: save, savePrefs: savePrefs, finishSetup: finishSetup, clearAll: clearAll
     };
   }
 }).mount('#app');
