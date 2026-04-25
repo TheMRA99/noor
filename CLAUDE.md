@@ -104,29 +104,34 @@ Motion tokens: `--ease-out-expo`, `--ease-in-out-expo`, `--ease-smooth`, `--ease
 ### Pages (`page` reactive ref)
 - `onboarding` / `setup-name` — first-run name capture
 - `home` — greeting, daily verse, random-verse + solace shortcuts, continue reading, quick entries, daily reflection
-- `quran` — surah list with search + Meccan/Medinan filter
-- `reader` — ayah-by-ayah Arabic + transliteration (toggle) + Khattab translation + audio + bookmark
+- `quran` — surah list with search + Meccan/Medinan filter — each row shows Arabic name, Latin name, italic gold *meaning*, revelation place, ayāt count
+- `reader` — ayah-by-ayah Arabic + transliteration (toggle) + Khattab translation + audio + bookmark; surah header shows the meaning prominently
 - `bookmarks` — saved verses
 - `names` — the 99 Names of Allah (grid)
-- `wisdom` — themed Quranic verses (patience / gratitude / mercy / faith / prayer / hope)
-- `hadith` — 25 selections from An-Nawawi's Forty Hadith with Arabic, transliteration, English, narrator, source
+- `wisdom` — themed Quranic verses (patience / gratitude / mercy / faith / prayer / hope / knowledge / humility)
+- `hadith` — 40 selections from An-Nawawi's Forty Hadith plus extensions, with Arabic, transliteration, English, narrator, source
 - `stories` — 25 prophets from Ādam to Muḥammad ﷺ — short summary + lesson
-- `solace` — verses for the heart, grouped by emotional state (anxiety / grief / hardship / forgiveness / trust / fear / gratitude / nearness)
-- `library` — entry tiles to Names · Wisdom · Hadith · Stories · Solace
-- `profile` — theme, reciter, name edit, clear data
+- `figures` — Companions, Women of Islam, Scholars (37 lives, category-chip filter)
+- `seerah` — 17 chronological events from the Prophet's ﷺ life (Year of the Elephant → Farewell Pilgrimage → his ﷺ passing)
+- `solace` — verses for the heart, grouped by emotional state (15 themes: anxiety / grief / hardship / forgiveness / trust / fear / gratitude / nearness / doubt / illness / parents / provision / sleep / guidance / patience)
+- `library` — entry tiles to Names · Wisdom · Hadith · Stories · Figures · Seerah · Solace
+- `profile` — theme, reciter, name edit, clear data, maker's signature
 
 ### Reactive state (all in the Vue `setup()` function)
 - `page`, `isDark`, `profile`, `bookmarks`, `lastPosition`
 - `currentSurah`, `verses`, `loadingVerses`, `versesError`
 - `surahSearch`, `revFilter`, `arabicSize`
-- `wisdomTheme`, `solaceTheme`
-- `selectedName`, `selectedVerse`, `selectedHadith`, `selectedStory`
+- `wisdomTheme`, `solaceTheme`, `figureCat`
+- `selectedName`, `selectedVerse`, `selectedHadith`, `selectedStory`, `selectedFigure`, `selectedSeerah`
 - `audio { isPlaying, currentAyah, label }`, `prefs { reciterId, showTranslit }`, `toast`
 
 ### Built-in data (no API needed)
-- `SURAHS_DB` (114), `ASMA_DB` (99), `DAILY_VERSES` (~30), `DAILY_REFLECTIONS` (10)
-- `WISDOM_THEMES` + `WISDOM_DB`, `RECITERS` (5)
-- `HADITH_DB` (25), `STORIES_DB` (25), `SOLACE_THEMES` (8) + `SOLACE_DB` (~30)
+- `SURAHS_DB` (114, with `meaning` field), `ASMA_DB` (99), `DAILY_VERSES` (~30), `DAILY_REFLECTIONS` (35)
+- `WISDOM_THEMES` (8 + All) + `WISDOM_DB` (44), `RECITERS` (5)
+- `HADITH_DB` (40), `STORIES_DB` (25)
+- `FIGURE_CATEGORIES` (3 + All) + `FIGURES_DB` (37: 9 companions, 15 women, 13 scholars)
+- `SEERAH_DB` (17 chronological events from the life of the Prophet ﷺ)
+- `SOLACE_THEMES` (15) + `SOLACE_DB` (~79)
 
 ### API & audio
 - Surahs + ayahs: `https://api.quran.com/api/v4/verses/by_chapter/{id}?translations=131&words=true&word_fields=text_uthmani,transliteration&fields=text_uthmani,verse_key,verse_number`

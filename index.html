@@ -117,6 +117,22 @@
       font-weight: 700;
       letter-spacing: -0.035em;
       line-height: 0.92;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: default;
+    }
+    /* Non-interactive editorial bits never show a text-caret cursor */
+    .kicker, .label, .mono-num, .f-ar, h1, h2, h3 {
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: default;
+    }
+    /* But the Quran reader's Arabic + translit + translation must remain selectable
+       so users can copy verses for sharing or notes */
+    .sacred-text, .translit-text, .verse-card p {
+      user-select: text;
+      -webkit-user-select: text;
+      cursor: text;
     }
     .display-xl { font-size: clamp(56px, 17vw, 120px); }
     .display-lg { font-size: clamp(40px, 12vw, 82px); }
@@ -732,8 +748,7 @@
 
       <!-- ================= ONBOARDING ================= -->
       <div v-if="page==='onboarding'" class="page-enter min-h-screen flex flex-col pt-6 pb-8">
-        <div class="flex items-center justify-between mb-10">
-          <span class="kicker" style="color:var(--text-3)">ISSUE / 2026</span>
+        <div class="flex items-center justify-end mb-10">
           <div class="toggle" :class="{'is-on':isDark}" @click="toggleTheme"><div class="knob"></div></div>
         </div>
 
@@ -943,9 +958,10 @@
             <span class="ed-num num">{{String(s.id).padStart(3,'0')}}</span>
             <div class="flex-1 min-w-0">
               <p class="f-display truncate" style="font-size:19px;font-weight:700;letter-spacing:-0.02em">{{s.nameEn}}</p>
-              <p class="text-xs mt-1 truncate" style="color:var(--text-3)">{{s.meaning.toUpperCase()}} <span class="mx-1" style="opacity:0.5">/</span> {{s.revelationPlace==='Mecca'?'MECCAN':'MEDINAN'}} <span class="mx-1" style="opacity:0.5">/</span> <span class="num">{{s.ayahCount}} AYĀT</span></p>
+              <p class="f-display mt-0.5" style="font-size:14px;font-weight:500;letter-spacing:-0.005em;color:var(--accent);font-style:italic">{{s.meaning}}</p>
+              <p class="kicker mt-1" style="color:var(--text-3);font-size:9px">{{s.revelationPlace==='Mecca'?'MECCAN':'MEDINAN'}} <span class="mx-1" style="opacity:0.5">·</span> <span class="num">{{s.ayahCount}} AYĀT</span></p>
             </div>
-            <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:22px">{{s.nameAr}}</p>
+            <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:24px">{{s.nameAr}}</p>
           </button>
           <p v-if="filteredSurahs.length===0" class="text-center py-12 kicker" style="color:var(--text-3)">NO MATCHES FOR "{{surahSearch.toUpperCase()}}"</p>
         </div>
@@ -965,7 +981,7 @@
             <div class="flex items-end justify-between mt-2">
               <div class="flex-1 min-w-0">
                 <h1 class="display display-md" style="color:var(--text)">{{currentSurah.nameEn}}<span class="text-accent">.</span></h1>
-                <p class="f-body mt-2" style="font-size:15px;color:var(--text-3)">{{currentSurah.meaning}}</p>
+                <p class="f-display mt-2" style="font-size:17px;font-weight:500;color:var(--accent);font-style:italic;letter-spacing:-0.005em">"{{currentSurah.meaning}}"</p>
               </div>
               <p class="big-num flex-shrink-0" style="font-size:clamp(64px,16vw,92px);line-height:0.82;color:var(--accent);opacity:0.8">{{String(currentSurah.id).padStart(3,'0')}}</p>
             </div>
@@ -1200,6 +1216,63 @@
         </div>
       </div>
 
+      <!-- ================= FIGURES OF ISLAM ================= -->
+      <div v-if="page==='figures'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">PEOPLE OF ISLAM / COMPANIONS · WOMEN · SCHOLARS</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Figures<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">رِجَالٌ وَنِسَاء</p>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-5" style="color:var(--text-3)">LIVES THAT SHAPED THE FAITH</p>
+
+        <!-- Category chips -->
+        <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
+          <button v-for="c in FIGURE_CATEGORIES" :key="c.id" @click="figureCat=c.id" class="chip" :class="{active:figureCat===c.id}">{{c.label.toUpperCase()}}</button>
+        </div>
+
+        <!-- Banner when one is selected -->
+        <div v-if="figureCat!=='all' && currentFigureCat" class="block-invert mb-6">
+          <p class="kicker" style="color:var(--accent)">{{currentFigureCat.kicker}}</p>
+          <h3 class="display display-md mt-2" style="color:var(--fg-invert)">{{currentFigureCat.label}}<span class="text-accent">.</span></h3>
+        </div>
+
+        <div class="space-y-3 stagger">
+          <button v-for="p in filteredFigures" :key="p.id" @click="selectedFigure=p" class="ed-row w-full text-left">
+            <span class="ed-num num">{{p.n}}</span>
+            <div class="flex-1 min-w-0">
+              <p class="f-display" style="font-size:18px;font-weight:700;letter-spacing:-0.02em;line-height:1.2">{{p.en}}</p>
+              <p class="text-xs mt-1" style="color:var(--text-3);line-height:1.3">{{p.title.toUpperCase()}}</p>
+              <p class="kicker mt-1" style="color:var(--text-4);font-size:9px">{{p.era}}</p>
+            </div>
+            <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:18px;text-align:right;max-width:120px">{{p.ar}}</p>
+          </button>
+          <p v-if="filteredFigures.length===0" class="text-center py-12 kicker" style="color:var(--text-3)">NO ENTRIES IN THIS CATEGORY</p>
+        </div>
+      </div>
+
+      <!-- ================= SEERAH ================= -->
+      <div v-if="page==='seerah'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">THE LIFE OF / THE PROPHET ﷺ</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Seerah<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلسِّيرَة</p>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-6" style="color:var(--text-3)">EVENTS FROM THE LIFE OF MUḤAMMAD ﷺ — IN ORDER</p>
+
+        <div class="space-y-3 stagger">
+          <button v-for="(e,ei) in SEERAH_DB" :key="e.id" @click="selectedSeerah=e" class="ed-row w-full text-left">
+            <span class="ed-num num">{{e.n}}</span>
+            <div class="flex-1 min-w-0">
+              <p class="f-display" style="font-size:18px;font-weight:700;letter-spacing:-0.02em;line-height:1.2">{{e.title}}</p>
+              <p class="kicker mt-1" style="color:var(--accent);font-size:10px">{{e.year}}</p>
+            </div>
+            <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:20px;text-align:right">{{e.ar}}</p>
+          </button>
+        </div>
+      </div>
+
       <!-- ================= SOLACE ================= -->
       <div v-if="page==='solace'" class="page-enter">
         <div class="masthead">
@@ -1287,8 +1360,20 @@
             <p class="tile-sub num">{{String(STORIES_DB.length).padStart(2,'0')}} MESSENGERS</p>
             <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
           </button>
+          <button @click="go('figures')" class="tile">
+            <p class="tile-index">05 / FIGURES</p>
+            <p class="tile-title">People<br>of Islam</p>
+            <p class="tile-sub num">{{String(FIGURES_DB.length).padStart(2,'0')}} LIVES</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('seerah')" class="tile">
+            <p class="tile-index">06 / SEERAH</p>
+            <p class="tile-title">Life of<br>the Prophet ﷺ</p>
+            <p class="tile-sub num">{{String(SEERAH_DB.length).padStart(2,'0')}} EVENTS</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
           <button @click="go('solace')" class="tile" style="grid-column:span 2">
-            <p class="tile-index">05 / SOLACE</p>
+            <p class="tile-index">07 / SOLACE</p>
             <p class="tile-title">For the<br>Heart<span class="text-accent">.</span></p>
             <p class="tile-sub num">VERSES BY EMOTION · ANXIETY · GRIEF · TRUST</p>
             <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
@@ -1345,7 +1430,35 @@
           CLEAR ALL DATA
         </button>
 
-        <div class="text-center mt-12 mb-4">
+        <!-- Maker's signature -->
+        <div class="mt-12 p-6 text-center" :style="{background:isDark?'linear-gradient(180deg,rgba(13,31,26,0.96),rgba(8,20,16,0.98))':'linear-gradient(180deg,rgba(245,240,225,0.98),rgba(238,230,210,0.96))',border:'1px solid '+(isDark?'rgba(232,201,121,0.10)':'rgba(15,76,58,0.08)'),borderRadius:4,boxShadow:isDark?'0 4px 24px rgba(0,0,0,0.4)':'0 2px 12px rgba(15,76,58,0.04)'}">
+          <!-- Thin rule top -->
+          <div class="mx-auto mb-4" :style="{width:'40px',height:'1px',background:isDark?'rgba(232,201,121,0.18)':'rgba(15,76,58,0.12)'}"></div>
+          <!-- Minimal crest with signature MA -->
+          <svg class="mx-auto mb-3" width="48" height="56" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="noor-crest-stroke" x1="0" y1="0" x2="0.5" y2="1">
+                <stop offset="0%" :stop-color="isDark?'rgba(232,201,121,0.55)':'rgba(15,76,58,0.35)'"/>
+                <stop offset="100%" :stop-color="isDark?'rgba(94,168,146,0.30)':'rgba(15,76,58,0.18)'"/>
+              </linearGradient>
+            </defs>
+            <!-- Shield outline — thin, understated -->
+            <path d="M60 8 L104 26 L104 60 Q104 96 60 126 Q16 96 16 60 L16 26 Z" fill="none" stroke="url(#noor-crest-stroke)" stroke-width="1.5"/>
+            <!-- MA monogram -->
+            <text x="60" y="82" text-anchor="middle" :fill="isDark?'rgba(232,201,121,0.75)':'rgba(15,76,58,0.7)'" font-size="46" font-family="'Space Grotesk','Arial Black',sans-serif" font-weight="900" letter-spacing="-2">MA</text>
+            <!-- Subtle underline flourish -->
+            <path d="M36 88 Q48 95 60 90 Q72 85 84 90" fill="none" :stroke="isDark?'rgba(232,201,121,0.25)':'rgba(15,76,58,0.20)'" stroke-width="0.8" stroke-linecap="round"/>
+          </svg>
+          <!-- Name — bold uppercase -->
+          <p class="mb-0.5" style="font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;" :style="{color:isDark?'rgba(245,240,225,0.55)':'rgba(15,76,58,0.55)'}">Muneer Ahmed</p>
+          <!-- House name — quiet -->
+          <p class="text-[7px] uppercase mb-2.5" style="letter-spacing:0.28em;" :style="{color:isDark?'rgba(232,201,121,0.30)':'rgba(15,76,58,0.30)'}">Ahmed Khaandaan</p>
+          <!-- Thin rule bottom -->
+          <div class="mx-auto mb-1.5" :style="{width:'24px',height:'1px',background:isDark?'rgba(232,201,121,0.12)':'rgba(15,76,58,0.10)'}"></div>
+          <p class="text-[7px] uppercase" style="letter-spacing:0.22em;" :style="{color:isDark?'rgba(232,201,121,0.30)':'rgba(15,76,58,0.30)'}">CRAFTED WITH NIYYAH</p>
+        </div>
+
+        <div class="text-center mt-8 mb-4">
           <div class="rule-gold w-16 mx-auto mb-4"></div>
           <p class="f-ar text-accent mb-2" style="font-size:24px;direction:rtl">نور</p>
           <p class="display f-display mb-2" style="font-size:20px;font-weight:700;letter-spacing:-0.02em;color:var(--text)">NOOR / V1.0</p>
@@ -1378,7 +1491,7 @@
     <!-- ================= BOTTOM NAV ================= -->
     <nav v-if="showHeader" class="glass fixed bottom-0 left-0 right-0 z-40" style="padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--rule)">
       <div class="max-w-xl mx-auto grid grid-cols-4">
-        <button v-for="(tab,ti) in [{id:'home',label:'HOME',match:['home']},{id:'quran',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','solace']},{id:'profile',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-3" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
+        <button v-for="(tab,ti) in [{id:'home',label:'HOME',match:['home']},{id:'quran',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace']},{id:'profile',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-3" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
           <span class="mono-num" style="font-size:10px;letter-spacing:0.14em;opacity:0.6">0{{ti+1}}</span>
           <span class="label mt-1" style="font-size:10px">{{tab.label}}</span>
           <div class="tab-underline mt-2" style="height:2px;width:24px;background:transparent"></div>
@@ -1508,6 +1621,65 @@
           <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
           <p class="f-display italic mb-6" style="font-size:18px;font-weight:500;color:var(--text-2);line-height:1.5">"{{selectedStory.lesson}}"</p>
           <button @click="selectedStory=null" class="btn btn-ghost btn-block">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Figure detail -->
+    <div v-if="selectedFigure" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedFigure=null">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
+        <div class="invert p-6 pb-7 relative">
+          <div class="flex items-center justify-between mb-5">
+            <span class="kicker" style="color:var(--accent)">{{selectedFigure.cat==='companion'?'COMPANION':selectedFigure.cat==='women'?'WOMAN OF ISLAM':'SCHOLAR'}} · <span class="num">{{selectedFigure.n}}</span></span>
+            <button @click="selectedFigure=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="f-ar" style="color:var(--accent);font-size:42px;direction:rtl;line-height:1.1;margin-bottom:14px;text-align:right">{{selectedFigure.ar}}</p>
+          <h3 class="display display-md" style="color:var(--fg-invert);font-size:32px">{{selectedFigure.en}}</h3>
+          <p class="kicker mt-3" style="color:rgba(245,240,225,0.7)">{{selectedFigure.title.toUpperCase()}}</p>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-2 gap-4 mb-5">
+            <div>
+              <p class="kicker mb-1" style="color:var(--text-3)">ERA</p>
+              <p class="f-body" style="font-size:13px;color:var(--text-2)">{{selectedFigure.era}}</p>
+            </div>
+            <div>
+              <p class="kicker mb-1" style="color:var(--text-3)">KNOWN AS</p>
+              <p class="f-body" style="font-size:13px;color:var(--text-2);font-style:italic">{{selectedFigure.kunya}}</p>
+            </div>
+          </div>
+          <div class="rule-gold w-16 mb-4"></div>
+          <p class="f-display leading-snug mb-5" style="font-size:16px;font-weight:500;letter-spacing:-0.005em;color:var(--text);line-height:1.65">{{selectedFigure.summary}}</p>
+          <div class="rule-soft mb-4"></div>
+          <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
+          <p class="f-display italic mb-6" style="font-size:17px;font-weight:500;color:var(--text-2);line-height:1.55">"{{selectedFigure.lesson}}"</p>
+          <button @click="selectedFigure=null" class="btn btn-ghost btn-block">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seerah event detail -->
+    <div v-if="selectedSeerah" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedSeerah=null">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
+        <div class="invert p-6 pb-7 relative">
+          <div class="flex items-center justify-between mb-5">
+            <span class="kicker" style="color:var(--accent)">SEERAH · <span class="num">{{selectedSeerah.n}}</span> · {{selectedSeerah.year}}</span>
+            <button @click="selectedSeerah=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="f-ar" style="color:var(--accent);font-size:44px;direction:rtl;line-height:1.1;margin-bottom:12px;text-align:right">{{selectedSeerah.ar}}</p>
+          <h3 class="display display-md" style="color:var(--fg-invert);font-size:30px">{{selectedSeerah.title}}</h3>
+        </div>
+        <div class="p-6">
+          <div class="rule-gold w-16 mb-4"></div>
+          <p class="f-display leading-snug mb-5" style="font-size:16px;font-weight:500;letter-spacing:-0.005em;color:var(--text);line-height:1.65">{{selectedSeerah.summary}}</p>
+          <div class="rule-soft mb-4"></div>
+          <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
+          <p class="f-display italic mb-6" style="font-size:17px;font-weight:500;color:var(--text-2);line-height:1.55">"{{selectedSeerah.lesson}}"</p>
+          <button @click="selectedSeerah=null" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
@@ -1806,7 +1978,32 @@ var DAILY_REFLECTIONS = [
   "Silence is often louder than dhikr spoken without presence of heart.",
   "Allah is closer to you than your jugular vein. What need of loneliness?",
   "The sweetest tears are those shed in sujood.",
-  "Trust the timing. The One who sends the rain knows when the soil is ready."
+  "Trust the timing. The One who sends the rain knows when the soil is ready.",
+  "What is for you will not pass you. What passes you was never yours.",
+  "The moon does not stop being beautiful because someone is sleeping.",
+  "Pray as if it were your last prayer — not your fastest.",
+  "He hears the prayer you have not yet found the words for.",
+  "If your heart is heavy, it is being prepared. Hearts only crack to receive light.",
+  "Quiet your phone. Loud your dhikr.",
+  "The one who placed the longing in you will not abandon you with it.",
+  "Provision is shared by Allah, never earned by anxiety.",
+  "Forgive — not because they deserve it, but because you do.",
+  "Every door you knocked on closed for a reason. The right one opens without effort.",
+  "He sees the prayer you mumble in the shower as clearly as the one in the masjid.",
+  "Worry is interest paid on a debt you may never owe.",
+  "Sins do not delay His mercy — they make it more astonishing when it arrives.",
+  "The Quran was revealed slowly. So is your healing.",
+  "Lower your gaze. Quiet your tongue. Soften your heart.",
+  "Tonight, before you sleep, name three blessings. Then sleep grateful.",
+  "When you cannot pray long — pray slowly.",
+  "The same Hand that wrote your trial wrote its end.",
+  "Subḥān Allāh while you walk. Alḥamdu lillāh while you eat. Allāhu Akbar when you remember.",
+  "Strangers in this world. Familiar in the next.",
+  "Make du'a for someone in secret today. The angel says: and for you the same.",
+  "There is a verse in the Quran written for tonight. Open it.",
+  "He left you breath enough to repent. That alone is mercy.",
+  "Plant the seed. Water the seed. The harvest is His business.",
+  "Every storm passes. Every winter ends. Every fajr comes."
 ];
 
 /* Wisdom */
@@ -2007,7 +2204,82 @@ var HADITH_DB = [
     arabic:'تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ لَكَ صَدَقَةٌ',
     translit:'Tabassumuka fī wajhi akhīka laka ṣadaqah.',
     english:'Your smile in your brother\'s face is charity — every day the sun rises is a chance for ṣadaqa.',
-    note:'Even your face can be a gift.'}
+    note:'Even your face can be a gift.'},
+  {n:'26', theme:'STRENGTH', narrator:'Abū Hurayra', source:'Muslim',
+    arabic:'لَيْسَ ٱلشَّدِيدُ بِٱلصُّرَعَةِ، إِنَّمَا ٱلشَّدِيدُ ٱلَّذِى يَمْلِكُ نَفْسَهُ عِنْدَ ٱلْغَضَبِ',
+    translit:'Laysa ash-shadīdu biṣ-ṣuraʿah, innamā ash-shadīdu alladhī yamliku nafsahu ʿinda al-ghaḍab.',
+    english:'The strong one is not the wrestler — the strong one is the one who controls themselves when angry.',
+    note:'Real strength is the pause before the reply.'},
+  {n:'27', theme:'NEIGHBOR', narrator:'Abū Hurayra', source:'Bukhārī & Muslim',
+    arabic:'مَا زَالَ جِبْرِيلُ يُوصِينِي بِٱلْجَارِ حَتَّى ظَنَنْتُ أَنَّهُ سَيُوَرِّثُهُ',
+    translit:'Mā zāla Jibrīlu yūṣīnī bil-jāri ḥattā ẓanantu annahu sa-yuwarrithuh.',
+    english:'Jibrīl kept advising me about the neighbor until I thought he would make him an heir.',
+    note:'A door away. A heart away. Both deserve your kindness.'},
+  {n:'28', theme:'DECEPTION', narrator:'Abū Hurayra', source:'Muslim',
+    arabic:'مَنْ غَشَّ فَلَيْسَ مِنِّي',
+    translit:'Man ghashsha fa-laysa minnī.',
+    english:'Whoever cheats is not from me.',
+    note:'The Prophet ﷺ said this when he found a merchant hiding wet grain beneath dry.'},
+  {n:'29', theme:'DUNYA', narrator:'Ibn ʿUmar', source:'Bukhārī',
+    arabic:'كُنْ فِي ٱلدُّنْيَا كَأَنَّكَ غَرِيبٌ أَوْ عَابِرُ سَبِيلٍ',
+    translit:'Kun fī ad-dunyā ka-annaka gharībun aw ʿābiru sabīl.',
+    english:'Live in this world as if you were a stranger, or a traveler passing through.',
+    note:'Hold the world the way a guest holds a borrowed cup.'},
+  {n:'30', theme:'GUIDANCE', narrator:'Abū Mūsā', source:'Bukhārī & Muslim',
+    arabic:'مَثَلُ مَا بَعَثَنِي ٱللَّهُ بِهِ مِنَ ٱلْهُدَى وَٱلْعِلْمِ كَمَثَلِ ٱلْغَيْثِ',
+    translit:'Mathalu mā baʿathanī Allāhu bihi min al-hudā wal-ʿilmi ka-mathali al-ghayth.',
+    english:'The guidance and knowledge with which Allah has sent me is like rain — fertile soil receives it and brings forth pasture, hard ground holds the water for others to drink.',
+    note:'Some learn. Some teach. Some do both.'},
+  {n:'31', theme:'GENTLENESS', narrator:'ʿĀʾisha', source:'Muslim',
+    arabic:'إِنَّ ٱللَّهَ رَفِيقٌ يُحِبُّ ٱلرِّفْقَ فِي ٱلْأَمْرِ كُلِّهِ',
+    translit:'Inna Allāha rafīqun yuḥibbu ar-rifqa fī al-amri kullih.',
+    english:'Allah is gentle and loves gentleness in every matter.',
+    note:'Bring softness to the conversation, even the difficult one.'},
+  {n:'32', theme:'CHILDREN', narrator:'Abū Hurayra', source:'Bukhārī & Muslim',
+    arabic:'لَيْسَ مِنَّا مَنْ لَمْ يَرْحَمْ صَغِيرَنَا وَيُوَقِّرْ كَبِيرَنَا',
+    translit:'Laysa minnā man lam yarḥam ṣaghīranā wa yuwaqqir kabīranā.',
+    english:'They are not from us who do not show mercy to our young and respect to our old.',
+    note:'Two ends of life — both deserve gentleness.'},
+  {n:'33', theme:'MOTHERHOOD', narrator:'Abū Hurayra', source:'Bukhārī & Muslim',
+    arabic:'ٱلْجَنَّةُ تَحْتَ أَقْدَامِ ٱلْأُمَّهَاتِ',
+    translit:'Al-jannatu taḥta aqdāmi al-ummahāt.',
+    english:'Paradise lies beneath the feet of mothers.',
+    note:'A man asked the Prophet ﷺ: who deserves my best companionship? He said: your mother. Then? Your mother. Then? Your mother. Then? Your father.'},
+  {n:'34', theme:'KNOWLEDGE', narrator:'Anas', source:'Ibn Mājah',
+    arabic:'طَلَبُ ٱلْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ',
+    translit:'Ṭalabu al-ʿilmi farīḍatun ʿalā kulli muslim.',
+    english:'Seeking knowledge is an obligation upon every Muslim.',
+    note:'A book a week. A page a night. Begin where you are.'},
+  {n:'35', theme:'DUʿĀ', narrator:'Anas', source:'Tirmidhī',
+    arabic:'ٱلدُّعَاءُ مُخُّ ٱلْعِبَادَةِ',
+    translit:'Ad-duʿāʾu mukhkhu al-ʿibādah.',
+    english:'Supplication is the marrow of worship.',
+    note:'Not the loudest part — the deepest.'},
+  {n:'36', theme:'MERCY', narrator:'ʿAbdullāh ibn ʿAmr', source:'Tirmidhī (ḥasan ṣaḥīḥ)',
+    arabic:'ٱلرَّاحِمُونَ يَرْحَمُهُمُ ٱلرَّحْمَٰنُ',
+    translit:'Ar-rāḥimūna yarḥamuhumu ar-Raḥmān.',
+    english:'The merciful — the Most Merciful has mercy upon them. Show mercy to those on earth, and the One in the heavens will show mercy to you.',
+    note:'Mercy moves in circles. Begin one.'},
+  {n:'37', theme:'WORDS', narrator:'Bilāl ibn al-Ḥārith', source:'Mālik / Tirmidhī',
+    arabic:'إِنَّ ٱلرَّجُلَ لَيَتَكَلَّمُ بِٱلْكَلِمَةِ مِنْ رِضْوَانِ ٱللَّهِ',
+    translit:'Inna ar-rajula la-yatakallamu bil-kalimati min riḍwāni Allāh.',
+    english:'A man speaks a word pleasing to Allah — without realizing how far it reaches — and Allah raises him by it. And another speaks a word displeasing to Him, by which he sinks.',
+    note:'A sentence can be a ladder. Or a pit. Choose.'},
+  {n:'38', theme:'PRESENCE', narrator:'Abū Hurayra', source:'Bukhārī & Muslim',
+    arabic:'مَنْ كَانَ يُؤْمِنُ بِٱللَّهِ وَٱلْيَوْمِ ٱلْآخِرِ فَلْيُكْرِمْ ضَيْفَهُ',
+    translit:'Man kāna yuʾminu billāhi wal-yawmi al-ākhiri fal-yukrim ḍayfah.',
+    english:'Whoever believes in Allah and the Last Day, let them honor their guest.',
+    note:'A guest in your home. A guest in your time.'},
+  {n:'39', theme:'LOVE', narrator:'Abū Hurayra', source:'Muslim',
+    arabic:'لَا تَدْخُلُونَ ٱلْجَنَّةَ حَتَّى تُؤْمِنُوا، وَلَا تُؤْمِنُوا حَتَّى تَحَابُّوا',
+    translit:'Lā tadkhulūna al-jannata ḥattā tuʾminū, wa lā tuʾminū ḥattā taḥābbū.',
+    english:'You will not enter Paradise until you believe, and you will not believe until you love one another. Shall I guide you to something — when you do it, you will love one another? Spread peace among you.',
+    note:'Salām — said freely — opens hearts.'},
+  {n:'40', theme:'DESTINY', narrator:'Ibn ʿAbbās', source:'Tirmidhī',
+    arabic:'وَٱعْلَمْ أَنَّ مَا أَصَابَكَ لَمْ يَكُنْ لِيُخْطِئَكَ، وَمَا أَخْطَأَكَ لَمْ يَكُنْ لِيُصِيبَكَ',
+    translit:'Wāʿlam anna mā aṣābaka lam yakun li-yukhṭiʾaka, wa mā akhṭaʾaka lam yakun li-yuṣībaka.',
+    english:'Know — what reaches you was never going to miss you. What missed you was never going to reach you.',
+    note:'Your share is yours. The rest was never yours to lose.'}
 ];
 
 /* =================================================================
@@ -2118,6 +2390,233 @@ var STORIES_DB = [
 ];
 
 /* =================================================================
+   FIGURES — Companions, scholars, and women whose lives shaped Islam.
+   Brief, reverent biographies. Honorifics: RA (raḍiya Allāhu ʿanhu/hā)
+   for companions; rḥ (raḥimahu Allāh) for later scholars.
+   ================================================================= */
+var FIGURE_CATEGORIES = [
+  {id:'all',       label:'All',        kicker:'EVERYONE'},
+  {id:'companion', label:'Companions', kicker:'THE ṢAḤĀBA · GOLDEN GENERATION'},
+  {id:'women',     label:'Women',      kicker:'WOMEN OF ISLAM'},
+  {id:'scholar',   label:'Scholars',   kicker:'IMĀMS · MUḤADDITHŪN · SAGES'}
+];
+
+var FIGURES_DB = [
+  /* COMPANIONS */
+  {id:'abubakr', cat:'companion', n:'01', ar:'أَبُو بَكْر ٱلصِّدِّيق', en:'Abū Bakr aṣ-Ṣiddīq (RA)', title:'The First Caliph · The Truthful',
+    era:'c. 573 – 634 CE', kunya:'aṣ-Ṣiddīq — the affirmer of truth',
+    summary:'A wealthy Meccan merchant, the first free man to accept Islam. The Prophet\'s ﷺ closest companion — his companion in the cave during the Hijrah (mentioned in Qurʾān 9:40). He freed Bilāl from slavery and gave away his wealth for the religion. After the Prophet ﷺ passed, he held the community together with the words: "Whoever worshipped Muḥammad — Muḥammad has died. Whoever worships Allah — Allah is alive and never dies." Compiled the first written muṣḥaf.',
+    lesson:'Truthfulness is its own kingdom.'},
+  {id:'umar', cat:'companion', n:'02', ar:'عُمَر ٱبْن ٱلْخَطَّاب', en:'ʿUmar ibn al-Khaṭṭāb (RA)', title:'The Second Caliph · al-Fārūq',
+    era:'c. 584 – 644 CE', kunya:'al-Fārūq — the one who distinguishes truth from falsehood',
+    summary:'Once a fierce opponent of Islam, he set out to kill the Prophet ﷺ — and instead, hearing his sister recite the Qurʾān, accepted faith. The Prophet ﷺ said: "If there were a prophet after me, it would be ʿUmar." His ten years as caliph saw the conquest of Syria, Egypt, and Persia, the founding of the Islamic calendar, the night patrols of his city, and the building of the first treasury and judicial system. Walked Jerusalem in a patched cloak, leading his servant\'s camel.',
+    lesson:'A just leader is the shadow of God on earth.'},
+  {id:'uthman', cat:'companion', n:'03', ar:'عُثْمَان ٱبْن عَفَّان', en:'ʿUthmān ibn ʿAffān (RA)', title:'The Third Caliph · Dhū an-Nūrayn',
+    era:'c. 576 – 656 CE', kunya:'Dhū an-Nūrayn — possessor of the two lights',
+    summary:'A man of immense wealth and immense modesty. Married two of the Prophet\'s ﷺ daughters in turn — hence Dhū an-Nūrayn. Bought the well of Rūma and gave it freely to the people of Madīna. Funded the Army of Hardship at Tabūk. As caliph, he commissioned the standardized text of the Qurʾān — the muṣḥaf you read today is from the ʿUthmānic codex. Killed in his home by rebels, the Qurʾān open in his lap.',
+    lesson:'Generosity is faith made visible.'},
+  {id:'ali', cat:'companion', n:'04', ar:'عَلِيّ ٱبْن أَبِي طَالِب', en:'ʿAlī ibn Abī Ṭālib (RA)', title:'The Fourth Caliph · The Lion of Allah',
+    era:'c. 600 – 661 CE', kunya:'Asad Allāh — the Lion of Allah',
+    summary:'Cousin of the Prophet ﷺ, raised in his household. The first child to accept Islam. Slept in the Prophet\'s ﷺ bed during the Hijrah to mislead the assassins. Married Fāṭima, the Prophet\'s ﷺ daughter — from them came Ḥasan and Ḥusayn. A warrior at Badr, Uḥud, Khaybar — the gate of Khaybar, which forty men could not move, he lifted alone. Equally a scholar, his sayings fill volumes. The Prophet ﷺ called him "the gate to the city of knowledge."',
+    lesson:'Courage and learning belong to the same heart.'},
+  {id:'khalid', cat:'companion', n:'05', ar:'خَالِد ٱبْن ٱلْوَلِيد', en:'Khālid ibn al-Walīd (RA)', title:'The Sword of Allah Unsheathed',
+    era:'c. 592 – 642 CE', kunya:'Sayf Allāh al-Maslūl — the Drawn Sword of Allah',
+    summary:'The greatest military mind of his age. He fought against the Muslims at Uḥud and turned the tide of that battle. After his conversion, he never lost a battle — over a hundred engagements against Byzantium and Persia. At Yarmūk, he routed an army several times the size of his own. The Prophet ﷺ named him Sayf Allāh, "the Sword of Allah." When ʿUmar dismissed him from command — to teach the people not to worship a man — Khālid obeyed without complaint and continued fighting as a soldier in the ranks.',
+    lesson:'The strongest sword is the one that obeys the hand that holds it.'},
+  {id:'bilal', cat:'companion', n:'06', ar:'بِلَال ٱبْن رَبَاح', en:'Bilāl ibn Rabāḥ (RA)', title:'The First Muezzin',
+    era:'c. 580 – 640 CE', kunya:'Muʾadhdhin Rasūl Allāh — the caller of the Messenger',
+    summary:'An Abyssinian slave, tortured under the desert sun with a boulder on his chest, refusing to renounce his faith — repeating only "Aḥad, Aḥad" (One, One). Abū Bakr bought him and freed him. The Prophet ﷺ chose him as the first muezzin of Islam — his voice carrying the call to prayer over the rooftops of Madīna for the first time. After the Prophet ﷺ passed, Bilāl could not bring himself to give the adhān again. Years later, visiting the Prophet\'s ﷺ grave, ʿUmar asked him to call the prayer once more. He climbed the minaret, his voice broke at "Ashhadu anna Muḥammadan rasūl Allāh" — and the city wept.',
+    lesson:'A free heart is louder than any chain.'},
+  {id:'salman', cat:'companion', n:'07', ar:'سَلْمَان ٱلْفَارِسِيّ', en:'Salmān al-Fārisī (RA)', title:'The Persian Seeker',
+    era:'c. 568 – 656 CE', kunya:'Salmān minnā ahl al-bayt — Salmān is from us, the family',
+    summary:'Born in Persia to a Zoroastrian family. Searched across faiths — visiting monasteries in Syria, traveling with caravans — until a monk on his deathbed told him a prophet would soon arise in Arabia. Sold into slavery on the way, he reached Madīna and recognized the signs the monk had described. He bought his freedom with the help of the Muslims. At the Battle of the Trench, he proposed digging a defensive ditch — a Persian tactic that saved Madīna. The Prophet ﷺ said: "Salmān is from us, the people of the house."',
+    lesson:'The truth knows where to lead the seeker.'},
+  {id:'sumayya', cat:'women', n:'08', ar:'سُمَيَّة بِنْت خَيَّاط', en:'Sumayya bint Khayyāṭ (RA)', title:'First Martyr of Islam',
+    era:'died c. 615 CE', kunya:'Shahīdat al-Islām al-ūlā — the first martyr of Islam',
+    summary:'A woman of low standing in Meccan society — a slave woman, mother of ʿAmmār. When she and her family accepted Islam, Abū Jahl tortured them in public to force them to recant. She would not. He killed her with a spear. She was the first soul to die for the faith — before any battle, before any commandment of jihād. Her son ʿAmmār was a beloved companion the rest of his life.',
+    lesson:'Conviction outlasts the body.'},
+  {id:'muadh', cat:'companion', n:'09', ar:'مُعَاذ ٱبْن جَبَل', en:'Muʿādh ibn Jabal (RA)', title:'Most Knowledgeable in Halāl & Ḥarām',
+    era:'c. 605 – 639 CE', kunya:'aʿlamu ummatī bil-ḥalāli wal-ḥarām — most learned of my nation in lawful and unlawful',
+    summary:'A young man of striking intellect. The Prophet ﷺ said: "The most knowledgeable of my community in what is lawful and unlawful is Muʿādh." Sent to Yemen as a teacher and judge. When asked how he would judge, he answered: "By the Book of Allah." "And if you do not find it there?" "By the Sunnah." "And if you do not find it there?" "I will reason with my own judgment." The Prophet ﷺ struck his chest in approval.',
+    lesson:'Knowledge is honored when paired with humility before its limits.'},
+  {id:'saadwaqqas', cat:'companion', n:'10', ar:'سَعْد ٱبْن أَبِي وَقَّاص', en:'Saʿd ibn Abī Waqqāṣ (RA)', title:'The First Archer of Islam',
+    era:'c. 595 – 674 CE', kunya:'awwalu man ramā bi-sahmin fī sabīli Allāh — the first to shoot an arrow in the path of Allah',
+    summary:'One of the first ten promised Paradise. The first man to shed blood in defense of Islam. Commander at the Battle of al-Qādisiyya, where the small Muslim army defeated the empire of Persia. Founded the city of Kūfa in Iraq. The Prophet ﷺ once said of him at Uḥud: "Shoot, Saʿd! May my mother and father be ransomed for you" — the only person to whom he ﷺ spoke these words.',
+    lesson:'Some doors open with prayer. Others, with the bow drawn quietly at dawn.'},
+
+  /* WOMEN */
+  {id:'khadija', cat:'women', n:'11', ar:'خَدِيجَة بِنْت خُوَيْلِد', en:'Khadīja bint Khuwaylid (RA)', title:'The First Believer',
+    era:'c. 555 – 619 CE', kunya:'Umm al-Muʾminīn — Mother of the Believers',
+    summary:'A noblewoman of Quraysh, a successful merchant who employed the young Muḥammad ﷺ. She proposed marriage to him; he was twenty-five, she was forty. Together they had Fāṭima and others. When the first revelation came in the cave of Ḥirāʾ and he returned trembling, she wrapped him in her cloak and said: "By Allah, He will never disgrace you. You uphold ties of kinship, you bear the burden of the weak, you give to the destitute, you honor your guests, you stand up for what is right." She was the first to believe — before any other soul. The Prophet ﷺ never married another woman in her lifetime, and grieved her until his last day.',
+    lesson:'The first to believe in you carries you when you cannot carry yourself.'},
+  {id:'aisha', cat:'women', n:'12', ar:'عَائِشَة بِنْت أَبِي بَكْر', en:'ʿĀʾisha bint Abī Bakr (RA)', title:'Mother of the Believers · Scholar',
+    era:'c. 614 – 678 CE', kunya:'Umm al-Muʾminīn · al-Ṣiddīqa bint aṣ-Ṣiddīq',
+    summary:'Daughter of Abū Bakr. Wife of the Prophet ﷺ. The most learned woman in Islamic history — over 2,210 hadiths reported on her authority. Companions, including the senior ones, came to her with their questions. She taught fiqh, tafsīr, medicine, poetry, lineage, and Arabic. The Prophet ﷺ said her superiority to other women was like the superiority of tharīd (a beloved dish) to all other foods. Lived to see four caliphates; survived to teach for nearly fifty years after his ﷺ passing.',
+    lesson:'A woman\'s mind, set free, illuminates a thousand years.'},
+  {id:'fatima', cat:'women', n:'13', ar:'فَاطِمَة ٱلزَّهْرَاء', en:'Fāṭima az-Zahrāʾ (RA)', title:'Daughter of the Prophet ﷺ',
+    era:'c. 605 – 632 CE', kunya:'az-Zahrāʾ — the radiant · Sayyidat Nisāʾ al-ʿĀlamīn',
+    summary:'The Prophet\'s ﷺ youngest and most beloved daughter. He stood when she entered, kissed her forehead, and called her "a piece of me." She married ʿAlī and bore Ḥasan and Ḥusayn — the only continuing line of the Prophet ﷺ. Their household was so simple that her hands were calloused from grinding flour. The Prophet ﷺ taught her: "Say SubḥānAllāh thirty-three times, Alḥamdulillāh thirty-three times, Allāhu Akbar thirty-four times before sleep — it is better than a servant." She passed away six months after her father, the only one of his children to survive him.',
+    lesson:'Faith gleams brightest in the simplest home.'},
+  {id:'asma', cat:'women', n:'14', ar:'أَسْمَاء بِنْت أَبِي بَكْر', en:'Asmāʾ bint Abī Bakr (RA)', title:'She of the Two Belts',
+    era:'c. 595 – 692 CE', kunya:'Dhāt an-Niṭāqayn — possessor of the two belts',
+    summary:'Daughter of Abū Bakr, sister of ʿĀʾisha. During the Hijrah, she carried food up the mountain to the Prophet ﷺ and her father in the cave of Thawr. She tore her belt in two — half to tie the food, half to wear — and the Prophet ﷺ named her "she of the two belts." Mother of ʿAbdullāh ibn Zubayr. Lived to over a hundred — and at the end, when her son ʿAbdullāh was about to face certain death defending Mecca, she said to him: "If you stand for the truth, do not fear the fall."',
+    lesson:'Sometimes courage is a torn cloth and a steep climb.'},
+  {id:'nusayba', cat:'women', n:'15', ar:'نُسَيْبَة بِنْت كَعْب', en:'Nusayba bint Kaʿb (RA)', title:'Defender of the Prophet ﷺ at Uḥud',
+    era:'died c. 634 CE', kunya:'Umm ʿUmāra · al-Mujāhida',
+    summary:'When the Muslims were routed at Uḥud and most of the companions were scattered, she stood beside the Prophet ﷺ with a sword and a shield. She took thirteen wounds defending him. The Prophet ﷺ said: "I did not turn left or right but I saw her fighting in front of me." She fought again at Ḥunayn, at Yamāma — where she lost her hand and her son. She is the woman who showed that the call to defend faith and household belongs to every soul.',
+    lesson:'The shield is not a man\'s alone.'},
+  {id:'fihriyya', cat:'women', n:'16', ar:'فَاطِمَة ٱلْفِهْرِيَّة', en:'Fāṭima al-Fihriyya (rḥ)', title:'Founder of the World\'s Oldest University',
+    era:'c. 800 – 880 CE', kunya:'Umm al-Banīn — mother of the children (of knowledge)',
+    summary:'Born in Qayrawān (Tunisia), she emigrated with her family to Fes, Morocco. When her father, a wealthy merchant, died and left her a substantial inheritance, she chose to spend it building al-Qarawiyyīn — a mosque and university — in 859 CE. Her sister Maryam founded the al-Andalusiyyīn mosque the same year. Al-Qarawiyyīn is recognized by UNESCO and Guinness as the oldest continuously operating degree-granting university in the world — older than Oxford, older than Bologna. Ibn Khaldūn taught there. Pope Sylvester II is said to have studied there.',
+    lesson:'The wealth a woman leaves to learning outlives empires.'},
+  {id:'rabia', cat:'women', n:'17', ar:'رَابِعَة ٱلْعَدَوِيَّة', en:'Rābiʿa al-ʿAdawiyya (rḥ)', title:'The Saint of Basra',
+    era:'c. 717 – 801 CE', kunya:'al-Qaddīsa — the saintly one',
+    summary:'Born poor in Basra, sold into slavery in childhood. Her master, finding her in prayer surrounded by light, freed her. She refused all marriage proposals — even from the governor of Basra — saying her heart was already taken. She is famed for the prayer: "O Allah, if I worship You out of fear of Hell, burn me in it. If I worship You hoping for Paradise, exclude me from it. But if I worship You for Your own sake, do not withhold from me Your eternal beauty." She brought tears to scholars who came to debate her.',
+    lesson:'Worship Him because He is — not because of what is given or feared.'},
+
+  /* SCHOLARS */
+  {id:'abuhanifa', cat:'scholar', n:'18', ar:'أَبُو حَنِيفَة', en:'Imām Abū Ḥanīfa (rḥ)', title:'al-Imām al-Aʿẓam · Founder of Ḥanafī school',
+    era:'c. 699 – 767 CE', kunya:'al-Imām al-Aʿẓam — the great Imām',
+    summary:'Born in Kufa to a Persian silk merchant family. He continued the trade while studying with the senior tābiʿīn. His school of jurisprudence emphasizes reasoning (qiyās) and the public good. He refused official judgeships under the Umayyads and Abbasids — preferring imprisonment to compromising independence. Tortured and imprisoned by the Caliph al-Manṣūr until his death. Three of the four schools of Sunni law trace their early teachers back to him.',
+    lesson:'The free scholar is more terrifying to tyrants than any army.'},
+  {id:'malik', cat:'scholar', n:'19', ar:'مَالِك ٱبْن أَنَس', en:'Imām Mālik ibn Anas (rḥ)', title:'Imām of Madīna · Author of al-Muwaṭṭaʾ',
+    era:'c. 711 – 795 CE', kunya:'Imām Dār al-Hijra — Imām of the City of the Hijrah',
+    summary:'Born and lived nearly his entire life in Madīna, the city of the Prophet ﷺ. He held that the practice (ʿamal) of the people of Madīna was itself a living transmission of the Sunna. His al-Muwaṭṭaʾ is one of the earliest collections of hadith and law. The Caliph offered to make it the law of the empire; he refused, saying scholars in other lands had their own ijtihād. Flogged for issuing a fatwā unfavorable to the ruler — he never wavered.',
+    lesson:'The grass of the Prophet\'s ﷺ city remembers more than the libraries of distant capitals.'},
+  {id:'shafii', cat:'scholar', n:'20', ar:'مُحَمَّد ٱبْن إِدْرِيس ٱلشَّافِعِيّ', en:'Imām ash-Shāfiʿī (rḥ)', title:'Founder of Uṣūl al-Fiqh',
+    era:'767 – 820 CE', kunya:'Nāṣir as-Sunna — supporter of the Sunna',
+    summary:'Born in Gaza, raised in poverty in Makkah by his widowed mother. Memorized the Qurʾān at seven, the Muwaṭṭaʾ at ten. Studied with Imām Mālik in Madīna, then with the students of Abū Ḥanīfa in Iraq. Wrote ar-Risāla — the first systematic work of Islamic legal theory. His school synthesizes Mālikī tradition with Ḥanafī reasoning. Spent his final years in Egypt; his tomb in Cairo still draws visitors.',
+    lesson:'A method matters as much as the conclusion it reaches.'},
+  {id:'ahmad', cat:'scholar', n:'21', ar:'أَحْمَد ٱبْن حَنْبَل', en:'Imām Aḥmad ibn Ḥanbal (rḥ)', title:'Imām of Hadith · Founder of Ḥanbalī school',
+    era:'780 – 855 CE', kunya:'Imām Ahl as-Sunna — Imām of the People of the Sunna',
+    summary:'Born in Baghdad. Compiled al-Musnad, with over 27,000 hadith. During the miḥna — the inquisition under three Abbasid caliphs — he refused to affirm the doctrine that the Qurʾān was created. Imprisoned, flogged in public, he held the line. When the policy was reversed, he refused honors and gifts from the new caliph. He said: "The people need a scholar who, when the truth is on one side and the world on the other, chooses the truth."',
+    lesson:'A scholar without a price keeps his community honest.'},
+  {id:'bukhari', cat:'scholar', n:'22', ar:'مُحَمَّد ٱبْن إِسْمَاعِيل ٱلْبُخَارِيّ', en:'Imām al-Bukhārī (rḥ)', title:'Compiler of Ṣaḥīḥ al-Bukhārī',
+    era:'810 – 870 CE', kunya:'Amīr al-Muʾminīn fī al-Ḥadīth — Commander of the Faithful in Hadith',
+    summary:'Born in Bukhārā (modern Uzbekistan). Began memorizing hadith at eleven. Traveled across the Islamic world for sixteen years, sifting around 600,000 narrations to select 7,275 (with repetitions) for his Ṣaḥīḥ — the most rigorously authenticated book after the Qurʾān. He is said to have prayed two rakʿas before recording every single hadith. His work has been continuously studied without break for 1,200 years.',
+    lesson:'Patience and prayer turn lifetimes into a single book that lasts forever.'},
+  {id:'muslim', cat:'scholar', n:'23', ar:'مُسْلِم ٱبْن ٱلْحَجَّاج', en:'Imām Muslim (rḥ)', title:'Compiler of Ṣaḥīḥ Muslim',
+    era:'c. 821 – 875 CE', kunya:'al-Naysābūrī',
+    summary:'Born in Naysābūr (modern Iran). A direct student of al-Bukhārī. His Ṣaḥīḥ is considered second only to al-Bukhārī\'s in authenticity — and structurally, many scholars find it superior. Together the two are called "aṣ-Ṣaḥīḥān" — the two authentic ones — and they form the bedrock of Sunni hadith literature.',
+    lesson:'Standing in the shadow of a teacher does not diminish the light of the student.'},
+  {id:'nawawi', cat:'scholar', n:'24', ar:'يَحْيَى ٱبْن شَرَف ٱلنَّوَوِيّ', en:'Imām an-Nawawī (rḥ)', title:'Author of Riyāḍ aṣ-Ṣāliḥīn & the Forty Hadith',
+    era:'1233 – 1277 CE', kunya:'Muḥyī ad-Dīn — reviver of the religion',
+    summary:'Born in the Syrian village of Nawā. Studied in Damascus, where he wrote prolifically despite a short life of forty-four years — never married, slept little, ate sparingly. His works became standard reading across the Muslim world: Riyāḍ aṣ-Ṣāliḥīn, al-Adhkār, the Arbaʿīn (Forty Hadith), and his commentary on Ṣaḥīḥ Muslim. He spoke truth to the Mamluk Sultan over treatment of the people, and was exiled briefly for it.',
+    lesson:'A short life, used well, outlives long lives that drift.'},
+  {id:'ghazali', cat:'scholar', n:'25', ar:'أَبُو حَامِد ٱلْغَزَالِيّ', en:'Imām al-Ghazālī (rḥ)', title:'Ḥujjat al-Islām · The Proof of Islam',
+    era:'1058 – 1111 CE', kunya:'Ḥujjat al-Islām — the Proof of Islam',
+    summary:'Born in Ṭūs (modern Iran). Became, at thirty-three, the head of the most prestigious madrasa in Baghdad — the Niẓāmiyya. At the height of his fame, he suffered a spiritual crisis, left everything, and wandered for ten years in seclusion. From that crucible came Iḥyāʾ ʿUlūm ad-Dīn — "The Revival of the Religious Sciences" — perhaps the most influential book of Islamic spirituality ever written. He returned to teach in his hometown until his death.',
+    lesson:'The deepest learning sometimes begins when the crowd disappears.'},
+  {id:'ibntaymiyya', cat:'scholar', n:'26', ar:'ٱبْن تَيْمِيَّة', en:'Ibn Taymiyya (rḥ)', title:'Shaykh al-Islām',
+    era:'1263 – 1328 CE', kunya:'Shaykh al-Islām',
+    summary:'Born in Ḥarrān, fled with his family to Damascus when the Mongols invaded. A scholar of unusual breadth — fiqh, kalām, hadith, philosophy, history. He led troops at the Battle of Shaqḥab against the Mongols when the rulers wavered, declaring jihād a duty when the homeland was attacked. Imprisoned several times for his rulings. Wrote some of his most enduring works in prison — until his pen and paper were taken from him. He died in the citadel of Damascus, and the city poured into the streets at his funeral.',
+    lesson:'Truth in chains is louder than falsehood at court.'},
+  {id:'ibnqayyim', cat:'scholar', n:'27', ar:'ٱبْن ٱلْقَيِّم', en:'Ibn al-Qayyim al-Jawziyya (rḥ)', title:'The Heart\'s Physician',
+    era:'1292 – 1350 CE', kunya:'Shams ad-Dīn — sun of the religion',
+    summary:'Born in Damascus. The greatest student of Ibn Taymiyya — imprisoned alongside his teacher. His writings turn law into something the heart can taste: Madārij as-Sālikīn (the stations of the wayfarers), Zād al-Maʿād (the prophetic way of life), al-Fawāʾid (gleanings from his daily reflection). He combined the rigor of the jurist with the breath of the gnostic.',
+    lesson:'The law is the path; the heart is the traveler.'},
+  {id:'ibnsina', cat:'scholar', n:'28', ar:'ٱبْن سِينَا', en:'Ibn Sīnā / Avicenna (rḥ)', title:'Polymath · Physician · Philosopher',
+    era:'980 – 1037 CE', kunya:'al-Shaykh al-Raʾīs — the master prince',
+    summary:'Born near Bukhārā, he memorized the Qurʾān by ten and mastered the medicine of his age before sixteen. His Canon of Medicine (al-Qānūn fī aṭ-Ṭibb) was the standard medical textbook in Europe and the Islamic world for over six hundred years. He wrote on logic, metaphysics, music, geology, astronomy. A devout Muslim who understood the world as the wisdom-script of its Maker.',
+    lesson:'The God who reveals the Qurʾān also wrote the body — read both.'},
+  {id:'ibnkhaldun', cat:'scholar', n:'29', ar:'ٱبْن خَلْدُون', en:'Ibn Khaldūn (rḥ)', title:'Father of Sociology & Historiography',
+    era:'1332 – 1406 CE', kunya:'Walī ad-Dīn',
+    summary:'Born in Tunis to a family of Andalusian origin. Statesman, judge, ambassador. After a turbulent political life, he retreated to a hilltop fort in Algeria and wrote his Muqaddima — the introduction to his universal history — laying down what we now call sociology, economics, and the philosophy of history six centuries before those fields were named in Europe. Met Tamerlane outside Damascus and bargained for the city. Died as Chief Mālikī judge in Cairo.',
+    lesson:'Civilizations rise on solidarity and fall on luxury — read it before you live it.'},
+  {id:'rumi', cat:'scholar', n:'30', ar:'جَلَال ٱلدِّين ٱلرُّومِيّ', en:'Mawlānā Rūmī (rḥ)', title:'The Poet of the Path',
+    era:'1207 – 1273 CE', kunya:'Mawlānā — our master',
+    summary:'Born in Balkh (modern Afghanistan), his family fled west ahead of the Mongol invasions, eventually settling in Konya, in modern Turkey. A jurist and teacher in his thirties — until he met the wandering dervish Shams of Tabrīz, who changed everything. From that meeting came the Mathnawī, six volumes of poetry called by some "the Qurʾān in Persian." He wrote that the cure for the soul was the polish of remembrance, the bitterness of separation, and the sweetness of return.',
+    lesson:'The reed cut from the reed-bed weeps because it remembers home.'},
+
+  /* WOMEN — extended */
+  {id:'maryam', cat:'women', n:'31', ar:'مَرْيَم بِنْت عِمْرَان', en:'Maryam bint ʿImrān (AS)', title:'The Mother of ʿĪsā · The Pure',
+    era:'1st century BCE', kunya:'aṣ-Ṣiddīqa — the truthful',
+    summary:'The only woman named in the Qurʾān — and an entire surah, the nineteenth, bears her name. Born to ʿImrān and Ḥanna, vowed to the temple before her birth, raised by the prophet Zakariyya, who found her chamber miraculously stocked with fruit out of season. She is one of four perfect women, according to the Prophet ﷺ. When she was visited by the angel Jibrīl with the news of a son without a father, she retreated alone to give birth beneath a date palm. When her people accused her, she pointed to the infant ʿĪsā in the cradle — and he spoke from the cradle, declaring himself a servant of Allah given the Book and made a prophet (Qurʾān 19:30).',
+    lesson:'When the world cannot defend you — the Book and the truth will.'},
+  {id:'asiya', cat:'women', n:'32', ar:'آسِيَة بِنْت مُزَاحِم', en:'Āsiya bint Muzāḥim (RA)', title:'Wife of Pharaoh · Mother of Mūsā',
+    era:'c. 14th century BCE', kunya:'Imraʾat Firʿawn — the wife of Pharaoh',
+    summary:'She married the cruelest tyrant of her age — but her heart was not his. When the basket carrying baby Mūsā arrived at the palace, she insisted on saving and raising him, telling Pharaoh: "He may be a comfort for me and you" (Qurʾān 28:9). Mūsā became a prophet under her roof. When her secret faith was discovered and Pharaoh tortured her under the desert sun, she lifted her eyes to heaven and prayed: "My Lord, build for me a house with You in Paradise, and rescue me from Pharaoh and his deeds, and rescue me from the wrongdoing people" (Qurʾān 66:11). The Prophet ﷺ named her one of the four perfect women.',
+    lesson:'Your environment does not define your covenant — your prayer does.'},
+  {id:'hajar', cat:'women', n:'33', ar:'هَاجَر', en:'Hājar (RA)', title:'Mother of Ismāʿīl · The Runner',
+    era:'c. 19th century BCE', kunya:'Umm al-ʿArab — Mother of the Arabs',
+    summary:'Wife of Ibrāhīm, mother of Ismāʿīl. By divine command, she was left with her infant son in the barren valley of what would become Makkah. When the water she had ran out and her child cried with thirst, she ran seven times between the hills of Ṣafā and Marwā searching for a caravan or relief — that running is now a pillar of every ḥajj, repeated by millions every year. When she returned to her son, the angel Jibrīl had struck the ground and water sprang up — Zamzam, which has not stopped flowing for nearly four thousand years. Caravans came for the water; the city of Makkah grew up around her well.',
+    lesson:'A mother\'s desperate love founded the city of God\'s house.'},
+  {id:'ummsalama', cat:'women', n:'34', ar:'أُمّ سَلَمَة', en:'Umm Salama (RA)', title:'Mother of the Believers · The Wise Counsel',
+    era:'c. 596 – 681 CE', kunya:'Umm al-Muʾminīn',
+    summary:'Born Hind bint Abī Umayya. Migrated twice — first to Abyssinia, then to Madīna — and during the second migration was separated from her husband and son for a year before being reunited. After her first husband Abū Salama died of wounds from Uḥud, she married the Prophet ﷺ. At the Treaty of Ḥudaybiyya, when the companions hesitated to comply with the Prophet\'s ﷺ command to shave and slaughter, she counseled him: "Go out, do not speak a word to anyone — slaughter your animal yourself, and shave your head." He did. The companions immediately followed. She had saved a moment that could have splintered the community.',
+    lesson:'Sometimes the right word at the right moment outweighs an army.'},
+  {id:'hafsa', cat:'women', n:'35', ar:'حَفْصَة بِنْت عُمَر', en:'Ḥafṣa bint ʿUmar (RA)', title:'Mother of the Believers · Keeper of the Muṣḥaf',
+    era:'c. 605 – 665 CE', kunya:'Umm al-Muʾminīn',
+    summary:'Daughter of ʿUmar ibn al-Khaṭṭāb. After her first husband died in the Battle of Badr, she married the Prophet ﷺ. Known for her piety, fasting, night prayers, and literacy — she could read and write at a time when few women or men could. After the Prophet\'s ﷺ passing, when Abū Bakr commissioned the first written collection of the Qurʾān, the master copy was entrusted to her. From her copy, ʿUthmān commissioned the standard codices that were sent to the major cities — the muṣḥaf you read today traces back, through her, to the Prophet\'s ﷺ scribes.',
+    lesson:'A literate woman entrusted with the master text of the Qurʾān — for thirteen years she kept it safe.'},
+  {id:'khawla', cat:'women', n:'36', ar:'خَوْلَة بِنْت ثَعْلَبَة', en:'Khawla bint Thaʿlaba (RA)', title:'The Woman of Surah al-Mujādila',
+    era:'c. 580 – 650 CE', kunya:'al-Mujādila — the disputing woman',
+    summary:'When her husband uttered an unjust pre-Islamic formula of divorce against her, she went to the Prophet ﷺ to plead her case. He told her gently that no revelation had yet addressed her situation. She continued to plead, raising her hands to heaven, refusing to be silenced. Then revelation descended — the opening verses of Surah al-Mujādila (58:1): "Allah has indeed heard the words of the woman who disputes with you concerning her husband, and complains to Allah — and Allah hears the dialogue between you. Surely Allah is All-Hearing, All-Seeing." Years later, when she was old and ʿUmar was caliph, he would stop in the street to listen to her advice. He said: "By Allah, the heavens listened to her — should I not?"',
+    lesson:'When the world will not hear you — the heavens still will.'},
+  {id:'zaynab', cat:'women', n:'37', ar:'زَيْنَب بِنْت جَحْش', en:'Zaynab bint Jaḥsh (RA)', title:'Mother of the Believers · The Generous',
+    era:'c. 590 – 641 CE', kunya:'Umm al-Muʾminīn',
+    summary:'Cousin of the Prophet ﷺ — daughter of his aunt Umayma. The Prophet ﷺ said of her: "She is the longest in arm among you" — meaning the most generous. She worked tanning leather and spinning, and gave the proceeds in charity. She was the first of his ﷺ wives to pass away after him; ʿĀʾisha said she gave away her entire pension as soon as it arrived. The Qurʾān itself orchestrated her marriage to the Prophet ﷺ (33:37) — abolishing the pre-Islamic taboo against marrying the former wife of an adopted son.',
+    lesson:'Generosity that empties the hand keeps the heart full.'}
+];
+
+/* =================================================================
+   SEERAH — Pivotal events from the life of the Prophet Muḥammad ﷺ.
+   ================================================================= */
+var SEERAH_DB = [
+  {id:'birth', n:'01', year:'570 CE', ar:'عَامُ ٱلْفِيل', title:'The Year of the Elephant',
+    summary:'In the year of his ﷺ birth, the Abyssinian governor Abraha marched on Makkah with an army that included war elephants, intending to destroy the Kaʿba. The lead elephant refused to charge, kneeling instead. Then flocks of birds (Ababīl) appeared, dropping stones of baked clay — the army was destroyed before it could reach the city. Surah al-Fīl recounts this. Days later, in the family of ʿAbd al-Muṭṭalib, a child was born to ʿAbdullāh and Āmina — Muḥammad ﷺ.',
+    lesson:'The Kaʿba is protected, even before its keeper is born.'},
+  {id:'orphan', n:'02', year:'570–578 CE', ar:'ٱلطُّفُولَة', title:'Orphaned Child',
+    summary:'His father ʿAbdullāh died before he was born. His mother Āmina died when he was six, on the road back from visiting her relatives. He was taken in by his grandfather ʿAbd al-Muṭṭalib, who passed two years later. From the age of eight, he was raised by his paternal uncle Abū Ṭālib — a man who never accepted Islam but defended his nephew until his last breath.',
+    lesson:'Allah does not abandon the one He has chosen — He places strangers, and uncles, in his path.'},
+  {id:'amin', n:'03', year:'595 CE', ar:'ٱلْأَمِين', title:'Al-Amīn — The Trustworthy',
+    summary:'Even before any revelation, Makkah called him al-Amīn — the trustworthy. People left their valuables in his care while traveling. When the Quraysh rebuilt the Kaʿba and quarreled over which clan would have the honor of placing the Black Stone, they agreed to let the next person to enter the courtyard decide. He ﷺ entered, spread his cloak on the ground, placed the stone in the center, and asked one elder from each clan to lift a corner of the cloak together — and he himself set the stone in its place. The matter was settled without bloodshed.',
+    lesson:'The reputation a man builds before his calling becomes his first proof of it.'},
+  {id:'khadija', n:'04', year:'595 CE', ar:'زَوَاجُهُ بِخَدِيجَة', title:'Marriage to Khadīja',
+    summary:'Khadīja, a wealthy Meccan widow, employed him to lead her trade caravans. So impressed was she by his honesty and character that she proposed marriage. He was twenty-five; she was forty. They were married for twenty-five years and had four daughters together (and two sons who died in infancy). She was the first to believe in him and the rock of his early prophethood.',
+    lesson:'A righteous spouse is the calmest harbor in the storms ahead.'},
+  {id:'iqra', n:'05', year:'610 CE', ar:'ٱقْرَأ', title:'The First Revelation',
+    summary:'In a cave on Mount Ḥirāʾ, where he ﷺ retreated for solitary worship, the angel Jibrīl appeared and gripped him: "Read!" "I cannot read." Three times. Then the words came — Iqra bismi Rabbika alladhī khalaq — the first verses of Surah al-ʿAlaq. He returned home trembling and asked Khadīja to wrap him in a cloak. She comforted him with the words companions would remember: "Allah will never disgrace you. You uphold the ties of kinship, you carry the weak, you give to the destitute, you honor your guest, you stand for the truth."',
+    lesson:'The first command of the Qurʾān is: read.'},
+  {id:'persecution', n:'06', year:'613–619 CE', ar:'ٱلِٱضْطِهَاد', title:'Persecution in Makkah',
+    summary:'For three years he ﷺ called only those close to him. When the public message began, the Quraysh — whose wealth and authority depended on the idols of the Kaʿba — turned against him. The slaves who accepted Islam, especially Bilāl, ʿAmmār, and Sumayya, were tortured. The clans of the Prophet ﷺ were boycotted in a public document hung in the Kaʿba — no one would sell to them, marry into them, or speak with them. They lived in a desert valley for three years, eating leaves.',
+    lesson:'A faith without enemies is rarely a faith that asks anything.'},
+  {id:'abyssinia', n:'07', year:'615 CE', ar:'ٱلْهِجْرَة إِلَى ٱلْحَبَشَة', title:'The Migration to Abyssinia',
+    summary:'When the persecution became unbearable, the Prophet ﷺ sent a small group of believers across the Red Sea to the Christian kingdom of Abyssinia, ruled by the Negus, a man known for justice. Quraysh sent envoys to demand their return. The Negus invited the Muslims to speak. Jaʿfar ibn Abī Ṭālib recited Surah Maryam. The Negus wept until his beard was wet, drew a line in the sand with his staff, and said: "Between your religion and ours there is no more than the breadth of this line." He refused to surrender them.',
+    lesson:'Sometimes the truth finds its first protector in another faith\'s court.'},
+  {id:'sorrow', n:'08', year:'619 CE', ar:'عَامُ ٱلْحُزْن', title:'The Year of Sorrow',
+    summary:'Within months of each other, both his wife Khadīja and his uncle Abū Ṭālib — his greatest emotional support and his greatest political protector — passed away. The Prophet ﷺ named that year ʿĀm al-Ḥuzn, the year of sorrow. He went to the nearby town of Ṭāʾif seeking refuge — the children of the town were sent out to throw stones at him until his feet bled. He prayed: "O Allah, I complain to You of my weakness…" Jibrīl came offering to crush the town between two mountains. He ﷺ said no — perhaps from their descendants will come those who worship You.',
+    lesson:'Mercy is the slow patience to wait for the next generation.'},
+  {id:'isra', n:'09', year:'620 CE', ar:'ٱلْإِسْرَاء وَٱلْمِعْرَاج', title:'The Night Journey & Ascension',
+    summary:'In a single night, he ﷺ was carried from Makkah to Jerusalem, and from there ascended through the seven heavens. He met the prophets, including Ibrāhīm, Mūsā, and ʿĪsā. He was given the gift of five daily prayers — originally fifty, reduced after consultation with Mūsā. The next morning, he described Jerusalem in detail to the disbelieving Quraysh — though he had never been there. Surah al-Isrāʾ opens with this event.',
+    lesson:'After the year of sorrow came the night that touched the heavens.'},
+  {id:'hijra', n:'10', year:'622 CE', ar:'ٱلْهِجْرَة', title:'The Hijrah to Madīnah',
+    summary:'The Quraysh plotted to assassinate him. ʿAlī slept in his bed to deceive the assassins. He ﷺ left at night with Abū Bakr and hid for three nights in the cave of Thawr. Asmāʾ, Abū Bakr\'s daughter, brought them food. Pursuers reached the mouth of the cave — but a spider had spun a web across it and a dove had built a nest. They turned back. The two reached Madīnah, where the Prophet ﷺ founded a city of believers — the calendar of Islam begins from this journey, not from his ﷺ birth or first revelation.',
+    lesson:'Some webs are mightier than armies.'},
+  {id:'badr', n:'11', year:'624 CE', ar:'بَدْر', title:'The Battle of Badr',
+    summary:'Three hundred and thirteen Muslims — many in their teens, several without a sword — faced an army of around a thousand Quraysh. The Prophet ﷺ prayed through the night. He raised his hands so high that his cloak slipped from his shoulders. By the end of the day, the Quraysh army was routed, their leaders killed. The Qurʾān calls Badr "the Day of Distinction" — Yawm al-Furqān.',
+    lesson:'Every du\'ā made through the night is heard before the morning.'},
+  {id:'uhud', n:'12', year:'625 CE', ar:'أُحُد', title:'The Battle of Uḥud',
+    summary:'The Quraysh returned for revenge with three thousand men. The Prophet ﷺ stationed fifty archers on a hill — strict orders not to leave their post. As the battle turned in the Muslims\' favor, most of the archers descended for spoils. Khālid ibn al-Walīd — not yet Muslim — saw the gap and circled around. The Muslims were routed. The Prophet ﷺ was wounded — a tooth broken, his face cut. Hamza, his uncle, was martyred. He buried seventy companions that day.',
+    lesson:'Discipline at the edge wins the field. Discipline lost loses everything.'},
+  {id:'khandaq', n:'13', year:'627 CE', ar:'ٱلْخَنْدَق', title:'The Battle of the Trench',
+    summary:'A coalition of ten thousand from Quraysh, allied tribes, and treacherous Madīnan Jews besieged Madīnah. Salmān al-Fārisī suggested digging a trench around the unprotected northern flank — a Persian tactic the Arabs had never seen. The Prophet ﷺ dug alongside the men, his stomach tied with a stone against hunger. The siege lasted weeks; food ran out; doubts spread. Then a windstorm rose at night, scattering the enemy\'s tents and fires. The siege was lifted without a major battle.',
+    lesson:'When you have done your part, the wind is His.'},
+  {id:'hudaybiyya', n:'14', year:'628 CE', ar:'ٱلْحُدَيْبِيَّة', title:'The Treaty of Ḥudaybiyya',
+    summary:'He ﷺ set out for Makkah in pilgrim\'s dress with 1,400 unarmed companions. The Quraysh blocked them at Ḥudaybiyya. The terms of the treaty seemed humiliating — a ten-year truce, no pilgrimage that year, return of any Muslim who fled to Madīnah without their guardian\'s permission. ʿUmar argued. Abū Bakr counseled patience. The Qurʾān called it Fatḥ Mubīn — a clear victory. Within two years, the truce was broken by Quraysh\'s allies, and the path to Makkah was open.',
+    lesson:'A defeat that opens a door is a victory wearing strange clothes.'},
+  {id:'fath', n:'15', year:'630 CE', ar:'فَتْحُ مَكَّة', title:'The Conquest of Makkah',
+    summary:'He ﷺ entered Makkah at the head of ten thousand believers — bowing his head so low on his camel that his beard nearly touched the saddle. The city that had driven him out, tortured his companions, killed his uncle. He gathered the leaders of Quraysh — those who had hunted him for twenty years — and asked: "What do you think I will do with you?" They answered: "A noble brother, son of a noble brother." He ﷺ said: "Go — you are free." Surah an-Naṣr was revealed shortly after. He cleansed the Kaʿba of 360 idols himself.',
+    lesson:'Power is the chance to forgive.'},
+  {id:'farewell', n:'16', year:'632 CE', ar:'حَجَّةُ ٱلْوَدَاع', title:'The Farewell Pilgrimage',
+    summary:'He ﷺ performed his only ḥajj at the head of more than a hundred thousand pilgrims. On the plain of ʿArafāt, he delivered the Farewell Sermon — declaring the sanctity of life and property, the equality of all races (no Arab over a non-Arab, no white over a black except in piety), the rights of women, the abolition of usury and the blood-feuds of the age of ignorance. He asked the people three times: "Have I delivered the message?" They answered: "Yes." He looked to the sky and said: "O Allah, bear witness."',
+    lesson:'Speak the message clearly while you have breath.'},
+  {id:'passing', n:'17', year:'632 CE', ar:'وَفَاتُهُ ﷺ', title:'His ﷺ Passing',
+    summary:'Three months after the Farewell Pilgrimage, he ﷺ fell ill. In his final days, he asked Abū Bakr to lead the prayer in his place — a quiet signal of who would carry the community after him. He passed away with his head on ʿĀʾisha\'s lap, whispering: "Allāhumma, ar-Rafīq al-Aʿlā" — O Allah, the highest companion. ʿUmar refused at first to believe it. Abū Bakr stepped forward and recited: "Whoever worships Muḥammad — Muḥammad has died. Whoever worships Allah — Allah is alive and never dies." The community held.',
+    lesson:'A teacher worth following is one whose lessons survive him.'}
+];
+
+/* =================================================================
    SOLACE — Verses for the heart, grouped by emotional state.
    The Qur'an speaks closest at the moments we feel furthest.
    ================================================================= */
@@ -2129,7 +2628,14 @@ var SOLACE_THEMES = [
   {id:'tawakkul',   label:'Trust',       ar:'ٱلتَّوَكُّل',       kicker:'WHEN YOU MUST LET GO'},
   {id:'fear',       label:'Fear',        ar:'ٱلْخَوْف',          kicker:'WHEN YOU ARE AFRAID'},
   {id:'gratitude',  label:'Gratitude',   ar:'ٱلشُّكْر',           kicker:'WHEN BLESSED'},
-  {id:'nearness',   label:'Nearness',    ar:'ٱلْقُرْب',          kicker:'WHEN YOU FEEL ALONE'}
+  {id:'nearness',   label:'Nearness',    ar:'ٱلْقُرْب',          kicker:'WHEN YOU FEEL ALONE'},
+  {id:'doubt',      label:'Doubt',       ar:'ٱلشَّكّ',           kicker:'WHEN FAITH FEELS DISTANT'},
+  {id:'illness',    label:'Illness',     ar:'ٱلْمَرَض',          kicker:'WHEN THE BODY IS WEARY'},
+  {id:'parents',    label:'Parents',     ar:'ٱلْوَالِدَيْن',       kicker:'FOR THOSE WHO RAISED YOU'},
+  {id:'provision',  label:'Provision',   ar:'ٱلرِّزْق',           kicker:'WHEN MEANS RUN THIN'},
+  {id:'sleep',      label:'Sleep',       ar:'ٱلنَّوْم',           kicker:'BEFORE YOU CLOSE YOUR EYES'},
+  {id:'guidance',   label:'Guidance',    ar:'ٱلْهِدَايَة',        kicker:'WHEN THE PATH IS UNCLEAR'},
+  {id:'patience',   label:'Patience',    ar:'ٱلصَّبْر',           kicker:'WHEN WAITING IS LONG'}
 ];
 
 var SOLACE_DB = [
@@ -2292,7 +2798,287 @@ var SOLACE_DB = [
     arabic:'وَٱعْلَمُوٓا۟ أَنَّ ٱللَّهَ يَحُولُ بَيْنَ ٱلْمَرْءِ وَقَلْبِهِۦ',
     translit:'Waʿlamū anna Allāha yaḥūlu bayna al-marʾi wa qalbih.',
     translation:'Know that Allah comes between a person and their heart.',
-    note:'He knows what you cannot say.'}
+    note:'He knows what you cannot say.'},
+
+  /* ANXIETY — additions */
+  {theme:'anxiety', reference:'Quran 20:46', surahId:20, ayah:46,
+    arabic:'لَا تَخَافَآ ۖ إِنَّنِى مَعَكُمَآ أَسْمَعُ وَأَرَىٰ',
+    translit:'Lā takhāfā, innanī maʿakumā asmaʿu wa arā.',
+    translation:'Do not fear — I am with you both. I hear and I see.',
+    note:'Said to Mūsā and Hārūn before facing Pharaoh. Said to you, now.'},
+  {theme:'anxiety', reference:'Quran 39:36', surahId:39, ayah:36,
+    arabic:'أَلَيْسَ ٱللَّهُ بِكَافٍ عَبْدَهُۥ',
+    translit:'A-laysa Allāhu bi-kāfin ʿabdah.',
+    translation:'Is Allah not enough for His servant?',
+    note:'A question only the heart can answer.'},
+  {theme:'anxiety', reference:'Quran 28:24', surahId:28, ayah:24,
+    arabic:'رَبِّ إِنِّى لِمَآ أَنزَلْتَ إِلَىَّ مِنْ خَيْرٍۢ فَقِيرٌۭ',
+    translit:'Rabbi innī li-mā anzalta ilayya min khayrin faqīr.',
+    translation:'My Lord — I am in need of whatever good You send my way.',
+    note:'Mūsā\'s prayer in exile. Make it yours when you are tired.'},
+
+  /* GRIEF — additions */
+  {theme:'grief', reference:'Quran 12:18', surahId:12, ayah:18,
+    arabic:'فَصَبْرٌۭ جَمِيلٌۭ',
+    translit:'Fa-ṣabrun jamīl.',
+    translation:'So a beautiful patience.',
+    note:'Yaʿqūb\'s words for grief without bitterness.'},
+  {theme:'grief', reference:'Quran 12:87', surahId:12, ayah:87,
+    arabic:'وَلَا تَا۟يْـَٔسُوا۟ مِن رَّوْحِ ٱللَّهِ',
+    translit:'Wa lā tayʾasū min rawḥi Allāh.',
+    translation:'And do not despair of the comfort of Allah.',
+    note:'Even after years. Even after silence.'},
+  {theme:'grief', reference:'Quran 9:40', surahId:9, ayah:40,
+    arabic:'لَا تَحْزَنْ إِنَّ ٱللَّهَ مَعَنَا',
+    translit:'Lā taḥzan, inna Allāha maʿanā.',
+    translation:'Do not grieve — Allah is with us.',
+    note:'Whispered in the cave when the world was hunting them.'},
+
+  /* HARDSHIP — additions */
+  {theme:'hardship', reference:'Quran 65:7', surahId:65, ayah:7,
+    arabic:'سَيَجْعَلُ ٱللَّهُ بَعْدَ عُسْرٍۢ يُسْرًۭا',
+    translit:'Sa-yajʿalu Allāhu baʿda ʿusrin yusrā.',
+    translation:'Allah will bring about ease after hardship.',
+    note:'Future tense. He will. He is bringing it now.'},
+  {theme:'hardship', reference:'Quran 29:2-3', surahId:29, ayah:2,
+    arabic:'أَحَسِبَ ٱلنَّاسُ أَن يُتْرَكُوٓا۟ أَن يَقُولُوٓا۟ ءَامَنَّا وَهُمْ لَا يُفْتَنُونَ',
+    translit:'A-ḥasiba an-nāsu an yutrakū an yaqūlū āmannā wa hum lā yuftanūn.',
+    translation:'Do people think they will be left alone to say "we believe" without being tested?',
+    note:'The trial confirms what the tongue claimed.'},
+  {theme:'hardship', reference:'Quran 47:31', surahId:47, ayah:31,
+    arabic:'وَلَنَبْلُوَنَّكُمْ حَتَّىٰ نَعْلَمَ ٱلْمُجَٰهِدِينَ مِنكُمْ وَٱلصَّٰبِرِينَ',
+    translit:'Wa la-nabluwannakum ḥattā naʿlama al-mujāhidīna minkum waṣ-ṣābirīn.',
+    translation:'We will certainly test you until We know the strivers and the patient.',
+    note:'The scales are weighing — keep going.'},
+
+  /* FORGIVENESS — additions */
+  {theme:'forgiveness', reference:'Quran 4:110', surahId:4, ayah:110,
+    arabic:'وَمَن يَعْمَلْ سُوٓءًا أَوْ يَظْلِمْ نَفْسَهُۥ ثُمَّ يَسْتَغْفِرِ ٱللَّهَ يَجِدِ ٱللَّهَ غَفُورًۭا رَّحِيمًۭا',
+    translit:'Wa man yaʿmal sūʾan aw yaẓlim nafsahu thumma yastaghfiri Allāha yajidi Allāha ghafūran raḥīmā.',
+    translation:'Whoever does wrong, or wrongs themselves, and then seeks Allah\'s forgiveness — will find Him Most Forgiving, Most Merciful.',
+    note:'Find Him. He is waiting in the place you fear to look.'},
+  {theme:'forgiveness', reference:'Quran 71:10-12', surahId:71, ayah:10,
+    arabic:'فَقُلْتُ ٱسْتَغْفِرُوا۟ رَبَّكُمْ إِنَّهُۥ كَانَ غَفَّارًۭا',
+    translit:'Fa-qultu istaghfirū Rabbakum innahu kāna ghaffārā.',
+    translation:'I said: ask forgiveness of your Lord — He is ever Most Forgiving.',
+    note:'Istighfār opens skies and unties knots.'},
+  {theme:'forgiveness', reference:'Quran 25:70', surahId:25, ayah:70,
+    arabic:'فَأُو۟لَٰٓئِكَ يُبَدِّلُ ٱللَّهُ سَيِّـَٔاتِهِمْ حَسَنَٰتٍۢ',
+    translit:'Fa-ulāʾika yubaddilu Allāhu sayyiʾātihim ḥasanāt.',
+    translation:'For them — Allah will replace their evils with goods.',
+    note:'Not erased. Replaced. The slate becomes a garden.'},
+
+  /* TAWAKKUL — additions */
+  {theme:'tawakkul', reference:'Quran 8:64', surahId:8, ayah:64,
+    arabic:'يَٰٓأَيُّهَا ٱلنَّبِىُّ حَسْبُكَ ٱللَّهُ',
+    translit:'Yā ayyuhā an-nabiyyu ḥasbuka Allāh.',
+    translation:'O Prophet — Allah is enough for you.',
+    note:'If He is enough for him ﷺ, He is enough for you.'},
+  {theme:'tawakkul', reference:'Quran 64:13', surahId:64, ayah:13,
+    arabic:'ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ۚ وَعَلَى ٱللَّهِ فَلْيَتَوَكَّلِ ٱلْمُؤْمِنُونَ',
+    translit:'Allāhu lā ilāha illā huwa, wa ʿalā Allāhi fal-yatawakkali al-muʾminūn.',
+    translation:'Allah — there is no god but He. And in Allah let the believers place their trust.',
+    note:'One God. One Trust.'},
+  {theme:'tawakkul', reference:'Quran 33:3', surahId:33, ayah:3,
+    arabic:'وَتَوَكَّلْ عَلَى ٱللَّهِ ۚ وَكَفَىٰ بِٱللَّهِ وَكِيلًۭا',
+    translit:'Wa tawakkal ʿalā Allāh, wa kafā billāhi wakīlā.',
+    translation:'Trust in Allah. Allah is enough as a guardian.',
+    note:'Sufficient as a guardian. The strongest hand.'},
+
+  /* FEAR — additions */
+  {theme:'fear', reference:'Quran 33:39', surahId:33, ayah:39,
+    arabic:'وَلَا يَخْشَوْنَ أَحَدًا إِلَّا ٱللَّهَ',
+    translit:'Wa lā yakhshawna aḥadan illā Allāh.',
+    translation:'They fear none but Allah.',
+    note:'Fear of Him releases you from fear of everyone else.'},
+  {theme:'fear', reference:'Quran 16:127', surahId:16, ayah:127,
+    arabic:'وَٱصْبِرْ وَمَا صَبْرُكَ إِلَّا بِٱللَّهِ',
+    translit:'Waṣbir wa mā ṣabruka illā billāh.',
+    translation:'Be patient — and your patience is only by Allah.',
+    note:'Even the strength to endure is His gift.'},
+  {theme:'fear', reference:'Quran 5:23', surahId:5, ayah:23,
+    arabic:'وَعَلَى ٱللَّهِ فَتَوَكَّلُوٓا۟ إِن كُنتُم مُّؤْمِنِينَ',
+    translit:'Wa ʿalā Allāhi fa-tawakkalū in kuntum muʾminīn.',
+    translation:'In Allah place your trust — if you are believers.',
+    note:'The threshold of īmān: handing the matter back.'},
+
+  /* GRATITUDE — additions */
+  {theme:'gratitude', reference:'Quran 27:40', surahId:27, ayah:40,
+    arabic:'هَٰذَا مِن فَضْلِ رَبِّى لِيَبْلُوَنِىٓ ءَأَشْكُرُ أَمْ أَكْفُرُ',
+    translit:'Hādhā min faḍli Rabbī li-yabluwanī a-ashkuru am akfur.',
+    translation:'This is from my Lord\'s favor — to test whether I am thankful or ungrateful.',
+    note:'Sulaymān\'s posture before a kingdom. Try it before your morning coffee.'},
+  {theme:'gratitude', reference:'Quran 31:12', surahId:31, ayah:12,
+    arabic:'وَمَن يَشْكُرْ فَإِنَّمَا يَشْكُرُ لِنَفْسِهِۦ',
+    translit:'Wa man yashkur fa-innamā yashkuru li-nafsih.',
+    translation:'Whoever gives thanks — gives thanks for the good of their own self.',
+    note:'Gratitude is something you do for you.'},
+  {theme:'gratitude', reference:'Quran 39:66', surahId:39, ayah:66,
+    arabic:'بَلِ ٱللَّهَ فَٱعْبُدْ وَكُن مِّنَ ٱلشَّٰكِرِينَ',
+    translit:'Bal-illāha faʿbud wa kun min ash-shākirīn.',
+    translation:'Worship Allah, and be of the grateful.',
+    note:'The two halves of a whole heart.'},
+
+  /* NEARNESS — additions */
+  {theme:'nearness', reference:'Quran 11:61', surahId:11, ayah:61,
+    arabic:'إِنَّ رَبِّى قَرِيبٌۭ مُّجِيبٌۭ',
+    translit:'Inna Rabbī qarībun mujīb.',
+    translation:'My Lord is near — and He answers.',
+    note:'Two qualities together: closeness, and response.'},
+  {theme:'nearness', reference:'Quran 7:55', surahId:7, ayah:55,
+    arabic:'ٱدْعُوا۟ رَبَّكُمْ تَضَرُّعًۭا وَخُفْيَةً',
+    translit:'Udʿū Rabbakum taḍarruʿan wa khufyah.',
+    translation:'Call upon your Lord humbly and in private.',
+    note:'The quietest words travel the highest.'},
+  {theme:'nearness', reference:'Quran 17:110', surahId:17, ayah:110,
+    arabic:'قُلِ ٱدْعُوا۟ ٱللَّهَ أَوِ ٱدْعُوا۟ ٱلرَّحْمَٰنَ ۖ أَيًّۭا مَّا تَدْعُوا۟ فَلَهُ ٱلْأَسْمَآءُ ٱلْحُسْنَىٰ',
+    translit:'Qul-iḍʿū Allāha aw-iḍʿū ar-Raḥmān, ayyan mā tadʿū fa-lahu al-asmāʾu al-ḥusnā.',
+    translation:'Say: call upon Allah, or call upon the Most Merciful — by whichever name, His are the most beautiful names.',
+    note:'However you can speak Him — speak.'},
+
+  /* DOUBT */
+  {theme:'doubt', reference:'Quran 2:260', surahId:2, ayah:260,
+    arabic:'أَوَلَمْ تُؤْمِن ۖ قَالَ بَلَىٰ وَلَٰكِن لِّيَطْمَئِنَّ قَلْبِى',
+    translit:'A-walam tuʾmin? Qāla balā, wa lākin li-yaṭmaʾinna qalbī.',
+    translation:'"Do you not believe?" He said: "Yes — but to put my heart at rest."',
+    note:'Even Ibrāhīm asked. Faith is not the absence of questions.'},
+  {theme:'doubt', reference:'Quran 49:14', surahId:49, ayah:14,
+    arabic:'قَالَتِ ٱلْأَعْرَابُ ءَامَنَّا ۖ قُل لَّمْ تُؤْمِنُوا۟ وَلَٰكِن قُولُوٓا۟ أَسْلَمْنَا وَلَمَّا يَدْخُلِ ٱلْإِيمَٰنُ فِى قُلُوبِكُمْ',
+    translit:'Qālat al-aʿrābu āmannā, qul lam tuʾminū wa lākin qūlū aslamnā wa lammā yadkhul al-īmānu fī qulūbikum.',
+    translation:'The desert Arabs said: "We believe." Say: "You have not believed — but say: we have submitted, for faith has not yet entered your hearts."',
+    note:'There is a path between submission and certainty. Walk it.'},
+  {theme:'doubt', reference:'Quran 13:11', surahId:13, ayah:11,
+    arabic:'إِنَّ ٱللَّهَ لَا يُغَيِّرُ مَا بِقَوْمٍ حَتَّىٰ يُغَيِّرُوا۟ مَا بِأَنفُسِهِمْ',
+    translit:'Inna Allāha lā yughayyiru mā bi-qawmin ḥattā yughayyirū mā bi-anfusihim.',
+    translation:'Allah does not change a people\'s state until they change what is in themselves.',
+    note:'The first hand is yours. The garden is His.'},
+  {theme:'doubt', reference:'Quran 14:27', surahId:14, ayah:27,
+    arabic:'يُثَبِّتُ ٱللَّهُ ٱلَّذِينَ ءَامَنُوا۟ بِٱلْقَوْلِ ٱلثَّابِتِ',
+    translit:'Yuthabbitu Allāhu alladhīna āmanū bil-qawli ath-thābit.',
+    translation:'Allah keeps firm the believers with the firm word.',
+    note:'When the wind comes, the rooted tree bends but does not fall.'},
+
+  /* ILLNESS */
+  {theme:'illness', reference:'Quran 26:80', surahId:26, ayah:80,
+    arabic:'وَإِذَا مَرِضْتُ فَهُوَ يَشْفِينِ',
+    translit:'Wa idhā mariḍtu fa-huwa yashfīn.',
+    translation:'And when I am ill — He heals me.',
+    note:'Ibrāhīm\'s naming of the Healer. The body is His to mend.'},
+  {theme:'illness', reference:'Quran 17:82', surahId:17, ayah:82,
+    arabic:'وَنُنَزِّلُ مِنَ ٱلْقُرْءَانِ مَا هُوَ شِفَآءٌۭ وَرَحْمَةٌۭ لِّلْمُؤْمِنِينَ',
+    translit:'Wa nunazzilu min al-Qurʾāni mā huwa shifāʾun wa raḥmatun lil-muʾminīn.',
+    translation:'We send down from the Qur\'an what is healing and mercy for the believers.',
+    note:'Read it slowly. Let the words rest on the place that aches.'},
+  {theme:'illness', reference:'Quran 21:84', surahId:21, ayah:84,
+    arabic:'فَٱسْتَجَبْنَا لَهُۥ فَكَشَفْنَا مَا بِهِۦ مِن ضُرٍّۢ',
+    translit:'Fa-istajabnā lahu fa-kashafnā mā bihi min ḍurr.',
+    translation:'So We answered him, and removed the harm that was upon him.',
+    note:'Ayyūb\'s ending — every illness has its sunset.'},
+  {theme:'illness', reference:'Quran 10:107', surahId:10, ayah:107,
+    arabic:'وَإِن يَمْسَسْكَ ٱللَّهُ بِضُرٍّۢ فَلَا كَاشِفَ لَهُۥٓ إِلَّا هُوَ',
+    translit:'Wa in yamsaska Allāhu bi-ḍurrin fa-lā kāshifa lahu illā huwa.',
+    translation:'If Allah touches you with hardship — none can remove it but He.',
+    note:'The hand that wounds is the hand that heals.'},
+
+  /* PARENTS */
+  {theme:'parents', reference:'Quran 17:23', surahId:17, ayah:23,
+    arabic:'وَبِٱلْوَٰلِدَيْنِ إِحْسَٰنًا',
+    translit:'Wa bil-wālidayni iḥsānā.',
+    translation:'And to parents — kindness.',
+    note:'The verse begins with worshipping Him alone, and immediately turns here.'},
+  {theme:'parents', reference:'Quran 17:24', surahId:17, ayah:24,
+    arabic:'رَّبِّ ٱرْحَمْهُمَا كَمَا رَبَّيَانِى صَغِيرًۭا',
+    translit:'Rabbi-irḥamhumā kamā rabbayānī ṣaghīrā.',
+    translation:'My Lord — have mercy on them as they raised me when I was small.',
+    note:'A prayer to whisper after every prayer.'},
+  {theme:'parents', reference:'Quran 31:14', surahId:31, ayah:14,
+    arabic:'أَنِ ٱشْكُرْ لِى وَلِوَٰلِدَيْكَ',
+    translit:'An-ishkur lī wa li-wālidayk.',
+    translation:'Be grateful to Me — and to your parents.',
+    note:'Two thanks named in the same breath.'},
+  {theme:'parents', reference:'Quran 46:15', surahId:46, ayah:15,
+    arabic:'وَوَصَّيْنَا ٱلْإِنسَٰنَ بِوَٰلِدَيْهِ إِحْسَٰنًا',
+    translit:'Wa waṣṣaynā al-insāna bi-wālidayhi iḥsānā.',
+    translation:'We have enjoined upon humanity — to their parents, kindness.',
+    note:'They carried you. Carry them now.'},
+
+  /* PROVISION */
+  {theme:'provision', reference:'Quran 65:2-3', surahId:65, ayah:2,
+    arabic:'وَمَن يَتَّقِ ٱللَّهَ يَجْعَل لَّهُۥ مَخْرَجًۭا ۝ وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ',
+    translit:'Wa man yattaqi Allāha yajʿal lahu makhrajā. Wa yarzuqhu min ḥaythu lā yaḥtasib.',
+    translation:'Whoever is mindful of Allah — He will make a way out for them, and provide from where they did not expect.',
+    note:'A door you did not see opens.'},
+  {theme:'provision', reference:'Quran 51:22', surahId:51, ayah:22,
+    arabic:'وَفِى ٱلسَّمَآءِ رِزْقُكُمْ وَمَا تُوعَدُونَ',
+    translit:'Wa fī as-samāʾi rizqukum wa mā tūʿadūn.',
+    translation:'In the heaven is your provision — and whatever you are promised.',
+    note:'Your share is named and waiting.'},
+  {theme:'provision', reference:'Quran 11:6', surahId:11, ayah:6,
+    arabic:'وَمَا مِن دَآبَّةٍۢ فِى ٱلْأَرْضِ إِلَّا عَلَى ٱللَّهِ رِزْقُهَا',
+    translit:'Wa mā min dābbatin fī al-arḍi illā ʿalā Allāhi rizquhā.',
+    translation:'No creature crawls on earth without its provision being upon Allah.',
+    note:'The ant beneath the stone is fed. So are you.'},
+  {theme:'provision', reference:'Quran 67:15', surahId:67, ayah:15,
+    arabic:'هُوَ ٱلَّذِى جَعَلَ لَكُمُ ٱلْأَرْضَ ذَلُولًۭا فَٱمْشُوا۟ فِى مَنَاكِبِهَا وَكُلُوا۟ مِن رِّزْقِهِۦ',
+    translit:'Huwa alladhī jaʿala lakumu al-arḍa dhalūlan fāmshū fī manākibihā wa kulū min rizqih.',
+    translation:'He has made the earth tame for you — so walk through its valleys and eat from His provision.',
+    note:'Walk and seek. The earth has been smoothed for your feet.'},
+
+  /* SLEEP */
+  {theme:'sleep', reference:'Quran 25:47', surahId:25, ayah:47,
+    arabic:'وَهُوَ ٱلَّذِى جَعَلَ لَكُمُ ٱلَّيْلَ لِبَاسًۭا وَٱلنَّوْمَ سُبَاتًۭا',
+    translit:'Wa huwa alladhī jaʿala lakumu al-layla libāsan wan-nawma subātā.',
+    translation:'He made the night a covering for you, and sleep a rest.',
+    note:'A garment of darkness. A rest woven by His hand.'},
+  {theme:'sleep', reference:'Quran 39:42', surahId:39, ayah:42,
+    arabic:'ٱللَّهُ يَتَوَفَّى ٱلْأَنفُسَ حِينَ مَوْتِهَا وَٱلَّتِى لَمْ تَمُتْ فِى مَنَامِهَا',
+    translit:'Allāhu yatawaffā al-anfusa ḥīna mawtihā wallatī lam tamut fī manāmihā.',
+    translation:'Allah takes the souls at the time of their death, and those that have not died — during their sleep.',
+    note:'Each night is a rehearsal of trust.'},
+  {theme:'sleep', reference:'Quran 30:23', surahId:30, ayah:23,
+    arabic:'وَمِنْ ءَايَٰتِهِۦ مَنَامُكُم بِٱللَّيْلِ وَٱلنَّهَارِ',
+    translit:'Wa min āyātihi manāmukum bil-layli wan-nahār.',
+    translation:'Among His signs is your sleep by night and by day.',
+    note:'Even rest is a verse.'},
+
+  /* GUIDANCE */
+  {theme:'guidance', reference:'Quran 1:6', surahId:1, ayah:6,
+    arabic:'ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ',
+    translit:'Ihdinā aṣ-ṣirāṭa al-mustaqīm.',
+    translation:'Guide us to the straight path.',
+    note:'You ask for it seventeen times every day. He hears.'},
+  {theme:'guidance', reference:'Quran 18:24', surahId:18, ayah:24,
+    arabic:'وَٱذْكُر رَّبَّكَ إِذَا نَسِيتَ',
+    translit:'Wadhkur Rabbaka idhā nasīt.',
+    translation:'Remember your Lord when you forget.',
+    note:'When the path slips — return to His name.'},
+  {theme:'guidance', reference:'Quran 29:69', surahId:29, ayah:69,
+    arabic:'وَٱلَّذِينَ جَٰهَدُوا۟ فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا',
+    translit:'Walladhīna jāhadū fīnā la-nahdiyannahum subulanā.',
+    translation:'Those who strive in Our way — We will surely guide them to Our paths.',
+    note:'Take a step. The road appears step by step.'},
+  {theme:'guidance', reference:'Quran 24:35', surahId:24, ayah:35,
+    arabic:'يَهْدِى ٱللَّهُ لِنُورِهِۦ مَن يَشَآءُ',
+    translit:'Yahdī Allāhu li-nūrihi man yashāʾ.',
+    translation:'Allah guides to His Light whom He wills.',
+    note:'The light is His to give. Open your hands.'},
+
+  /* PATIENCE */
+  {theme:'patience', reference:'Quran 8:46', surahId:8, ayah:46,
+    arabic:'وَٱصْبِرُوٓا۟ ۚ إِنَّ ٱللَّهَ مَعَ ٱلصَّٰبِرِينَ',
+    translit:'Waṣbirū, inna Allāha maʿa aṣ-ṣābirīn.',
+    translation:'Be patient — Allah is with the patient.',
+    note:'Withness, the prize.'},
+  {theme:'patience', reference:'Quran 70:5', surahId:70, ayah:5,
+    arabic:'فَٱصْبِرْ صَبْرًۭا جَمِيلًۭا',
+    translit:'Faṣbir ṣabran jamīlā.',
+    translation:'So bear with a beautiful patience.',
+    note:'Beautiful — meaning: without complaint to creation.'},
+  {theme:'patience', reference:'Quran 16:127', surahId:16, ayah:127,
+    arabic:'وَلَا تَحْزَنْ عَلَيْهِمْ وَلَا تَكُ فِى ضَيْقٍۢ مِّمَّا يَمْكُرُونَ',
+    translit:'Wa lā taḥzan ʿalayhim wa lā taku fī ḍayqin mimmā yamkurūn.',
+    translation:'Do not grieve over them, nor be in distress over what they plot.',
+    note:'Their plot is loud. His plan is louder.'}
 ];
 
 /* Reciters */
@@ -2326,10 +3112,13 @@ V.createApp({
 
     var wisdomTheme = V.ref('all');
     var solaceTheme = V.ref('all');
+    var figureCat = V.ref('all');
     var selectedName = V.ref(null);
     var selectedVerse = V.ref(null);
     var selectedHadith = V.ref(null);
     var selectedStory = V.ref(null);
+    var selectedFigure = V.ref(null);
+    var selectedSeerah = V.ref(null);
     var showNameEdit = V.ref(false);
     var showDeleteConfirm = V.ref(false);
 
@@ -2402,6 +3191,16 @@ V.createApp({
     var currentSolaceTheme = V.computed(function () {
       if (solaceTheme.value === 'all') return null;
       return SOLACE_THEMES.find(function (t) { return t.id === solaceTheme.value; }) || null;
+    });
+
+    var filteredFigures = V.computed(function () {
+      if (figureCat.value === 'all') return FIGURES_DB;
+      return FIGURES_DB.filter(function (f) { return f.cat === figureCat.value; });
+    });
+
+    var currentFigureCat = V.computed(function () {
+      if (figureCat.value === 'all') return null;
+      return FIGURE_CATEGORIES.find(function (c) { return c.id === figureCat.value; }) || null;
     });
 
     var bookmarksSorted = V.computed(function () {
@@ -2687,19 +3486,22 @@ V.createApp({
       page: page, isDark: isDark, profile: profile, bookmarks: bookmarks, bookmarksSorted: bookmarksSorted,
       lastPosition: lastPosition, currentSurah: currentSurah, verses: verses, loadingVerses: loadingVerses,
       versesError: versesError, surahSearch: surahSearch, revFilter: revFilter, arabicSize: arabicSize,
-      wisdomTheme: wisdomTheme, solaceTheme: solaceTheme,
+      wisdomTheme: wisdomTheme, solaceTheme: solaceTheme, figureCat: figureCat,
       selectedName: selectedName, selectedVerse: selectedVerse,
       selectedHadith: selectedHadith, selectedStory: selectedStory,
+      selectedFigure: selectedFigure, selectedSeerah: selectedSeerah,
       showNameEdit: showNameEdit, showDeleteConfirm: showDeleteConfirm,
       audio: audio, prefs: prefs, toast: toast,
       showHeader: showHeader, avatarInitial: avatarInitial, greeting: greeting,
       todayLabel: todayLabel, todayYear: todayYear,
       filteredSurahs: filteredSurahs, filteredWisdom: filteredWisdom,
       filteredSolace: filteredSolace, currentSolaceTheme: currentSolaceTheme,
+      filteredFigures: filteredFigures, currentFigureCat: currentFigureCat,
       dailyVerse: dailyVerse, dailyReflection: dailyReflection,
       asmaUlHusna: asmaUlHusna, wisdomThemes: wisdomThemes, surahs: surahs,
       WISDOM_COUNT: WISDOM_COUNT,
       HADITH_DB: HADITH_DB, STORIES_DB: STORIES_DB,
+      FIGURES_DB: FIGURES_DB, FIGURE_CATEGORIES: FIGURE_CATEGORIES, SEERAH_DB: SEERAH_DB,
       SOLACE_THEMES: SOLACE_THEMES, SOLACE_DB: SOLACE_DB,
       go: go, toggleTheme: toggleTheme, getSurah: getSurah,
       toArabicDigits: toArabicDigits, stripHtml: stripHtml, getThemeLabel: getThemeLabel,
