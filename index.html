@@ -230,7 +230,27 @@
 
     .bismillah {
       text-align: center;
-      padding: 26px 10px 22px;
+      padding: 32px 10px 28px;
+      position: relative;
+    }
+    .bismillah::before, .bismillah::after {
+      content: '';
+      position: absolute;
+      left: 50%; transform: translateX(-50%);
+      width: 38%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--accent), transparent);
+      opacity: 0.45;
+    }
+    .bismillah::before { top: 8px; }
+    .bismillah::after  { bottom: 8px; }
+    .bismillah-ornament {
+      display: inline-block;
+      width: 6px; height: 6px;
+      background: var(--accent);
+      transform: rotate(45deg);
+      margin: 0 6px 12px;
+      opacity: 0.7;
     }
     .bismillah-text {
       font-family: 'Amiri Quran','Amiri',serif;
@@ -239,6 +259,7 @@
       color: var(--accent);
       line-height: 1.8;
       font-weight: 400;
+      text-shadow: 0 0 24px rgba(201,169,97,0.10);
     }
     .ayah-marker {
       display: inline-flex;
@@ -466,9 +487,36 @@
       background: var(--surface);
       border: 1px solid var(--surface-border);
       border-radius: 4px;
-      transition: border-color var(--d-q);
+      transition: border-color var(--d-q), box-shadow var(--d-q);
+      overflow: hidden;
     }
-    .verse-card.is-playing { border-color: var(--accent); }
+    .verse-card.is-playing {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 4px 28px rgba(201,169,97,0.14);
+    }
+    /* A subtle gold rail down the left side of the playing verse,
+       and a small pulsing dot near the top — eyes find it immediately. */
+    .verse-card.is-playing::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent);
+      box-shadow: 0 0 16px rgba(201,169,97,0.5);
+    }
+    .verse-card.is-playing::after {
+      content: '';
+      position: absolute;
+      top: 18px; right: 6px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: ayah-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes ayah-pulse {
+      0%, 100% { opacity: 0.35; transform: scale(0.85); }
+      50%      { opacity: 1;    transform: scale(1.15); }
+    }
     .verse-card .verse-index {
       position: absolute;
       top: 14px; left: 20px;
@@ -696,6 +744,34 @@
       color: var(--fg-invert);
       border: 1px solid var(--bg-invert);
       border-radius: 4px;
+      overflow: hidden;
+    }
+    /* Thin gold playback progress at the bottom edge of the audio bar */
+    .audio-bar-progress {
+      position: absolute;
+      left: 0; bottom: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.18s linear;
+    }
+
+    /* Reading progress — a thin gold rail across the top of the
+       reader page that fills as the user moves through the surah. */
+    .read-progress {
+      position: fixed;
+      left: 0; right: 0;
+      top: env(safe-area-inset-top);
+      height: 2px;
+      z-index: 41;
+      pointer-events: none;
+      background: transparent;
+    }
+    .read-progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--accent), var(--accent-2));
+      width: 0;
+      transition: width 0.15s linear;
+      box-shadow: 0 0 12px rgba(201,169,97,0.35);
     }
 
     /* Pulse dot */
@@ -704,6 +780,15 @@
       50% { opacity: 1; }
     }
     .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.8s ease-in-out infinite; }
+
+    /* Bookmark feel — a small scale-pop when toggled, so the act of
+       saving a verse has a tactile echo. */
+    @keyframes bookmark-pop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.28); }
+      100% { transform: scale(1); }
+    }
+    .bookmark-pop { animation: bookmark-pop 0.32s var(--e-out); }
 
     /* Wisdom pull-quote */
     .pull-quote {
@@ -757,6 +842,11 @@
 </head>
 <body>
   <div id="app" v-cloak>
+
+    <!-- Reading progress bar (reader page only) -->
+    <div v-if="page==='reader' && currentSurah && verses.length" class="read-progress">
+      <div class="read-progress-fill" :style="{width: readingProgress + '%'}"></div>
+    </div>
 
     <!-- ======================= HEADER ======================= -->
     <header v-if="showHeader" class="glass fixed top-0 left-0 right-0 z-40 safe-top" :style="{borderBottom:'1px solid var(--rule)'}">
@@ -1042,7 +1132,8 @@
           </div>
 
           <!-- Bismillah -->
-          <div v-if="currentSurah.id!==1 && currentSurah.id!==9" class="bismillah mb-2" style="border-top:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft)">
+          <div v-if="currentSurah.id!==1 && currentSurah.id!==9" class="bismillah mb-2">
+            <div><span class="bismillah-ornament"></span></div>
             <p class="bismillah-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
             <p class="kicker mt-3" style="color:var(--text-3)">IN THE NAME OF ALLAH, THE MOST MERCIFUL</p>
           </div>
@@ -1085,7 +1176,7 @@
                 <svg v-if="!(audio.currentAyah===v.verse_key&&audio.isPlaying)" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.84A1 1 0 004.84 3.7v12.6a1 1 0 001.46.86l11-6.3a1 1 0 000-1.72l-11-6.3z"/></svg>
                 <svg v-else class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5zm7 0h3v12h-3z"/></svg>
               </button>
-              <button @click="toggleBookmark(v)" class="btn-icon" :style="isBookmarked(v.verse_key)?{borderColor:'var(--accent)',color:'var(--accent)'}:{}">
+              <button @click="toggleBookmark(v, $event)" class="btn-icon" :style="isBookmarked(v.verse_key)?{borderColor:'var(--accent)',color:'var(--accent)'}:{}">
                 <svg v-if="isBookmarked(v.verse_key)" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
               </button>
@@ -1522,15 +1613,19 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
+      <div class="audio-bar-progress" :style="{width: (audio.progress||0) + '%'}"></div>
     </div>
 
     <!-- ================= BOTTOM NAV ================= -->
     <nav v-if="showHeader" class="glass fixed bottom-0 left-0 right-0 z-40" style="padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--rule)">
       <div class="max-w-xl mx-auto grid grid-cols-4">
-        <button v-for="(tab,ti) in [{id:'home',label:'HOME',match:['home']},{id:'quran',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace']},{id:'profile',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-3" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
-          <span class="mono-num" style="font-size:10px;letter-spacing:0.14em;opacity:0.6">0{{ti+1}}</span>
-          <span class="label mt-1" style="font-size:10px">{{tab.label}}</span>
-          <div class="tab-underline mt-2" style="height:2px;width:24px;background:transparent"></div>
+        <button v-for="(tab,ti) in [{id:'home',icon:'home',label:'HOME',match:['home']},{id:'quran',icon:'book',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',icon:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace']},{id:'profile',icon:'user',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-2.5" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
+          <svg v-if="tab.icon==='home'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11l9-8 9 8M5 10v10a1 1 0 001 1h4v-7h4v7h4a1 1 0 001-1V10"/></svg>
+          <svg v-if="tab.icon==='book'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 014 17.5v-13zM4 17.5A2.5 2.5 0 016.5 15H20"/></svg>
+          <svg v-if="tab.icon==='library'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5V4a1 1 0 011-1h3a1 1 0 011 1v15.5M9 19.5V4a1 1 0 011-1h3a1 1 0 011 1v15.5M14 19.5l3.5-15.2a1 1 0 011.2-.7l1.9.4a1 1 0 01.8 1.2L18 19.5"/></svg>
+          <svg v-if="tab.icon==='user'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 20.5c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg>
+          <span class="label" style="font-size:9.5px">{{tab.label}}</span>
+          <div class="tab-underline mt-1.5" style="height:2px;width:20px;background:transparent"></div>
         </button>
       </div>
     </nav>
@@ -3985,7 +4080,7 @@ V.createApp({
     var showNameEdit = V.ref(false);
     var showDeleteConfirm = V.ref(false);
 
-    var audio = V.ref({ currentAyah: null, isPlaying: false, label: '' });
+    var audio = V.ref({ currentAyah: null, isPlaying: false, label: '', progress: 0 });
     var audioEl = null;
 
     var prefs = V.ref({ reciterId: 7, showTranslit: true });
@@ -4047,6 +4142,16 @@ V.createApp({
     });
 
     var todayYear = V.computed(function () { return new Date(_nowTick.value).getFullYear(); });
+
+    /* Reading-progress percent through the current surah, derived from
+       the last-read ayah (kept up to date by the IntersectionObserver). */
+    var readingProgress = V.computed(function () {
+      if (!currentSurah.value || !lastPosition.value) return 0;
+      if (lastPosition.value.surahId !== currentSurah.value.id) return 0;
+      var total = currentSurah.value.ayahCount || 1;
+      var pct = (lastPosition.value.ayah / total) * 100;
+      return Math.max(0, Math.min(100, pct));
+    });
 
     var filteredSurahs = V.computed(function () {
       var q = surahSearch.value.toLowerCase().trim();
@@ -4329,9 +4434,13 @@ V.createApp({
       });
       audioEl.addEventListener('pause', function () { audio.value.isPlaying = false; });
       audioEl.addEventListener('play', function () { audio.value.isPlaying = true; });
-      audioEl.addEventListener('error', function () { showMsg('AUDIO FAILED · CHECK CONNECTION'); audio.value.currentAyah = null; });
+      audioEl.addEventListener('error', function () { showMsg('AUDIO FAILED · CHECK CONNECTION'); audio.value.currentAyah = null; audio.value.progress = 0; });
+      audioEl.addEventListener('timeupdate', function () {
+        if (!audioEl || !audioEl.duration) return;
+        audio.value.progress = (audioEl.currentTime / audioEl.duration) * 100;
+      });
       var surahName = currentSurah.value ? currentSurah.value.nameEn : '';
-      audio.value = { currentAyah: v.verse_key, isPlaying: true, label: surahName + ' · Ayah ' + v.verse_number };
+      audio.value = { currentAyah: v.verse_key, isPlaying: true, label: surahName + ' · Ayah ' + v.verse_number, progress: 0 };
       if (currentSurah.value) {
         lastPosition.value = { surahId: currentSurah.value.id, ayah: v.verse_number };
         save();
@@ -4346,14 +4455,14 @@ V.createApp({
     }
     function stopAudio() {
       if (audioEl) { try { audioEl.pause(); } catch (e) {} audioEl.src = ''; audioEl = null; }
-      audio.value = { currentAyah: null, isPlaying: false, label: '' };
+      audio.value = { currentAyah: null, isPlaying: false, label: '', progress: 0 };
     }
 
     /* ===== BOOKMARKS ===== */
     function isBookmarked(verseKey) {
       return bookmarks.value.some(function (b) { return b.verse_key === verseKey; });
     }
-    function toggleBookmark(v) {
+    function toggleBookmark(v, ev) {
       var key = v.verse_key;
       if (isBookmarked(key)) {
         bookmarks.value = bookmarks.value.filter(function (b) { return b.verse_key !== key; });
@@ -4371,6 +4480,14 @@ V.createApp({
         showMsg('BOOKMARKED');
       }
       save();
+      // Pop the icon for tactile feedback
+      if (ev && ev.currentTarget) {
+        var btn = ev.currentTarget;
+        btn.classList.remove('bookmark-pop');
+        // force reflow so the animation can replay if tapped twice
+        void btn.offsetWidth;
+        btn.classList.add('bookmark-pop');
+      }
     }
     function removeBookmark(key) {
       bookmarks.value = bookmarks.value.filter(function (b) { return b.verse_key !== key; });
@@ -4530,6 +4647,7 @@ V.createApp({
       filteredSurahs: filteredSurahs, filteredWisdom: filteredWisdom,
       filteredSolace: filteredSolace, currentSolaceTheme: currentSolaceTheme,
       filteredFigures: filteredFigures, currentFigureCat: currentFigureCat,
+      readingProgress: readingProgress,
       dailyVerse: dailyVerse, dailyReflection: dailyReflection,
       asmaUlHusna: asmaUlHusna, wisdomThemes: wisdomThemes, surahs: surahs,
       WISDOM_COUNT: WISDOM_COUNT,
