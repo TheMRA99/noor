@@ -128,14 +128,29 @@
       cursor: default;
     }
     /* Keyboard accessibility — visible focus ring without disturbing
-       the editorial look. Mouse clicks remain ring-free. */
+       the editorial look. Touch devices and mouse-clicks stay ring-free;
+       only real keyboard focus (Tab) shows the outline. WebView's
+       :focus-visible heuristic treats taps as keyboard-likely, so we
+       restrict the rule to fine-pointer devices. */
     :focus { outline: none; }
-    :focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 3px;
-      border-radius: 2px;
+    button, .tile, .ed-row, .chip, .toggle, .play-btn, .btn-icon, .btn { outline: none !important; }
+    @media (hover: hover) and (pointer: fine) {
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+      .input:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
     }
-    .input:focus-visible { outline-offset: 0; }
+    /* Remove tap highlight + persistent focus on Android/iOS WebView */
+    button, .tile, .ed-row, a {
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Tactile feedback during press — replaces the focus ring on touch */
+    .tile:active, .ed-row:active, .verse-card:active, .pull-quote:active, .chip:active, .play-btn:active, .btn-icon:active, .btn:active {
+      transform: scale(0.985);
+      transition: transform 80ms var(--e-out);
+    }
     /* But the Quran reader's Arabic + translit + translation must remain selectable
        so users can copy verses for sharing or notes */
     .sacred-text, .translit-text, .verse-card p {
@@ -659,16 +674,20 @@
     .safe-top { padding-top: env(safe-area-inset-top); }
     .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 92px); }
     .safe-x { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+    /* Main content offset must clear the fixed header (≈60px tall + the
+       device's status-bar safe-area). pt-20 alone (80px) was clipping
+       the top of mastheads on notched/cutout phones. */
+    .pt-header { padding-top: calc(env(safe-area-inset-top) + 80px); }
 
     /* Tab active */
     .tab-on { color: var(--text); }
     .tab-on .tab-underline { background: var(--accent); height: 2px; width: 100%; }
 
-    /* Audio bar */
+    /* Audio bar — floats above the tab bar, respects iOS home-bar */
     .audio-bar {
       position: fixed;
       left: 8px; right: 8px;
-      bottom: 78px;
+      bottom: calc(78px + env(safe-area-inset-bottom));
       max-width: 560px;
       margin: 0 auto;
       z-index: 45;
@@ -742,18 +761,23 @@
     <!-- ======================= HEADER ======================= -->
     <header v-if="showHeader" class="glass fixed top-0 left-0 right-0 z-40 safe-top" :style="{borderBottom:'1px solid var(--rule)'}">
       <div class="max-w-xl mx-auto flex items-center justify-between px-5 py-3.5">
-        <button @click="page==='home'?null:go('home')" class="flex items-baseline gap-2">
-          <span class="display f-display" style="font-size:22px;font-weight:700;letter-spacing:-0.04em;color:var(--text)">NOOR</span>
-          <span class="f-ar text-accent" style="font-size:15px;direction:rtl">نور</span>
-        </button>
+        <div class="flex items-center gap-3">
+          <button v-if="canGoBack" @click="goBack" aria-label="Go back" class="btn-icon" style="width:36px;height:36px;border-color:var(--rule)">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M19 12H5M11 6l-6 6 6 6"/></svg>
+          </button>
+          <button @click="page==='home'?null:go('home')" aria-label="Home" class="flex items-baseline gap-2">
+            <span class="display f-display" style="font-size:22px;font-weight:700;letter-spacing:-0.04em;color:var(--text)">NOOR</span>
+            <span class="f-ar text-accent" style="font-size:15px;direction:rtl">نور</span>
+          </button>
+        </div>
         <div class="flex items-center gap-2">
-          <div class="toggle" :class="{'is-on':isDark}" @click="toggleTheme"><div class="knob"></div></div>
+          <div class="toggle" :class="{'is-on':isDark}" @click="toggleTheme" aria-label="Toggle theme"><div class="knob"></div></div>
         </div>
       </div>
       <div class="rule"></div>
     </header>
 
-    <main class="max-w-xl mx-auto px-5 safe-x safe-bottom" :class="showHeader?'pt-20':'pt-4'">
+    <main class="max-w-xl mx-auto px-5 safe-x safe-bottom" :class="showHeader?'pt-header':'pt-4'">
 
       <!-- ================= ONBOARDING ================= -->
       <div v-if="page==='onboarding'" class="page-enter min-h-screen flex flex-col pt-6 pb-8">
@@ -3935,6 +3959,7 @@ var V = Vue;
 V.createApp({
   setup: function () {
     var page = V.ref('onboarding');
+    var pageHistory = V.ref([]); // back-stack for the in-app back button
     var isDark = V.ref(true);
     var profile = V.ref({ name: '' });
     var bookmarks = V.ref([]);
@@ -4051,11 +4076,39 @@ V.createApp({
     var WISDOM_COUNT = WISDOM_DB.length;
 
     /* ===== METHODS ===== */
+    /* Pages that act as roots — never pushed onto the history stack
+       (so the back button doesn't loop you between top-level tabs). */
+    var ROOT_PAGES = ['home', 'quran', 'library', 'profile', 'onboarding', 'setup-name'];
     function go(p) {
       try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8); } catch (e) {}
+      // Push current page onto history if it isn't a root and the target is different
+      if (page.value && page.value !== p && ROOT_PAGES.indexOf(page.value) < 0) {
+        pageHistory.value.push(page.value);
+        if (pageHistory.value.length > 24) pageHistory.value.shift();
+      }
+      // Going to a root resets the back-stack — fresh start from a tab
+      if (ROOT_PAGES.indexOf(p) >= 0) pageHistory.value = [];
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(function () { page.value = p; }, 40);
     }
+    function goBack() {
+      if (pageHistory.value.length > 0) {
+        var prev = pageHistory.value.pop();
+        try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8); } catch (e) {}
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(function () { page.value = prev; }, 40);
+      } else if (page.value === 'reader') {
+        // Reader has no history — fall back to the surah index
+        page.value = 'quran';
+      } else if (!ROOT_PAGES.includes(page.value)) {
+        // Sub-pages without history — go home
+        page.value = 'home';
+      }
+    }
+    var canGoBack = V.computed(function () {
+      if (page.value === 'reader') return true; // always offer escape from reader
+      return pageHistory.value.length > 0;
+    });
 
     function toggleTheme() {
       isDark.value = !isDark.value;
@@ -4380,6 +4433,42 @@ V.createApp({
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(function () {});
       }
+      /* Browser back button (Android, browser) — close any open modal first,
+         then pop the page-history stack. Push a sentinel state so the user's
+         "back" gesture/key always lands here instead of leaving the app. */
+      try {
+        history.replaceState({ noor: true }, '');
+        history.pushState({ noor: true }, '');
+        window.addEventListener('popstate', function () {
+          if (selectedName.value) { selectedName.value = null; history.pushState({ noor: true }, ''); return; }
+          if (selectedVerse.value) { selectedVerse.value = null; history.pushState({ noor: true }, ''); return; }
+          if (selectedHadith.value) { selectedHadith.value = null; history.pushState({ noor: true }, ''); return; }
+          if (selectedStory.value) { selectedStory.value = null; history.pushState({ noor: true }, ''); return; }
+          if (selectedFigure.value) { selectedFigure.value = null; history.pushState({ noor: true }, ''); return; }
+          if (selectedSeerah.value) { selectedSeerah.value = null; history.pushState({ noor: true }, ''); return; }
+          if (showNameEdit.value) { showNameEdit.value = false; history.pushState({ noor: true }, ''); return; }
+          if (showDeleteConfirm.value) { showDeleteConfirm.value = false; history.pushState({ noor: true }, ''); return; }
+          goBack();
+          history.pushState({ noor: true }, '');
+        });
+      } catch (e) {}
+      /* Capacitor Android hardware back button */
+      try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+          window.Capacitor.Plugins.App.addListener('backButton', function () {
+            if (selectedName.value) { selectedName.value = null; return; }
+            if (selectedVerse.value) { selectedVerse.value = null; return; }
+            if (selectedHadith.value) { selectedHadith.value = null; return; }
+            if (selectedStory.value) { selectedStory.value = null; return; }
+            if (selectedFigure.value) { selectedFigure.value = null; return; }
+            if (selectedSeerah.value) { selectedSeerah.value = null; return; }
+            if (showNameEdit.value) { showNameEdit.value = false; return; }
+            if (showDeleteConfirm.value) { showDeleteConfirm.value = false; return; }
+            if (canGoBack.value) goBack();
+            else if (window.Capacitor.Plugins.App.exitApp) window.Capacitor.Plugins.App.exitApp();
+          });
+        }
+      } catch (e) {}
     });
 
     return {
@@ -4403,6 +4492,7 @@ V.createApp({
       HADITH_DB: HADITH_DB, STORIES_DB: STORIES_DB,
       FIGURES_DB: FIGURES_DB, FIGURE_CATEGORIES: FIGURE_CATEGORIES, SEERAH_DB: SEERAH_DB,
       SOLACE_THEMES: SOLACE_THEMES, SOLACE_DB: SOLACE_DB,
+      canGoBack: canGoBack, goBack: goBack,
       go: go, toggleTheme: toggleTheme, getSurah: getSurah,
       toArabicDigits: toArabicDigits, stripHtml: stripHtml, getThemeLabel: getThemeLabel,
       getReciterName: getReciterName, cyclePreferredReciter: cyclePreferredReciter,
