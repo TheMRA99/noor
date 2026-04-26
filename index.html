@@ -4001,8 +4001,38 @@ V.createApp({
       return n ? n[0].toUpperCase() : 'N';
     });
 
+    /* ===== TIME REACTIVITY =====
+       Vue computeds only re-run when their reactive dependencies change.
+       new Date() isn't reactive — so daily-rotating things (verse,
+       reflection, greeting, date label) would freeze if the app stayed
+       open past midnight. We tick `_nowTick` once per minute and any
+       computed that depends on the current time reads it first. */
+    var _nowTick = V.ref(Date.now());
+    var _tickHandle = null;
+    function _refreshNow() { _nowTick.value = Date.now(); }
+    function _startTimeTicker() {
+      if (_tickHandle) return;
+      // Update once per minute — cheap, and resolves both date- and
+      // hour-bucket transitions without burning CPU.
+      _tickHandle = setInterval(_refreshNow, 60 * 1000);
+    }
+    function _stopTimeTicker() {
+      if (_tickHandle) { clearInterval(_tickHandle); _tickHandle = null; }
+    }
+
+    function _todayKey(ts) {
+      // Stable YYYY-MM-DD key in local time; reads _nowTick to be reactive.
+      var d = ts ? new Date(ts) : new Date(_nowTick.value);
+      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    }
+    function _dayOfYear(ts) {
+      var d = ts ? new Date(ts) : new Date(_nowTick.value);
+      // new Date(year, 0, 0) is Dec 31 of prev year — yields 1-based day-of-year
+      return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+    }
+
     var greeting = V.computed(function () {
-      var h = new Date().getHours();
+      var h = new Date(_nowTick.value).getHours();
       if (h < 5)  return 'LAYLA TAYYIBA';
       if (h < 12) return 'SABAH AL-KHAYR';
       if (h < 17) return 'MASA AN-NOOR';
@@ -4011,12 +4041,12 @@ V.createApp({
     });
 
     var todayLabel = V.computed(function () {
-      var d = new Date();
+      var d = new Date(_nowTick.value);
       var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
       return String(d.getDate()).padStart(2,'0') + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
     });
 
-    var todayYear = V.computed(function () { return new Date().getFullYear(); });
+    var todayYear = V.computed(function () { return new Date(_nowTick.value).getFullYear(); });
 
     var filteredSurahs = V.computed(function () {
       var q = surahSearch.value.toLowerCase().trim();
@@ -4030,15 +4060,20 @@ V.createApp({
     });
 
     var dailyVerse = V.computed(function () {
-      var d = new Date();
-      var dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
-      return DAILY_VERSES[dayOfYear % DAILY_VERSES.length];
+      // Mix in the year so the order doesn't repeat identically every
+      // calendar — different sequence year over year, still stable
+      // within a single day.
+      var d = new Date(_nowTick.value);
+      var seed = (d.getFullYear() * 367) + _dayOfYear();
+      return DAILY_VERSES[seed % DAILY_VERSES.length];
     });
 
     var dailyReflection = V.computed(function () {
-      var d = new Date();
-      var dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
-      return DAILY_REFLECTIONS[dayOfYear % DAILY_REFLECTIONS.length];
+      var d = new Date(_nowTick.value);
+      // Different seed multiplier from dailyVerse so the verse and
+      // reflection rotate independently — never accidentally coupled.
+      var seed = (d.getFullYear() * 421) + _dayOfYear();
+      return DAILY_REFLECTIONS[seed % DAILY_REFLECTIONS.length];
     });
 
     var filteredWisdom = V.computed(function () {
@@ -4430,6 +4465,15 @@ V.createApp({
 
     V.onMounted(function () {
       load();
+      _refreshNow();
+      _startTimeTicker();
+      // When the app comes back to foreground (tab switch / wake from
+      // background), re-tick immediately so the daily verse / greeting /
+      // date label all snap to the real current time.
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') _refreshNow();
+      });
+      window.addEventListener('focus', _refreshNow);
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(function () {});
       }
