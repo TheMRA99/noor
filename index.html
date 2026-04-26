@@ -4216,17 +4216,20 @@ V.createApp({
     var WISDOM_COUNT = WISDOM_DB.length;
 
     /* ===== METHODS ===== */
-    /* Pages that act as roots — never pushed onto the history stack
-       (so the back button doesn't loop you between top-level tabs). */
+    /* Top-level "tab" pages reachable from the bottom nav. Used to
+       reset the back-stack when a tab is tapped — but unlike before,
+       we DO push these onto history when navigating away from them
+       (so going Library → Names builds a real back-trail). */
     var ROOT_PAGES = ['home', 'quran', 'library', 'profile', 'onboarding', 'setup-name'];
     function go(p) {
       try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8); } catch (e) {}
-      // Push current page onto history if it isn't a root and the target is different
-      if (page.value && page.value !== p && ROOT_PAGES.indexOf(page.value) < 0) {
+      // Always push the current page onto history when moving to a new page
+      // — this is what lets the back button work from inside Library tiles.
+      if (page.value && page.value !== p) {
         pageHistory.value.push(page.value);
         if (pageHistory.value.length > 24) pageHistory.value.shift();
       }
-      // Going to a root resets the back-stack — fresh start from a tab
+      // Tapping a top-level tab is intentionally "fresh" — clear the trail.
       if (ROOT_PAGES.indexOf(p) >= 0) pageHistory.value = [];
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(function () { page.value = p; }, 40);
@@ -4238,15 +4241,16 @@ V.createApp({
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(function () { page.value = prev; }, 40);
       } else if (page.value === 'reader') {
-        // Reader has no history — fall back to the surah index
+        // Reader without history — fall back to the surah index.
         page.value = 'quran';
-      } else if (!ROOT_PAGES.includes(page.value)) {
-        // Sub-pages without history — go home
+      } else if (ROOT_PAGES.indexOf(page.value) < 0) {
+        // Any sub-page without history — go home as a safe default.
         page.value = 'home';
       }
     }
     var canGoBack = V.computed(function () {
-      if (page.value === 'reader') return true; // always offer escape from reader
+      if (page.value === 'reader') return true;             // always escape from reader
+      if (ROOT_PAGES.indexOf(page.value) < 0) return true;   // every sub-page has back
       return pageHistory.value.length > 0;
     });
 
@@ -4295,6 +4299,12 @@ V.createApp({
        below scrolls once verses arrive — no race-prone setTimeout. */
     var _pendingScroll = null;
     function openReader(surahId) {
+      // Push the current page onto history so back returns to wherever
+      // the user came from (bookmarks, wisdom, solace, quran index, etc).
+      if (page.value && page.value !== 'reader') {
+        pageHistory.value.push(page.value);
+        if (pageHistory.value.length > 24) pageHistory.value.shift();
+      }
       currentSurah.value = getSurah(surahId);
       verses.value = [];
       versesError.value = false;
