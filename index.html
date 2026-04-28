@@ -934,6 +934,7 @@
         <!-- Masthead -->
         <div class="masthead">
           <p class="kicker" style="color:var(--text-3)">{{greeting}} / {{todayLabel}}</p>
+          <p v-if="hijriLabel" class="kicker mt-1" style="color:var(--accent)">{{hijriLabel}}</p>
           <h2 class="display display-lg mt-3" style="color:var(--text)">
             {{profile.name.split(' ')[0]}}<span class="text-accent">.</span>
           </h2>
@@ -941,6 +942,22 @@
         </div>
 
         <div class="rule mt-2 mb-6"></div>
+
+        <!-- Friday gentle reminder — Surah al-Kahf -->
+        <div v-if="isFriday" @click="openReader(18)" class="block-invert mb-7" style="cursor:pointer">
+          <p class="kicker" style="color:var(--accent)">FRIDAY · ٱلْجُمُعَة</p>
+          <div class="flex items-end justify-between mt-2">
+            <div class="flex-1 min-w-0 pr-3">
+              <h3 class="display display-md" style="color:var(--fg-invert);font-size:32px">Surah<br>al-Kahf<span class="text-accent">.</span></h3>
+              <p class="text-sm mt-2" style="color:rgba(245,240,225,0.75);line-height:1.55">"Whoever recites Sūrah al-Kahf on Friday — light shines for him from one Friday to the next." <span style="opacity:0.6">— Ḥākim, Bayhaqī</span></p>
+            </div>
+            <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:42px;line-height:1">ٱلْكَهْف</p>
+          </div>
+          <div class="flex items-center justify-between mt-4">
+            <p class="kicker num" style="color:var(--accent)">SURAH 18 · 110 AYĀT</p>
+            <span class="label hv-strike text-accent">OPEN ↗</span>
+          </div>
+        </div>
 
         <!-- Marquee of dhikr -->
         <div class="marquee mb-7" style="border-top:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft);padding:10px 0">
@@ -1452,6 +1469,141 @@
         </div>
       </div>
 
+      <!-- ================= ADHKĀR (morning + evening) ================= -->
+      <div v-if="page==='adhkar'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">DAILY REMEMBRANCE / SUNNAH</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Adh<br>kār<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْأَذْكَار</p>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-4" style="color:var(--text-3)">{{adhkarTime==='morning'?'MORNING — AFTER FAJR · BEFORE SUNRISE':'EVENING — AFTER ʿAṢR · BEFORE MAGHRIB'}}</p>
+
+        <!-- Morning / Evening switch -->
+        <div class="flex gap-2 mb-6">
+          <button @click="adhkarTime='morning'" class="chip" :class="{active:adhkarTime==='morning'}">MORNING · ٱلصَّبَاح</button>
+          <button @click="adhkarTime='evening'" class="chip" :class="{active:adhkarTime==='evening'}">EVENING · ٱلْمَسَاء</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="block-invert mb-6">
+          <p class="kicker" style="color:var(--accent)">PROGRESS / TODAY</p>
+          <div class="flex items-end justify-between mt-2">
+            <h3 class="display display-md" style="color:var(--fg-invert)">{{adhkarDoneCount}}<span style="color:rgba(245,240,225,0.5)">/{{adhkarList.length}}</span></h3>
+            <button @click="resetAdhkar" class="label hv-strike" style="color:var(--accent)">RESET</button>
+          </div>
+          <div class="mt-3" style="height:3px;background:rgba(245,240,225,0.12);border-radius:2px;overflow:hidden">
+            <div :style="{width:(adhkarList.length?(adhkarDoneCount/adhkarList.length*100):0)+'%',height:'100%',background:'var(--accent)',transition:'width 0.3s var(--e-out)'}"></div>
+          </div>
+        </div>
+
+        <!-- Adhkār entries -->
+        <div class="space-y-3 stagger">
+          <div v-for="(a,ai) in adhkarList" :key="a.id" class="verse-card" :class="{'is-playing': adhkarProgress[a.id]>=a.count}">
+            <span class="verse-index">{{(ai+1).toString().padStart(2,'0')}} / {{adhkarList.length.toString().padStart(2,'0')}}</span>
+            <span class="verse-num num">×{{a.count}}</span>
+            <div class="rule-soft mt-6 mb-3"></div>
+            <p class="f-display mb-3" style="font-size:13px;font-weight:600;letter-spacing:0;color:var(--text-2);line-height:1.4">{{a.title}}</p>
+            <p class="sacred-text size-sm mb-3" :dir="'rtl'" :lang="'ar'">{{a.arabic}}</p>
+            <p class="translit-text mb-3">{{a.translit}}</p>
+            <div class="rule-gold w-12 mb-3"></div>
+            <p class="f-display leading-snug mb-3" style="font-size:15px;font-weight:500;color:var(--text-2)">{{a.translation}}</p>
+            <p v-if="a.reward" class="text-sm italic mb-4" style="color:var(--text-3);line-height:1.55;border-left:2px solid var(--accent);padding-left:14px">{{a.reward}}</p>
+            <p class="kicker mb-3" style="color:var(--text-4)">SOURCE · {{a.source}}</p>
+            <div class="rule-soft mb-4"></div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="kicker num" style="color:var(--accent)">{{adhkarProgress[a.id]||0}} / {{a.count}}</span>
+              <div class="flex gap-2">
+                <button @click="bumpAdhkar(a)" class="btn-icon" :style="(adhkarProgress[a.id]||0)>=a.count?{borderColor:'var(--accent)',background:'var(--accent)',color:'var(--ink)'}:{}">
+                  <svg v-if="(adhkarProgress[a.id]||0)>=a.count" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M12 5v14M5 12h14"/></svg>
+                </button>
+                <button v-if="(adhkarProgress[a.id]||0)>0" @click="resetOne(a)" class="btn-icon" style="color:var(--text-3)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M3 12a9 9 0 1015-6.7L21 8M21 3v5h-5"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= DUʿĀʾ ================= -->
+      <div v-if="page==='duas'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">PROPHETIC SUPPLICATIONS / FROM HADITH</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Duʿāʾ<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلدُّعَاء</p>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-5" style="color:var(--text-3)">PRAY THESE — AS THE OCCASION RISES</p>
+
+        <!-- Category chips -->
+        <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
+          <button v-for="c in DUA_CATEGORIES" :key="c.id" @click="duaCategory=c.id" class="chip" :class="{active:duaCategory===c.id}">{{c.label.toUpperCase()}}</button>
+        </div>
+
+        <!-- Banner -->
+        <div v-if="duaCategory!=='all' && currentDuaCategory" class="block-invert mb-6">
+          <p class="kicker" style="color:var(--accent)">{{currentDuaCategory.kicker}}</p>
+          <h3 class="display display-md mt-2" style="color:var(--fg-invert)">{{currentDuaCategory.label}}<span class="text-accent">.</span></h3>
+        </div>
+
+        <!-- Duʿās -->
+        <div class="space-y-3 stagger">
+          <div v-for="(d,di) in filteredDuas" :key="d.occasion+di" class="verse-card">
+            <span class="verse-index">{{(DUA_CATEGORIES.find(function(c){return c.id===d.cat})||{}).label.toUpperCase()}}</span>
+            <span class="verse-num num">{{(di+1).toString().padStart(2,'0')}}</span>
+            <div class="rule-soft mt-6 mb-3"></div>
+            <p class="f-display mb-3" style="font-size:13px;font-weight:600;color:var(--text);letter-spacing:0;line-height:1.4">{{d.occasion}}</p>
+            <p class="sacred-text size-sm mb-3" :dir="'rtl'" :lang="'ar'">{{d.arabic}}</p>
+            <p class="translit-text mb-3">{{d.translit}}</p>
+            <div class="rule-gold w-12 mb-3"></div>
+            <p class="f-display leading-snug mb-3" style="font-size:15px;font-weight:500;color:var(--text-2)">"{{d.translation}}"</p>
+            <p class="kicker" style="color:var(--text-4)">SOURCE · {{d.source}}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TASBĪḤ ================= -->
+      <div v-if="page==='tasbih'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">DIGITAL COUNTER / SUNNAH</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">Tasbīḥ<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلتَّسْبِيح</p>
+        </div>
+        <div class="rule-thick mb-6"></div>
+
+        <!-- Phase strip -->
+        <div class="grid grid-cols-3 gap-2 mb-7">
+          <div v-for="(p,pi) in tasbihPhases" :key="p.id" class="text-center py-3 px-2" :style="{border:'1px solid '+(pi===tasbihPhase?'var(--accent)':'var(--rule)'),borderRadius:4,background:pi===tasbihPhase?'var(--accent-soft)':'transparent',transition:'all 0.2s var(--e-out)'}">
+            <p class="f-ar" :style="{fontSize:'18px',direction:'rtl',color:pi===tasbihPhase?'var(--accent)':'var(--text-3)'}">{{p.ar}}</p>
+            <p class="kicker mt-1" :style="{color:pi===tasbihPhase?'var(--accent)':'var(--text-4)',fontSize:'9px'}">{{p.label}} · ×{{p.target}}</p>
+          </div>
+        </div>
+
+        <!-- Counter display -->
+        <div class="text-center mb-8">
+          <p class="kicker mb-3" style="color:var(--text-3)">{{tasbihPhases[tasbihPhase].label.toUpperCase()}}</p>
+          <p class="f-ar text-accent" style="font-size:48px;direction:rtl;line-height:1;margin-bottom:18px">{{tasbihPhases[tasbihPhase].ar}}</p>
+          <p class="display f-display" style="font-size:96px;font-weight:700;letter-spacing:-0.04em;color:var(--text);line-height:1;font-variant-numeric:tabular-nums">{{tasbihCount}}</p>
+          <p class="kicker mt-2" style="color:var(--text-3)">/ {{tasbihPhases[tasbihPhase].target}}</p>
+        </div>
+
+        <!-- Big tap button -->
+        <button @click="tapTasbih" class="w-full" :style="{background:'var(--accent)',color:'var(--ink)',padding:'28px 0',borderRadius:'4px',fontFamily:'Space Grotesk,sans-serif',fontWeight:'700',fontSize:'15px',letterSpacing:'0.18em',textTransform:'uppercase'}">
+          TAP TO COUNT
+        </button>
+
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <button @click="resetTasbih" class="btn btn-ghost">RESET</button>
+          <button @click="cycleTasbihPhase" class="btn btn-ghost">SKIP PHASE →</button>
+        </div>
+
+        <p class="text-sm italic text-center mt-8" style="color:var(--text-3);line-height:1.55;max-width:320px;margin-left:auto;margin-right:auto">
+          The Prophet ﷺ taught Fāṭima: <span style="color:var(--text-2)">"SubḥānAllāh thirty-three, Alḥamdulillāh thirty-three, Allāhu Akbar thirty-four — better for you than a servant."</span>
+        </p>
+      </div>
+
       <!-- ================= LIBRARY ================= -->
       <div v-if="page==='library'" class="page-enter">
         <div class="masthead">
@@ -1503,6 +1655,24 @@
             <p class="tile-index">07 / SOLACE</p>
             <p class="tile-title">For the<br>Heart<span class="text-accent">.</span></p>
             <p class="tile-sub num">VERSES BY EMOTION · ANXIETY · GRIEF · TRUST</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('adhkar')" class="tile">
+            <p class="tile-index">08 / ADHKĀR</p>
+            <p class="tile-title">Morning &<br>Evening</p>
+            <p class="tile-sub num">DAILY REMEMBRANCE</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('duas')" class="tile">
+            <p class="tile-index">09 / DUʿĀʾ</p>
+            <p class="tile-title">Prophetic<br>Prayers</p>
+            <p class="tile-sub num">{{DUA_DB.length}} SUPPLICATIONS</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+          <button @click="go('tasbih')" class="tile" style="grid-column:span 2">
+            <p class="tile-index">10 / TASBĪḤ</p>
+            <p class="tile-title">Counter<span class="text-accent">.</span></p>
+            <p class="tile-sub num">SUBḤĀNALLĀH · ALḤAMDULILLĀH · ALLĀHU AKBAR</p>
             <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
           </button>
         </div>
@@ -1618,7 +1788,7 @@
     <!-- ================= BOTTOM NAV ================= -->
     <nav v-if="showHeader" class="glass fixed bottom-0 left-0 right-0 z-40" style="padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--rule)">
       <div class="max-w-xl mx-auto grid grid-cols-4">
-        <button v-for="(tab,ti) in [{id:'home',icon:'home',label:'HOME',match:['home']},{id:'quran',icon:'book',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',icon:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace']},{id:'profile',icon:'user',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-2.5" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
+        <button v-for="(tab,ti) in [{id:'home',icon:'home',label:'HOME',match:['home']},{id:'quran',icon:'book',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',icon:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace','adhkar','duas','tasbih']},{id:'profile',icon:'user',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-2.5" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
           <svg v-if="tab.icon==='home'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11l9-8 9 8M5 10v10a1 1 0 001 1h4v-7h4v7h4a1 1 0 001-1V10"/></svg>
           <svg v-if="tab.icon==='book'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 014 17.5v-13zM4 17.5A2.5 2.5 0 016.5 15H20"/></svg>
           <svg v-if="tab.icon==='library'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5V4a1 1 0 011-1h3a1 1 0 011 1v15.5M9 19.5V4a1 1 0 011-1h3a1 1 0 011 1v15.5M14 19.5l3.5-15.2a1 1 0 011.2-.7l1.9.4a1 1 0 01.8 1.2L18 19.5"/></svg>
@@ -4037,6 +4207,361 @@ var SOLACE_DB = [
     note:'The exit door of this life is the entry door of the next.'}
 ];
 
+/* =================================================================
+   ADHKĀR — Morning & Evening Remembrance (al-Adhkār al-Ṣabāḥ wa al-Masāʾ).
+   Authentic supplications transmitted in the Sunnah and standardized in
+   Ḥiṣn al-Muslim ("Fortress of the Muslim") by Saʿīd al-Qaḥṭānī.
+   Each entry has a recommended count — tap to track. Counters reset
+   when the day or the morning/evening half rolls over.
+   ================================================================= */
+var ADHKAR_MORNING_DB = [
+  {id:'m01', count:1, source:'Bukhārī, Muslim',
+    title:'Āyat al-Kursī',
+    arabic:'ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ ۚ لَا تَأْخُذُهُۥ سِنَةٌۭ وَلَا نَوْمٌۭ ۚ لَّهُۥ مَا فِى ٱلسَّمَٰوَٰتِ وَمَا فِى ٱلْأَرْضِ ۗ مَن ذَا ٱلَّذِى يَشْفَعُ عِندَهُۥٓ إِلَّا بِإِذْنِهِۦ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَىْءٍۢ مِّنْ عِلْمِهِۦٓ إِلَّا بِمَا شَآءَ ۚ وَسِعَ كُرْسِيُّهُ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضَ ۖ وَلَا يَـُٔودُهُۥ حِفْظُهُمَا ۚ وَهُوَ ٱلْعَلِىُّ ٱلْعَظِيمُ',
+    translit:'Allāhu lā ilāha illā huwa al-Ḥayyu al-Qayyūm…',
+    translation:'Allah — there is no god but He, the Ever-Living, the Self-Sustaining.',
+    reward:'Whoever recites this in the morning is protected from the jinn until evening.'},
+  {id:'m02', count:3, source:'Abū Dāwūd, Tirmidhī',
+    title:'Surah al-Ikhlāṣ · al-Falaq · an-Nās (each ×3)',
+    arabic:'قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ ٱللَّهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ',
+    translit:'Qul huwa Allāhu aḥad. Allāhu aṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahu kufuwan aḥad.',
+    translation:'Say: He is Allah, the One. The Eternal Refuge. He neither begets nor is born, and there is none equal to Him.',
+    reward:'He who recites these three sūrahs three times in the morning and evening — they will suffice him from everything.'},
+  {id:'m03', count:1, source:'Bukhārī',
+    title:'Sayyid al-Istighfār — Master of Seeking Forgiveness',
+    arabic:'ٱللَّهُمَّ أَنْتَ رَبِّى لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِى وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا ٱسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَىَّ، وَأَبُوءُ بِذَنْبِى، فَٱغْفِرْ لِى فَإِنَّهُ لَا يَغْفِرُ ٱلذُّنُوبَ إِلَّا أَنْتَ',
+    translit:'Allāhumma anta Rabbī, lā ilāha illā anta, khalaqtanī wa anā ʿabduka, wa anā ʿalā ʿahdika wa waʿdika ma-staṭaʿtu, aʿūdhu bika min sharri mā ṣanaʿtu, abūʾu laka bi-niʿmatika ʿalayya, wa abūʾu bi-dhanbī, fa-ghfir lī fa-innahu lā yaghfiru adh-dhunūba illā anta.',
+    translation:'O Allah, You are my Lord — there is no god but You. You created me and I am Your servant. I keep Your covenant and pledge as best I can. I seek refuge in You from the evil I have done. I acknowledge Your blessings upon me, and I confess my sins — so forgive me, for none forgives sins except You.',
+    reward:'Whoever says it during the day with conviction and dies before evening enters Paradise. Same for night → morning.'},
+  {id:'m04', count:1, source:'Abū Dāwūd, Tirmidhī',
+    title:'Asbaḥnā wa Aṣbaḥa al-Mulk lillāh',
+    arabic:'أَصْبَحْنَا وَأَصْبَحَ ٱلْمُلْكُ لِلَّهِ، وَٱلْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا ٱللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ ٱلْمُلْكُ وَلَهُ ٱلْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍۢ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِى هَٰذَا ٱلْيَوْمِ وَخَيْرَ مَا بَعْدَهُ',
+    translit:'Aṣbaḥnā wa aṣbaḥa al-mulku lillāh, wal-ḥamdu lillāh, lā ilāha illā Allāhu waḥdahu lā sharīka lah, lahu al-mulku wa lahu al-ḥamdu wa huwa ʿalā kulli shayʾin qadīr. Rabbi as-aluka khayra mā fī hādhā al-yawmi wa khayra mā baʿdahu.',
+    translation:'We have entered the morning and the dominion belongs to Allah. All praise is for Allah. There is no god but Allah, alone with no partner. His is the dominion, His is the praise, and He has power over all things. My Lord, I ask You for the good of this day and the good that follows.'},
+  {id:'m05', count:1, source:'Abū Dāwūd, Tirmidhī',
+    title:'Allāhumma bika aṣbaḥnā',
+    arabic:'ٱللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ ٱلنُّشُورُ',
+    translit:'Allāhumma bika aṣbaḥnā, wa bika amsaynā, wa bika naḥyā, wa bika namūt, wa ilayka an-nushūr.',
+    translation:'O Allah, by You we enter the morning, by You we enter the evening, by You we live, by You we die, and to You is the resurrection.'},
+  {id:'m06', count:3, source:'Muslim',
+    title:'SubḥānAllāhi wa bi-ḥamdihi (×3 morning, full count)',
+    arabic:'سُبْحَانَ ٱللَّهِ وَبِحَمْدِهِ، عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ',
+    translit:'SubḥānAllāhi wa bi-ḥamdihi, ʿadada khalqihi, wa riḍā nafsihi, wa zinata ʿarshihi, wa midāda kalimātih.',
+    translation:'Glory to Allah and praise — as many as His creation, as pleasing to Him as His Self, as weighing as His throne, as enduring as His words.',
+    reward:'Said three times in the morning by the Prophet ﷺ to Juwayriya, equal in weight to all she had said since dawn.'},
+  {id:'m07', count:100, source:'Bukhārī, Muslim',
+    title:'SubḥānAllāhi wa bi-ḥamdihi (×100)',
+    arabic:'سُبْحَانَ ٱللَّهِ وَبِحَمْدِهِ',
+    translit:'SubḥānAllāhi wa bi-ḥamdihi.',
+    translation:'Glory to Allah and praise to Him.',
+    reward:'Whoever says it 100 times morning and evening — none will come on the Day of Judgment with anything better, except one who says the same or more.'},
+  {id:'m08', count:10, source:'Aḥmad, Nasāʾī',
+    title:'Lā ilāha illā Allāh waḥdahu (×10 or ×100)',
+    arabic:'لَا إِلَٰهَ إِلَّا ٱللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ ٱلْمُلْكُ وَلَهُ ٱلْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍۢ قَدِيرٌ',
+    translit:'Lā ilāha illā Allāhu waḥdahu lā sharīka lah, lahu al-mulku wa lahu al-ḥamdu wa huwa ʿalā kulli shayʾin qadīr.',
+    translation:'There is no god but Allah, alone without partner. His is the dominion and His the praise, and He has power over all things.',
+    reward:'Equal to freeing ten slaves; one hundred good deeds recorded; one hundred sins erased; protection from Shayṭān until evening.'},
+  {id:'m09', count:7, source:'Abū Dāwūd',
+    title:'Ḥasbiya Allāhu (×7)',
+    arabic:'حَسْبِىَ ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ ٱلْعَرْشِ ٱلْعَظِيمِ',
+    translit:'Ḥasbiya Allāhu lā ilāha illā huwa, ʿalayhi tawakkaltu, wa huwa Rabbu al-ʿArshi al-ʿaẓīm.',
+    translation:'Allah is sufficient for me — there is no god but He. In Him I trust. He is the Lord of the Mighty Throne.',
+    reward:'Whoever says this seven times morning and evening, Allah will suffice him in whatever distresses him.'},
+  {id:'m10', count:3, source:'Abū Dāwūd, Tirmidhī',
+    title:'Bismi Allāhi alladhī lā yaḍurru (×3)',
+    arabic:'بِسْمِ ٱللَّهِ ٱلَّذِى لَا يَضُرُّ مَعَ ٱسْمِهِ شَىْءٌۭ فِى ٱلْأَرْضِ وَلَا فِى ٱلسَّمَآءِ وَهُوَ ٱلسَّمِيعُ ٱلْعَلِيمُ',
+    translit:'Bismi Allāhi alladhī lā yaḍurru maʿa-smihi shayʾun fī al-arḍi wa lā fī as-samāʾi wa huwa as-Samīʿu al-ʿAlīm.',
+    translation:'In the name of Allah — with whose name nothing on earth or in the heavens can harm; He is the All-Hearing, the All-Knowing.',
+    reward:'Said three times morning and evening, nothing will harm the one who says it.'},
+  {id:'m11', count:3, source:'Aḥmad, Nasāʾī',
+    title:'Allāhumma ʿāfinī fī badanī (×3)',
+    arabic:'ٱللَّهُمَّ عَافِنِى فِى بَدَنِى، ٱللَّهُمَّ عَافِنِى فِى سَمْعِى، ٱللَّهُمَّ عَافِنِى فِى بَصَرِى، لَا إِلَٰهَ إِلَّا أَنْتَ',
+    translit:'Allāhumma ʿāfinī fī badanī, Allāhumma ʿāfinī fī samʿī, Allāhumma ʿāfinī fī baṣarī, lā ilāha illā ant.',
+    translation:'O Allah, give me well-being in my body. O Allah, give me well-being in my hearing. O Allah, give me well-being in my sight. There is no god but You.'},
+  {id:'m12', count:1, source:'Aḥmad',
+    title:'Allāhumma innī as-aluka al-ʿafwa wal-ʿāfiya',
+    arabic:'ٱللَّهُمَّ إِنِّى أَسْأَلُكَ ٱلْعَفْوَ وَٱلْعَافِيَةَ فِى ٱلدُّنْيَا وَٱلْآخِرَةِ، ٱللَّهُمَّ ٱسْتُرْ عَوْرَاتِى، وَآمِنْ رَوْعَاتِى',
+    translit:'Allāhumma innī as-aluka al-ʿafwa wal-ʿāfiyata fī ad-dunyā wal-ākhirah. Allāhumma-stur ʿawrātī, wa āmin rawʿātī.',
+    translation:'O Allah, I ask You for pardon and well-being in this world and the next. O Allah, conceal my faults and ease my fears.'},
+  {id:'m13', count:1, source:'Aḥmad, Bukhārī (Adab al-Mufrad)',
+    title:'Aṣbaḥnā ʿalā fiṭrati al-Islām',
+    arabic:'أَصْبَحْنَا عَلَىٰ فِطْرَةِ ٱلْإِسْلَامِ، وَعَلَىٰ كَلِمَةِ ٱلْإِخْلَاصِ، وَعَلَىٰ دِينِ نَبِيِّنَا مُحَمَّدٍ ﷺ، وَعَلَىٰ مِلَّةِ أَبِينَا إِبْرَاهِيمَ، حَنِيفًۭا مُسْلِمًۭا، وَمَا كَانَ مِنَ ٱلْمُشْرِكِينَ',
+    translit:'Aṣbaḥnā ʿalā fiṭrati al-Islām, wa ʿalā kalimati al-ikhlāṣ, wa ʿalā dīni nabiyyinā Muḥammadin ﷺ, wa ʿalā millati abīnā Ibrāhīma, ḥanīfan musliman, wa mā kāna min al-mushrikīn.',
+    translation:'We have entered upon the natural disposition of Islam, the word of pure devotion, the religion of our Prophet Muḥammad ﷺ, and the way of our father Ibrāhīm — upright, submitting, never of those who associated partners with Allah.'},
+  {id:'m14', count:1, source:'Bukhārī, Muslim',
+    title:'Du\'a after morning prayer',
+    arabic:'ٱللَّهُمَّ إِنِّى أَسْأَلُكَ عِلْمًۭا نَافِعًۭا، وَرِزْقًۭا طَيِّبًۭا، وَعَمَلًۭا مُتَقَبَّلًۭا',
+    translit:'Allāhumma innī as-aluka ʿilman nāfiʿan, wa rizqan ṭayyiban, wa ʿamalan mutaqabbalā.',
+    translation:'O Allah, I ask You for beneficial knowledge, wholesome provision, and accepted deeds.',
+    reward:'Recommended after the Fajr prayer.'}
+];
+
+var ADHKAR_EVENING_DB = [
+  {id:'e01', count:1, source:'Bukhārī, Muslim',
+    title:'Āyat al-Kursī',
+    arabic:'ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ ۚ لَا تَأْخُذُهُۥ سِنَةٌۭ وَلَا نَوْمٌۭ',
+    translit:'Allāhu lā ilāha illā huwa al-Ḥayyu al-Qayyūm…',
+    translation:'Allah — there is no god but He, the Ever-Living, the Self-Sustaining.',
+    reward:'Whoever recites this in the evening is protected from the jinn until morning.'},
+  {id:'e02', count:3, source:'Abū Dāwūd, Tirmidhī',
+    title:'Surah al-Ikhlāṣ · al-Falaq · an-Nās (each ×3)',
+    arabic:'قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ ۝ قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ',
+    translit:'Qul huwa Allāhu aḥad… Qul aʿūdhu bi-Rabbi al-falaq… Qul aʿūdhu bi-Rabbi an-nās…',
+    translation:'Say: He is Allah, the One… I seek refuge in the Lord of the daybreak… I seek refuge in the Lord of mankind…',
+    reward:'These three sūrahs morning and evening will suffice you from everything.'},
+  {id:'e03', count:1, source:'Bukhārī',
+    title:'Sayyid al-Istighfār',
+    arabic:'ٱللَّهُمَّ أَنْتَ رَبِّى لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِى وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا ٱسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَىَّ، وَأَبُوءُ بِذَنْبِى، فَٱغْفِرْ لِى فَإِنَّهُ لَا يَغْفِرُ ٱلذُّنُوبَ إِلَّا أَنْتَ',
+    translit:'Allāhumma anta Rabbī, lā ilāha illā anta, khalaqtanī wa anā ʿabduka…',
+    translation:'O Allah, You are my Lord — there is no god but You. You created me and I am Your servant…',
+    reward:'Whoever says it during the night with conviction and dies before morning enters Paradise.'},
+  {id:'e04', count:1, source:'Abū Dāwūd, Tirmidhī',
+    title:'Amsaynā wa amsa al-mulk lillāh',
+    arabic:'أَمْسَيْنَا وَأَمْسَىٰ ٱلْمُلْكُ لِلَّهِ، وَٱلْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا ٱللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ ٱلْمُلْكُ وَلَهُ ٱلْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍۢ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِى هَٰذِهِ ٱللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا',
+    translit:'Amsaynā wa amsa al-mulku lillāh, wal-ḥamdu lillāh, lā ilāha illā Allāhu waḥdahu lā sharīka lah… Rabbi as-aluka khayra mā fī hādhihi al-laylati wa khayra mā baʿdahā.',
+    translation:'We have entered the evening and the dominion belongs to Allah. My Lord, I ask You for the good of this night and the good that follows.'},
+  {id:'e05', count:1, source:'Abū Dāwūd, Tirmidhī',
+    title:'Allāhumma bika amsaynā',
+    arabic:'ٱللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ ٱلْمَصِيرُ',
+    translit:'Allāhumma bika amsaynā, wa bika aṣbaḥnā, wa bika naḥyā, wa bika namūt, wa ilayka al-maṣīr.',
+    translation:'O Allah, by You we enter the evening, by You we enter the morning, by You we live, by You we die, and to You is the return.'},
+  {id:'e06', count:3, source:'Muslim',
+    title:'SubḥānAllāhi wa bi-ḥamdihi · adada khalqih',
+    arabic:'سُبْحَانَ ٱللَّهِ وَبِحَمْدِهِ، عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ',
+    translit:'SubḥānAllāhi wa bi-ḥamdihi, ʿadada khalqihi, wa riḍā nafsihi, wa zinata ʿarshihi, wa midāda kalimātih.',
+    translation:'Glory to Allah and praise — as many as His creation, as pleasing as His Self, as weighing as His throne, as enduring as His words.'},
+  {id:'e07', count:100, source:'Bukhārī, Muslim',
+    title:'SubḥānAllāhi wa bi-ḥamdihi (×100)',
+    arabic:'سُبْحَانَ ٱللَّهِ وَبِحَمْدِهِ',
+    translit:'SubḥānAllāhi wa bi-ḥamdihi.',
+    translation:'Glory to Allah and praise to Him.',
+    reward:'Whoever says it 100 times morning and evening — none will come with anything better.'},
+  {id:'e08', count:10, source:'Aḥmad, Nasāʾī',
+    title:'Lā ilāha illā Allāh waḥdahu (×10)',
+    arabic:'لَا إِلَٰهَ إِلَّا ٱللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ ٱلْمُلْكُ وَلَهُ ٱلْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍۢ قَدِيرٌ',
+    translit:'Lā ilāha illā Allāhu waḥdahu lā sharīka lah, lahu al-mulku wa lahu al-ḥamdu wa huwa ʿalā kulli shayʾin qadīr.',
+    translation:'There is no god but Allah, alone, no partner. His is the dominion and the praise, and He has power over all things.'},
+  {id:'e09', count:7, source:'Abū Dāwūd',
+    title:'Ḥasbiya Allāhu (×7)',
+    arabic:'حَسْبِىَ ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ ٱلْعَرْشِ ٱلْعَظِيمِ',
+    translit:'Ḥasbiya Allāhu lā ilāha illā huwa, ʿalayhi tawakkaltu, wa huwa Rabbu al-ʿArshi al-ʿaẓīm.',
+    translation:'Allah is sufficient for me — there is no god but He. In Him I trust. He is the Lord of the Mighty Throne.'},
+  {id:'e10', count:3, source:'Abū Dāwūd, Tirmidhī',
+    title:'Bismi Allāhi alladhī lā yaḍurru (×3)',
+    arabic:'بِسْمِ ٱللَّهِ ٱلَّذِى لَا يَضُرُّ مَعَ ٱسْمِهِ شَىْءٌۭ فِى ٱلْأَرْضِ وَلَا فِى ٱلسَّمَآءِ وَهُوَ ٱلسَّمِيعُ ٱلْعَلِيمُ',
+    translit:'Bismi Allāhi alladhī lā yaḍurru maʿa-smihi shayʾun fī al-arḍi wa lā fī as-samāʾi wa huwa as-Samīʿu al-ʿAlīm.',
+    translation:'In the name of Allah — with whose name nothing in earth or sky can harm; He is the All-Hearing, the All-Knowing.'},
+  {id:'e11', count:3, source:'Aḥmad',
+    title:'Aʿūdhu bi-kalimāt Allāh (×3, especially evening)',
+    arabic:'أَعُوذُ بِكَلِمَاتِ ٱللَّهِ ٱلتَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ',
+    translit:'Aʿūdhu bi-kalimāti Allāhi at-tāmmāti min sharri mā khalaq.',
+    translation:'I seek refuge in the perfect words of Allah from the evil of all that He has created.',
+    reward:'Whoever says this three times in the evening, no scorpion or snake will harm him until morning.'},
+  {id:'e12', count:3, source:'Aḥmad, Nasāʾī',
+    title:'Allāhumma ʿāfinī fī badanī (×3)',
+    arabic:'ٱللَّهُمَّ عَافِنِى فِى بَدَنِى، ٱللَّهُمَّ عَافِنِى فِى سَمْعِى، ٱللَّهُمَّ عَافِنِى فِى بَصَرِى، لَا إِلَٰهَ إِلَّا أَنْتَ',
+    translit:'Allāhumma ʿāfinī fī badanī, Allāhumma ʿāfinī fī samʿī, Allāhumma ʿāfinī fī baṣarī, lā ilāha illā ant.',
+    translation:'O Allah, give me well-being in my body, my hearing, my sight. There is no god but You.'},
+  {id:'e13', count:1, source:'Aḥmad',
+    title:'Allāhumma ʿālim al-ghaybi wa-sh-shahādah',
+    arabic:'ٱللَّهُمَّ عَالِمَ ٱلْغَيْبِ وَٱلشَّهَادَةِ، فَاطِرَ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضِ، رَبَّ كُلِّ شَىْءٍۢ وَمَلِيكَهُ، أَشْهَدُ أَن لَّآ إِلَٰهَ إِلَّآ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِى وَمِنْ شَرِّ ٱلشَّيْطَٰنِ وَشِرْكِهِ',
+    translit:'Allāhumma ʿālima al-ghaybi wa-sh-shahādah, fāṭira as-samāwāti wal-arḍ, Rabba kulli shayʾin wa malīkah, ash-hadu an lā ilāha illā ant, aʿūdhu bika min sharri nafsī wa min sharri ash-shayṭāni wa shirkih.',
+    translation:'O Allah, Knower of the seen and unseen, Originator of heavens and earth, Lord and King of all — I bear witness there is no god but You. I seek refuge in You from the evil of myself, from the evil of Shayṭān and his polytheism.'},
+  {id:'e14', count:1, source:'Aḥmad',
+    title:'Amsaynā ʿalā fiṭrati al-Islām',
+    arabic:'أَمْسَيْنَا عَلَىٰ فِطْرَةِ ٱلْإِسْلَامِ، وَعَلَىٰ كَلِمَةِ ٱلْإِخْلَاصِ، وَعَلَىٰ دِينِ نَبِيِّنَا مُحَمَّدٍ ﷺ، وَعَلَىٰ مِلَّةِ أَبِينَا إِبْرَاهِيمَ، حَنِيفًۭا مُسْلِمًۭا، وَمَا كَانَ مِنَ ٱلْمُشْرِكِينَ',
+    translit:'Amsaynā ʿalā fiṭrati al-Islām, wa ʿalā kalimati al-ikhlāṣ, wa ʿalā dīni nabiyyinā Muḥammadin ﷺ, wa ʿalā millati abīnā Ibrāhīma, ḥanīfan musliman, wa mā kāna min al-mushrikīn.',
+    translation:'We have entered the evening upon the natural disposition of Islam, the word of pure devotion, the religion of our Prophet Muḥammad ﷺ, and the way of our father Ibrāhīm — upright, submitting, never of those who associated partners.'}
+];
+
+/* =================================================================
+   DUʿĀʾ — Authentic supplications from Hadith, organized by occasion.
+   Drawn from Ḥiṣn al-Muslim. Use them as the moment arises — not by
+   schedule. Each is from the Sunnah, with its source noted.
+   ================================================================= */
+var DUA_CATEGORIES = [
+  {id:'all',      label:'All',           kicker:'EVERY OCCASION'},
+  {id:'daily',    label:'Daily',         kicker:'WAKING · ENTERING · LEAVING'},
+  {id:'meals',    label:'Meals',         kicker:'BEFORE & AFTER EATING'},
+  {id:'travel',   label:'Travel',        kicker:'LEAVING · MOUNTING · RETURNING'},
+  {id:'distress', label:'Distress',      kicker:'WHEN THE HEART IS HEAVY'},
+  {id:'guidance', label:'Guidance',      kicker:'KNOWLEDGE · DECISIONS'},
+  {id:'family',   label:'Family',        kicker:'PARENTS · SPOUSE · CHILDREN'},
+  {id:'forgive',  label:'Forgiveness',   kicker:'TURNING BACK TO HIM'},
+  {id:'sleep',    label:'Sleep',         kicker:'BEFORE CLOSING YOUR EYES'},
+  {id:'protect',  label:'Protection',    kicker:'AGAINST THE UNSEEN'}
+];
+
+var DUA_DB = [
+  /* WAKING */
+  {cat:'daily', occasion:'Upon waking',
+    arabic:'ٱلْحَمْدُ لِلَّهِ ٱلَّذِى أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ ٱلنُّشُورُ',
+    translit:'Al-ḥamdu lillāhi alladhī aḥyānā baʿda mā amātanā wa ilayhi an-nushūr.',
+    translation:'Praise be to Allah who gave us life after taking it from us — to Him is the resurrection.',
+    source:'Bukhārī'},
+  {cat:'daily', occasion:'Leaving the home',
+    arabic:'بِسْمِ ٱللَّهِ، تَوَكَّلْتُ عَلَى ٱللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللَّهِ',
+    translit:'Bismi Allāh, tawakkaltu ʿalā Allāh, wa lā ḥawla wa lā quwwata illā billāh.',
+    translation:'In the name of Allah, I trust in Allah; there is no might nor power except by Allah.',
+    source:'Abū Dāwūd, Tirmidhī'},
+  {cat:'daily', occasion:'Entering the home',
+    arabic:'بِسْمِ ٱللَّهِ وَلَجْنَا، وَبِسْمِ ٱللَّهِ خَرَجْنَا، وَعَلَىٰ رَبِّنَا تَوَكَّلْنَا',
+    translit:'Bismi Allāhi walajnā, wa bismi Allāhi kharajnā, wa ʿalā Rabbinā tawakkalnā.',
+    translation:'In the name of Allah we enter, in the name of Allah we leave, and in our Lord we trust.',
+    source:'Abū Dāwūd'},
+  {cat:'daily', occasion:'Wearing new clothes',
+    arabic:'ٱللَّهُمَّ لَكَ ٱلْحَمْدُ أَنتَ كَسَوْتَنِيهِ، أَسْأَلُكَ مِنْ خَيْرِهِ وَخَيْرِ مَا صُنِعَ لَهُ',
+    translit:'Allāhumma laka al-ḥamdu anta kasawtanīh, as-aluka min khayrihi wa khayri mā ṣuniʿa lah.',
+    translation:'O Allah, praise is Yours — You have clothed me. I ask You for the good of it and the good for which it was made.',
+    source:'Abū Dāwūd, Tirmidhī'},
+
+  /* MEALS */
+  {cat:'meals', occasion:'Before eating',
+    arabic:'بِسْمِ ٱللَّهِ',
+    translit:'Bismi Allāh.',
+    translation:'In the name of Allah.',
+    source:'Abū Dāwūd, Tirmidhī'},
+  {cat:'meals', occasion:'If forgotten — during the meal',
+    arabic:'بِسْمِ ٱللَّهِ فِى أَوَّلِهِ وَآخِرِهِ',
+    translit:'Bismi Allāhi fī awwalihi wa ākhirih.',
+    translation:'In the name of Allah at its beginning and end.',
+    source:'Abū Dāwūd, Tirmidhī'},
+  {cat:'meals', occasion:'After eating',
+    arabic:'ٱلْحَمْدُ لِلَّهِ ٱلَّذِى أَطْعَمَنِى هَٰذَا، وَرَزَقَنِيهِ، مِنْ غَيْرِ حَوْلٍۢ مِّنِّى وَلَا قُوَّةٍۢ',
+    translit:'Al-ḥamdu lillāhi alladhī aṭʿamanī hādhā, wa razaqanīhi, min ghayri ḥawlin minnī wa lā quwwah.',
+    translation:'Praise be to Allah who fed me this and provided it for me — without might or strength of my own.',
+    source:'Abū Dāwūd, Tirmidhī, Ibn Mājah'},
+  {cat:'meals', occasion:'Drinking water',
+    arabic:'ٱلْحَمْدُ لِلَّهِ ٱلَّذِى جَعَلَ ٱلْمَآءَ بِفَضْلِهِ عَذْبًۭا فُرَاتًۭا، وَلَمْ يَجْعَلْهُ مِلْحًا أُجَاجًۭا بِذُنُوبِنَا',
+    translit:'Al-ḥamdu lillāhi alladhī jaʿala al-māʾa bi-faḍlihi ʿadhban furātā, wa lam yajʿalhu milḥan ujājan bi-dhunūbinā.',
+    translation:'Praise be to Allah who, by His grace, made the water sweet, and did not make it bitter and salty due to our sins.',
+    source:'classical du\'a, see Ibn Sunni'},
+
+  /* TRAVEL */
+  {cat:'travel', occasion:'Mounting a vehicle',
+    arabic:'سُبْحَانَ ٱلَّذِى سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُۥ مُقْرِنِينَ ۝ وَإِنَّآ إِلَىٰ رَبِّنَا لَمُنقَلِبُونَ',
+    translit:'Subḥāna alladhī sakhkhara lanā hādhā wa mā kunnā lahu muqrinīn. Wa innā ilā Rabbinā la-munqalibūn.',
+    translation:'Glory be to Him who placed this under our control — we could not have done so ourselves. To our Lord we shall surely return.',
+    source:'Quran 43:13-14, established as travel duʿā'},
+  {cat:'travel', occasion:'Travel — full prayer',
+    arabic:'ٱللَّهُمَّ إِنَّا نَسْأَلُكَ فِى سَفَرِنَا هَٰذَا ٱلْبِرَّ وَٱلتَّقْوَىٰ، وَمِنَ ٱلْعَمَلِ مَا تَرْضَىٰ، ٱللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَٰذَا، وَٱطْوِ عَنَّا بُعْدَهُ',
+    translit:'Allāhumma innā nas-aluka fī safarinā hādhā al-birra wat-taqwā, wa mina al-ʿamali mā tarḍā. Allāhumma hawwin ʿalaynā safaranā hādhā, wa-ṭwi ʿannā buʿdah.',
+    translation:'O Allah, we ask You on this journey of ours for righteousness and piety, and for deeds that please You. O Allah, ease this journey for us and shorten its distance.',
+    source:'Muslim'},
+  {cat:'travel', occasion:'Returning home',
+    arabic:'آيِبُونَ، تَائِبُونَ، عَابِدُونَ، لِرَبِّنَا حَامِدُونَ',
+    translit:'Āyibūna, tāʾibūna, ʿābidūna, li-Rabbinā ḥāmidūn.',
+    translation:'Returning, repenting, worshipping — to our Lord, we are full of praise.',
+    source:'Bukhārī, Muslim'},
+
+  /* DISTRESS */
+  {cat:'distress', occasion:'When in distress',
+    arabic:'لَآ إِلَٰهَ إِلَّآ أَنتَ سُبْحَٰنَكَ إِنِّى كُنتُ مِنَ ٱلظَّٰلِمِينَ',
+    translit:'Lā ilāha illā anta subḥānaka innī kuntu min aẓ-ẓālimīn.',
+    translation:'There is no god but You — glory be to You! I have wronged myself.',
+    source:'Tirmidhī (the duʿā of Yūnus AS — Quran 21:87). The Prophet ﷺ said: no Muslim invokes it for anything but Allah answers him.'},
+  {cat:'distress', occasion:'In times of grief',
+    arabic:'ٱللَّهُمَّ إِنِّى عَبْدُكَ، ٱبْنُ عَبْدِكَ، ٱبْنُ أَمَتِكَ، نَاصِيَتِى بِيَدِكَ، مَاضٍۢ فِىَّ حُكْمُكَ، عَدْلٌۭ فِىَّ قَضَاؤُكَ، أَسْأَلُكَ بِكُلِّ ٱسْمٍۢ هُوَ لَكَ أَن تَجْعَلَ ٱلْقُرْآنَ رَبِيعَ قَلْبِى',
+    translit:'Allāhumma innī ʿabduka, ibnu ʿabdika, ibnu amatika, nāṣiyatī bi-yadika, māḍin fiyya ḥukmuka, ʿadlun fiyya qaḍāʾuka, as-aluka bi-kulli-smin huwa lak, an tajʿala al-Qurʾāna rabīʿa qalbī.',
+    translation:'O Allah, I am Your servant, son of Your servant, son of Your handmaiden — my forelock is in Your hand. Your judgment over me is binding, Your decree upon me is just. I ask You by every name that is Yours, to make the Qurʾān the spring of my heart.',
+    source:'Aḥmad'},
+  {cat:'distress', occasion:'When anxious or worried',
+    arabic:'ٱللَّهُمَّ إِنِّى أَعُوذُ بِكَ مِنَ ٱلْهَمِّ وَٱلْحَزَنِ، وَأَعُوذُ بِكَ مِنَ ٱلْعَجْزِ وَٱلْكَسَلِ، وَأَعُوذُ بِكَ مِنَ ٱلْجُبْنِ وَٱلْبُخْلِ، وَأَعُوذُ بِكَ مِنْ غَلَبَةِ ٱلدَّيْنِ وَقَهْرِ ٱلرِّجَالِ',
+    translit:'Allāhumma innī aʿūdhu bika min al-hammi wal-ḥazan, wa aʿūdhu bika min al-ʿajzi wal-kasal, wa aʿūdhu bika min al-jubni wal-bukhl, wa aʿūdhu bika min ghalabati ad-dayni wa qahri ar-rijāl.',
+    translation:'O Allah, I seek refuge in You from worry and grief, from incapacity and laziness, from cowardice and miserliness, from being overwhelmed by debt and overpowered by men.',
+    source:'Bukhārī'},
+
+  /* GUIDANCE */
+  {cat:'guidance', occasion:'Asking for knowledge',
+    arabic:'رَبِّ زِدْنِى عِلْمًۭا',
+    translit:'Rabbi zidnī ʿilmā.',
+    translation:'My Lord, increase me in knowledge.',
+    source:'Quran 20:114'},
+  {cat:'guidance', occasion:'Beneficial knowledge',
+    arabic:'ٱللَّهُمَّ ٱنْفَعْنِى بِمَا عَلَّمْتَنِى، وَعَلِّمْنِى مَا يَنْفَعُنِى، وَزِدْنِى عِلْمًۭا',
+    translit:'Allāhumma-nfaʿnī bimā ʿallamtanī, wa ʿallimnī mā yanfaʿunī, wa zidnī ʿilmā.',
+    translation:'O Allah, benefit me with what You have taught me, teach me what benefits me, and increase me in knowledge.',
+    source:'Tirmidhī, Ibn Mājah'},
+  {cat:'guidance', occasion:'Istikhāra — when seeking guidance on a decision',
+    arabic:'ٱللَّهُمَّ إِنِّى أَسْتَخِيرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِن فَضْلِكَ ٱلْعَظِيمِ، فَإِنَّكَ تَقْدِرُ وَلَا أَقْدِرُ، وَتَعْلَمُ وَلَا أَعْلَمُ، وَأَنْتَ عَلَّامُ ٱلْغُيُوبِ',
+    translit:'Allāhumma innī astakhīruka bi-ʿilmika, wa astaqdiruka bi-qudratika, wa as-aluka min faḍlika al-ʿaẓīm, fa-innaka taqdiru wa lā aqdir, wa taʿlamu wa lā aʿlam, wa anta ʿAllāmu al-ghuyūb.',
+    translation:'O Allah, I seek Your guidance through Your knowledge, and Your ability through Your power, and I ask You of Your great favor — for You are able and I am not, You know and I do not, and You are the Knower of the unseen.',
+    source:'Bukhārī (long form for major decisions)'},
+
+  /* FAMILY */
+  {cat:'family', occasion:'For parents',
+    arabic:'رَّبِّ ٱرْحَمْهُمَا كَمَا رَبَّيَانِى صَغِيرًۭا',
+    translit:'Rabbi-rḥamhumā kamā rabbayānī ṣaghīrā.',
+    translation:'My Lord, have mercy on them as they raised me when I was small.',
+    source:'Quran 17:24'},
+  {cat:'family', occasion:'For righteous offspring',
+    arabic:'رَبِّ هَبْ لِى مِنَ ٱلصَّٰلِحِينَ',
+    translit:'Rabbi hab lī min aṣ-ṣāliḥīn.',
+    translation:'My Lord, grant me from among the righteous.',
+    source:'Quran 37:100 — the prayer of Ibrāhīm before Ismāʿīl was given'},
+  {cat:'family', occasion:'For the family',
+    arabic:'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَٰجِنَا وَذُرِّيَّٰتِنَا قُرَّةَ أَعْيُنٍۢ وَٱجْعَلْنَا لِلْمُتَّقِينَ إِمَامًۭا',
+    translit:'Rabbanā hab lanā min azwājinā wa dhurriyyātinā qurrata aʿyunin wa-jʿalnā lil-muttaqīna imāmā.',
+    translation:'Our Lord — grant us spouses and descendants who are the cooling of our eyes, and make us examples for the God-conscious.',
+    source:'Quran 25:74'},
+
+  /* FORGIVENESS */
+  {cat:'forgive', occasion:'The simplest istighfār',
+    arabic:'أَسْتَغْفِرُ ٱللَّهَ ٱلَّذِى لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىَّ ٱلْقَيُّومَ وَأَتُوبُ إِلَيْهِ',
+    translit:'Astaghfiru Allāha alladhī lā ilāha illā huwa al-Ḥayya al-Qayyūma wa atūbu ilayh.',
+    translation:'I seek the forgiveness of Allah, beside whom there is no god — the Ever-Living, the Self-Sustaining — and I turn to Him in repentance.',
+    source:'Abū Dāwūd, Tirmidhī (whoever says it, his sins are forgiven though he fled the battlefield)'},
+  {cat:'forgive', occasion:'A shorter istighfār — repeat freely',
+    arabic:'رَبِّ ٱغْفِرْ لِى وَتُبْ عَلَىَّ، إِنَّكَ أَنْتَ ٱلتَّوَّابُ ٱلرَّحِيمُ',
+    translit:'Rabbi-ghfir lī wa tub ʿalayya, innaka anta at-Tawwābu ar-Raḥīm.',
+    translation:'My Lord, forgive me and accept my repentance — surely You are the Oft-Returning, the Most Merciful.',
+    source:'Abū Dāwūd, Tirmidhī'},
+  {cat:'forgive', occasion:'A duʿā after wudūʾ',
+    arabic:'أَشْهَدُ أَن لَّآ إِلَٰهَ إِلَّا ٱللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ',
+    translit:'Ash-hadu an lā ilāha illā Allāhu waḥdahu lā sharīka lah, wa ash-hadu anna Muḥammadan ʿabduhu wa rasūluh.',
+    translation:'I bear witness there is no god but Allah, alone with no partner; and I bear witness that Muḥammad is His servant and Messenger.',
+    source:'Muslim (the eight gates of paradise are opened for whoever says this after wudūʾ)'},
+
+  /* SLEEP */
+  {cat:'sleep', occasion:'Before sleep — last words of the day',
+    arabic:'بِسْمِكَ ٱللَّهُمَّ أَمُوتُ وَأَحْيَا',
+    translit:'Bismika Allāhumma amūtu wa aḥyā.',
+    translation:'In Your name, O Allah, I die and I live.',
+    source:'Bukhārī'},
+  {cat:'sleep', occasion:'Reciting before sleep',
+    arabic:'ٱللَّهُمَّ أَسْلَمْتُ نَفْسِى إِلَيْكَ، وَفَوَّضْتُ أَمْرِى إِلَيْكَ، وَوَجَّهْتُ وَجْهِى إِلَيْكَ، وَأَلْجَأْتُ ظَهْرِى إِلَيْكَ',
+    translit:'Allāhumma aslamtu nafsī ilayka, wa fawwaḍtu amrī ilayka, wa wajjahtu wajhī ilayka, wa aljaʾtu ẓahrī ilayka.',
+    translation:'O Allah, I have submitted my soul to You, entrusted my affair to You, turned my face to You, and rested my back upon You.',
+    source:'Bukhārī, Muslim (whoever dies on this dies upon the natural disposition)'},
+  {cat:'sleep', occasion:'On waking in the night',
+    arabic:'لَا إِلَٰهَ إِلَّا ٱللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ ٱلْمُلْكُ وَلَهُ ٱلْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍۢ قَدِيرٌ',
+    translit:'Lā ilāha illā Allāhu waḥdahu lā sharīka lah, lahu al-mulku wa lahu al-ḥamdu wa huwa ʿalā kulli shayʾin qadīr.',
+    translation:'There is no god but Allah, alone, without partner. His is the dominion and the praise, and He has power over all things.',
+    source:'Bukhārī (whoever wakes and says this, then asks Allah, will be answered)'},
+
+  /* PROTECTION */
+  {cat:'protect', occasion:'When entering the bathroom',
+    arabic:'بِسْمِ ٱللَّهِ، ٱللَّهُمَّ إِنِّى أَعُوذُ بِكَ مِنَ ٱلْخُبُثِ وَٱلْخَبَائِثِ',
+    translit:'Bismi Allāh, Allāhumma innī aʿūdhu bika min al-khubuthi wal-khabāʾith.',
+    translation:'In the name of Allah. O Allah, I seek refuge in You from the male and female devils.',
+    source:'Bukhārī, Muslim'},
+  {cat:'protect', occasion:'On hearing the wind',
+    arabic:'ٱللَّهُمَّ إِنِّى أَسْأَلُكَ خَيْرَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّهَا',
+    translit:'Allāhumma innī as-aluka khayrahā, wa aʿūdhu bika min sharrihā.',
+    translation:'O Allah, I ask You for its good and seek refuge in You from its evil.',
+    source:'Abū Dāwūd, Ibn Mājah'},
+  {cat:'protect', occasion:'When seeing something pleasing — to ward off the evil eye',
+    arabic:'مَا شَاءَ ٱللَّهُ، لَا قُوَّةَ إِلَّا بِٱللَّهِ، تَبَارَكَ ٱللَّهُ',
+    translit:'Mā shāʾa Allāh, lā quwwata illā billāh, tabāraka Allāh.',
+    translation:'What Allah has willed — there is no power except by Allah. Blessed is Allah.',
+    source:'classical, derived from Surah al-Kahf 18:39'},
+  {cat:'protect', occasion:'A prayer for protection — morning and evening',
+    arabic:'ٱللَّهُمَّ إِنِّى أَعُوذُ بِكَ مِنْ جَهْدِ ٱلْبَلَاءِ، وَدَرَكِ ٱلشَّقَاءِ، وَسُوءِ ٱلْقَضَاءِ، وَشَمَاتَةِ ٱلْأَعْدَاءِ',
+    translit:'Allāhumma innī aʿūdhu bika min jahdi al-balāʾ, wa daraki ash-shaqāʾ, wa sūʾi al-qaḍāʾ, wa shamātati al-aʿdāʾ.',
+    translation:'O Allah, I seek refuge in You from severe trial, from despair, from a bad fate, and from the gloating of enemies.',
+    source:'Bukhārī, Muslim'}
+];
+
 /* Reciters */
 var RECITERS = [
   {id:7,name:"Mishary Alafasy",subfolder:"Alafasy_128kbps"},
@@ -4070,6 +4595,17 @@ V.createApp({
     var wisdomTheme = V.ref('all');
     var solaceTheme = V.ref('all');
     var figureCat = V.ref('all');
+    var adhkarTime = V.ref('morning');             // 'morning' | 'evening'
+    var adhkarProgress = V.ref({});                 // { id: count }
+    var adhkarSession = V.ref({ key: '', time: '' }); // YYYY-M-D + half (rolls over)
+    var duaCategory = V.ref('all');
+    var tasbihCount = V.ref(0);
+    var tasbihPhase = V.ref(0);                     // 0 = subhan, 1 = hamd, 2 = akbar
+    var tasbihPhases = [
+      {id:'subhan', label:'SubḥānAllāh',     ar:'سُبْحَانَ ٱللَّه',   target:33},
+      {id:'hamd',   label:'Alḥamdulillāh',   ar:'ٱلْحَمْدُ لِلَّه',  target:33},
+      {id:'akbar',  label:'Allāhu Akbar',    ar:'ٱللَّهُ أَكْبَر',    target:34}
+    ];
     var selectedName = V.ref(null);
     var selectedVerse = V.ref(null);
     var selectedHadith = V.ref(null);
@@ -4203,6 +4739,121 @@ V.createApp({
     var currentFigureCat = V.computed(function () {
       if (figureCat.value === 'all') return null;
       return FIGURE_CATEGORIES.find(function (c) { return c.id === figureCat.value; }) || null;
+    });
+
+    /* ===== ADHKĀR ===== */
+    var adhkarList = V.computed(function () {
+      return adhkarTime.value === 'morning' ? ADHKAR_MORNING_DB : ADHKAR_EVENING_DB;
+    });
+    var adhkarDoneCount = V.computed(function () {
+      var list = adhkarList.value;
+      var p = adhkarProgress.value || {};
+      return list.reduce(function (n, a) { return (p[a.id] || 0) >= a.count ? n + 1 : n; }, 0);
+    });
+    /* Each calendar day, morning + evening run independently. The session
+       key is YYYY-M-D + AM/PM bucket. When it rolls over, completed
+       counts auto-reset so the user starts fresh. */
+    function _adhkarSessionKey() {
+      var d = new Date(_nowTick.value);
+      var half = adhkarTime.value === 'morning' ? 'AM' : 'PM';
+      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + '-' + half;
+    }
+    function _ensureFreshAdhkarSession() {
+      var key = _adhkarSessionKey();
+      if (adhkarSession.value.key !== key) {
+        adhkarSession.value = { key: key, time: adhkarTime.value };
+        adhkarProgress.value = {};
+        save();
+      }
+    }
+    function bumpAdhkar(a) {
+      _ensureFreshAdhkarSession();
+      var p = Object.assign({}, adhkarProgress.value);
+      var current = p[a.id] || 0;
+      // Tap once per repetition; when target reached, tap again to "uncomplete"
+      if (current >= a.count) {
+        p[a.id] = 0;
+      } else {
+        p[a.id] = current + 1;
+      }
+      adhkarProgress.value = p;
+      try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(6); } catch (e) {}
+      save();
+    }
+    function resetOne(a) {
+      var p = Object.assign({}, adhkarProgress.value);
+      p[a.id] = 0;
+      adhkarProgress.value = p;
+      save();
+    }
+    function resetAdhkar() {
+      adhkarProgress.value = {};
+      save();
+    }
+    /* Reset the session whenever the user enters the Adhkār page or
+       toggles morning/evening — keeps counts honest across day rollovers. */
+    V.watch([adhkarTime, function () { return page.value; }], function () {
+      if (page.value === 'adhkar') _ensureFreshAdhkarSession();
+    });
+
+    /* ===== DUʿĀʾ ===== */
+    var filteredDuas = V.computed(function () {
+      if (duaCategory.value === 'all') return DUA_DB;
+      return DUA_DB.filter(function (d) { return d.cat === duaCategory.value; });
+    });
+    var currentDuaCategory = V.computed(function () {
+      if (duaCategory.value === 'all') return null;
+      return DUA_CATEGORIES.find(function (c) { return c.id === duaCategory.value; }) || null;
+    });
+
+    /* ===== TASBĪḤ ===== */
+    function tapTasbih() {
+      var phase = tasbihPhases[tasbihPhase.value];
+      if (!phase) return;
+      tasbihCount.value = tasbihCount.value + 1;
+      try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8); } catch (e) {}
+      // Auto-advance when target hit
+      if (tasbihCount.value >= phase.target) {
+        if (tasbihPhase.value < tasbihPhases.length - 1) {
+          tasbihPhase.value = tasbihPhase.value + 1;
+          tasbihCount.value = 0;
+          showMsg(tasbihPhases[tasbihPhase.value].label.toUpperCase());
+        } else {
+          showMsg('TASBĪḤ COMPLETE — ALḤAMDULILLĀH');
+        }
+      }
+    }
+    function resetTasbih() {
+      tasbihCount.value = 0;
+      tasbihPhase.value = 0;
+    }
+    function cycleTasbihPhase() {
+      tasbihCount.value = 0;
+      tasbihPhase.value = (tasbihPhase.value + 1) % tasbihPhases.length;
+    }
+
+    /* ===== HIJRI DATE =====
+       Browser-native conversion via Intl. Falls back gracefully if the
+       runtime doesn't support the islamic-umalqura calendar. */
+    var hijriLabel = V.computed(function () {
+      try {
+        var fmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+          day: 'numeric', month: 'long', year: 'numeric'
+        });
+        var parts = fmt.formatToParts(new Date(_nowTick.value));
+        var day = '', month = '', year = '';
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i].type === 'day') day = parts[i].value;
+          else if (parts[i].type === 'month') month = parts[i].value;
+          else if (parts[i].type === 'year') year = parts[i].value;
+        }
+        if (!day || !month) return '';
+        return day + ' ' + month.toUpperCase() + ' ' + year + ' AH';
+      } catch (e) { return ''; }
+    });
+
+    var isFriday = V.computed(function () {
+      return new Date(_nowTick.value).getDay() === 5;
     });
 
     var bookmarksSorted = V.computed(function () {
@@ -4534,6 +5185,9 @@ V.createApp({
         localStorage.setItem('noor_theme', isDark.value ? 'dark' : 'light');
         localStorage.setItem('noor_prefs', JSON.stringify(prefs.value));
         localStorage.setItem('noor_arabic_size', arabicSize.value);
+        localStorage.setItem('noor_adhkar', JSON.stringify({
+          session: adhkarSession.value, progress: adhkarProgress.value
+        }));
       } catch (e) {}
     }
     function savePrefs() { save(); }
@@ -4555,6 +5209,11 @@ V.createApp({
         }
         var sz = localStorage.getItem('noor_arabic_size');
         if (sz) arabicSize.value = sz;
+        var adh = JSON.parse(localStorage.getItem('noor_adhkar'));
+        if (adh && adh.session && adh.progress) {
+          adhkarSession.value = adh.session;
+          adhkarProgress.value = adh.progress;
+        }
       } catch (e) {}
       applyTheme();
       if (profile.value.name) page.value = 'home';
@@ -4576,6 +5235,7 @@ V.createApp({
         localStorage.removeItem('noor_theme');
         localStorage.removeItem('noor_prefs');
         localStorage.removeItem('noor_arabic_size');
+        localStorage.removeItem('noor_adhkar');
       } catch (e) {}
       profile.value = { name: '' };
       bookmarks.value = [];
@@ -4652,7 +5312,7 @@ V.createApp({
       showNameEdit: showNameEdit, showDeleteConfirm: showDeleteConfirm,
       audio: audio, prefs: prefs, toast: toast,
       showHeader: showHeader, avatarInitial: avatarInitial, greeting: greeting,
-      todayLabel: todayLabel, todayYear: todayYear,
+      todayLabel: todayLabel, todayYear: todayYear, hijriLabel: hijriLabel, isFriday: isFriday,
       filteredSurahs: filteredSurahs, filteredWisdom: filteredWisdom,
       filteredSolace: filteredSolace, currentSolaceTheme: currentSolaceTheme,
       filteredFigures: filteredFigures, currentFigureCat: currentFigureCat,
@@ -4663,6 +5323,14 @@ V.createApp({
       HADITH_DB: HADITH_DB, STORIES_DB: STORIES_DB,
       FIGURES_DB: FIGURES_DB, FIGURE_CATEGORIES: FIGURE_CATEGORIES, SEERAH_DB: SEERAH_DB,
       SOLACE_THEMES: SOLACE_THEMES, SOLACE_DB: SOLACE_DB,
+      ADHKAR_MORNING_DB: ADHKAR_MORNING_DB, ADHKAR_EVENING_DB: ADHKAR_EVENING_DB,
+      DUA_DB: DUA_DB, DUA_CATEGORIES: DUA_CATEGORIES,
+      adhkarTime: adhkarTime, adhkarProgress: adhkarProgress, adhkarList: adhkarList,
+      adhkarDoneCount: adhkarDoneCount,
+      bumpAdhkar: bumpAdhkar, resetOne: resetOne, resetAdhkar: resetAdhkar,
+      duaCategory: duaCategory, filteredDuas: filteredDuas, currentDuaCategory: currentDuaCategory,
+      tasbihCount: tasbihCount, tasbihPhase: tasbihPhase, tasbihPhases: tasbihPhases,
+      tapTasbih: tapTasbih, resetTasbih: resetTasbih, cycleTasbihPhase: cycleTasbihPhase,
       canGoBack: canGoBack, goBack: goBack,
       go: go, toggleTheme: toggleTheme, getSurah: getSurah,
       toArabicDigits: toArabicDigits, stripHtml: stripHtml, getThemeLabel: getThemeLabel,
