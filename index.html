@@ -1197,10 +1197,20 @@
                 <svg v-if="isBookmarked(v.verse_key)" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
               </button>
-              <button @click="shareAyah(v)" class="btn-icon">
+              <button @click="shareAyah(v)" class="btn-icon" aria-label="Share">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v14"/></svg>
               </button>
+              <button @click="cycleVerseRepeat(v)" class="btn-icon" :style="memorize.verseKey===v.verse_key?{borderColor:'var(--accent)',color:'var(--accent)'}:{}" :aria-label="'Repeat for memorization, currently ' + (memorize.verseKey===v.verse_key?memorize.target:'off')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M17 2l4 4-4 4M3 10v-2a4 4 0 014-4h14M7 22l-4-4 4-4M21 14v2a4 4 0 01-4 4H3"/></svg>
+                <span v-if="memorize.verseKey===v.verse_key" style="font-size:9px;font-weight:700;margin-left:2px">×{{memorize.target}}</span>
+              </button>
+              <button v-if="v.words && v.words.length" @click="selectedWordVerse=v" class="btn-icon" aria-label="Word-by-word">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M4 7h16M4 12h10M4 17h16"/></svg>
+              </button>
               <span class="ml-auto kicker num" style="color:var(--text-3)">{{v.verse_key}}</span>
+            </div>
+            <div v-if="memorize.verseKey===v.verse_key && audio.currentAyah===v.verse_key" class="mt-2">
+              <p class="kicker" style="color:var(--accent);font-size:10px">REPEAT · {{memorize.done+1}} OF {{memorize.target}}</p>
             </div>
           </div>
         </div>
@@ -1317,10 +1327,17 @@
           <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلْحَدِيث</p>
         </div>
         <div class="rule-thick mb-4"></div>
-        <p class="kicker mb-6" style="color:var(--text-3)">SELECTIONS — AN-NAWAWĪ · BUKHĀRĪ · MUSLIM</p>
+        <p class="kicker mb-4" style="color:var(--text-3)">SELECTIONS — AN-NAWAWĪ · BUKHĀRĪ · MUSLIM</p>
+
+        <div class="relative mb-5">
+          <input v-model="hadithSearch" type="text" placeholder="Search hadith — theme, narrator, text" class="input">
+          <button v-if="hadithSearch" @click="hadithSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)" aria-label="Clear search">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
 
         <div class="space-y-3 stagger">
-          <div v-for="(h,hi) in HADITH_DB" :key="h.n" @click="selectedHadith=h" class="verse-card" style="cursor:pointer">
+          <div v-for="(h,hi) in filteredHadith" :key="h.n" @click="selectedHadith=h" class="verse-card" style="cursor:pointer">
             <span class="verse-index">HADITH</span>
             <span class="verse-num num">{{h.n}} / {{String(HADITH_DB.length).padStart(2,'0')}}</span>
             <div class="rule-soft mt-6 mb-4"></div>
@@ -1334,6 +1351,7 @@
               <p class="kicker" style="color:var(--text-4)">{{h.source.toUpperCase()}}</p>
             </div>
           </div>
+          <p v-if="filteredHadith.length===0" class="text-center py-12 kicker" style="color:var(--text-3)">NO MATCHES FOR "{{hadithSearch.toUpperCase()}}"</p>
         </div>
       </div>
 
@@ -1367,7 +1385,14 @@
           <p class="f-ar text-accent masthead-ar" style="top:40px">رِجَالٌ وَنِسَاء</p>
         </div>
         <div class="rule-thick mb-4"></div>
-        <p class="kicker mb-5" style="color:var(--text-3)">LIVES THAT SHAPED THE FAITH</p>
+        <p class="kicker mb-4" style="color:var(--text-3)">LIVES THAT SHAPED THE FAITH</p>
+
+        <div class="relative mb-4">
+          <input v-model="figureSearch" type="text" placeholder="Search by name, era, title, or biography" class="input">
+          <button v-if="figureSearch" @click="figureSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)" aria-label="Clear search">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
 
         <!-- Category chips -->
         <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
@@ -1424,7 +1449,14 @@
           <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلسَّكِينَة</p>
         </div>
         <div class="rule-thick mb-4"></div>
-        <p class="kicker mb-6" style="color:var(--text-3)">VERSES TO READ WHEN — CHOOSE A FEELING</p>
+        <p class="kicker mb-4" style="color:var(--text-3)">VERSES TO READ WHEN — CHOOSE A FEELING</p>
+
+        <div class="relative mb-4">
+          <input v-model="solaceSearch" type="text" placeholder="Search verses — translation, reflection, reference" class="input">
+          <button v-if="solaceSearch" @click="solaceSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)" aria-label="Clear search">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
 
         <!-- Theme chips -->
         <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
@@ -1535,7 +1567,14 @@
           <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلدُّعَاء</p>
         </div>
         <div class="rule-thick mb-4"></div>
-        <p class="kicker mb-5" style="color:var(--text-3)">PRAY THESE — AS THE OCCASION RISES</p>
+        <p class="kicker mb-4" style="color:var(--text-3)">PRAY THESE — AS THE OCCASION RISES</p>
+
+        <div class="relative mb-4">
+          <input v-model="duaSearch" type="text" placeholder="Search by occasion, words, or source" class="input">
+          <button v-if="duaSearch" @click="duaSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)" aria-label="Clear search">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
 
         <!-- Category chips -->
         <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
@@ -1602,6 +1641,97 @@
         <p class="text-sm italic text-center mt-8" style="color:var(--text-3);line-height:1.55;max-width:320px;margin-left:auto;margin-right:auto">
           The Prophet ﷺ taught Fāṭima: <span style="color:var(--text-2)">"SubḥānAllāh thirty-three, Alḥamdulillāh thirty-three, Allāhu Akbar thirty-four — better for you than a servant."</span>
         </p>
+      </div>
+
+      <!-- ================= ABOUT NOOR ================= -->
+      <div v-if="page==='about'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">A QUIET COMPANION / MADE WITH NIYYAH</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">About<br>Noor<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">نُور</p>
+        </div>
+        <div class="rule-thick mb-6"></div>
+
+        <div class="space-y-7">
+          <div>
+            <p class="kicker mb-3" style="color:var(--accent)">WHAT IT IS</p>
+            <p class="f-display leading-snug" style="font-size:18px;font-weight:500;color:var(--text);line-height:1.55;letter-spacing:-0.005em">
+              Noor is a reverent Islamic companion. The Qurʾān in Uthmani script with transliteration and clear English translation. Forty hadith. The lives of those who carried the faith. Verses for the heart by emotion. The morning and evening adhkār. Authentic duʿāʾ from the Sunnah. A tasbīḥ counter. A reading progress rail. Nothing more — and nothing that distracts from these.
+            </p>
+          </div>
+
+          <div class="rule-soft"></div>
+
+          <div>
+            <p class="kicker mb-3" style="color:var(--accent)">WHY</p>
+            <p class="f-display italic mb-4" style="font-size:18px;font-weight:500;color:var(--text-2);line-height:1.55">
+              "Surely in the remembrance of Allah hearts find rest." <span style="opacity:0.7">— Qurʾān 13:28</span>
+            </p>
+            <p class="f-body" style="font-size:15px;color:var(--text-2);line-height:1.7">
+              Most Islamic apps are loud — ads, leaderboards, push notifications, social features that turn worship into performance. Noor is the opposite: a quiet room. Open it for two minutes; close it. The intention is sadaqa jāriya — charity that flows on after its maker has gone.
+            </p>
+          </div>
+
+          <div class="rule-soft"></div>
+
+          <div>
+            <p class="kicker mb-3" style="color:var(--accent)">WHAT'S INSIDE</p>
+            <div class="space-y-2.5" style="font-size:14px;color:var(--text-2);line-height:1.65">
+              <p>· The full Qurʾān — 114 sūrahs, Uthmani text, transliteration, Sahīḥ International translation, audio from five reciters.</p>
+              <p>· The 99 Names of Allah — Asmāʾ ul-Ḥusnā.</p>
+              <p>· Themed Qurʾānic wisdom — patience, gratitude, mercy, faith, prayer, hope, knowledge, humility, charity, justice.</p>
+              <p>· Forty Hadith with Arabic, transliteration, English, narrator, source.</p>
+              <p>· Twenty-five prophets — from Ādam to Muḥammad ﷺ.</p>
+              <p>· Eighty-nine figures of Islam — companions, women, scholars, warriors, polymaths, Qurʾānic figures.</p>
+              <p>· Seventeen events from the Seerah of the Prophet ﷺ.</p>
+              <p>· Solace — verses for the heart, organised by 19 emotional states.</p>
+              <p>· Adhkār — the morning and evening Sunnah remembrance with tap-to-count.</p>
+              <p>· Duʿāʾ — authentic prophetic supplications by occasion.</p>
+              <p>· Tasbīḥ — the simple counter, three phases.</p>
+            </div>
+          </div>
+
+          <div class="rule-soft"></div>
+
+          <div>
+            <p class="kicker mb-3" style="color:var(--accent)">A NOTE ON AUTHENTICITY</p>
+            <p class="f-body" style="font-size:14px;color:var(--text-2);line-height:1.7">
+              The Qurʾān text is the standard Uthmani Hafs muṣḥaf, served live through the Quran.com API. Translations are interpretations — for fiqh, return to scholars. Hadith are drawn from Bukhārī, Muslim, Abū Dāwūd, Tirmidhī, Aḥmad, Nasāʾī, Ibn Mājah; sources are noted on every entry. Adhkār are from Ḥiṣn al-Muslim. Biographical entries are summarised respectfully but are not works of formal scholarship — verify what you intend to teach.
+            </p>
+          </div>
+
+          <div class="rule-soft"></div>
+
+          <div>
+            <p class="kicker mb-3" style="color:var(--accent)">PRIVACY</p>
+            <p class="f-body" style="font-size:14px;color:var(--text-2);line-height:1.7">
+              Everything stays on your device. No accounts, no tracking, no analytics. Your name, bookmarks, last-read position, theme, and adhkār progress live in your browser's localStorage. The Qurʾān API is read-only and anonymous. The audio CDN is served by EveryAyah.
+            </p>
+          </div>
+
+          <div class="rule-soft"></div>
+
+          <div>
+            <p class="kicker mb-3" style="color:var(--accent)">DO NOTS</p>
+            <div class="space-y-1.5" style="font-size:13px;color:var(--text-3);line-height:1.6">
+              <p>· No ads. No notifications. No social features.</p>
+              <p>· No leaderboards. No streaks. No gamification.</p>
+              <p>· No images of Prophets or sacred figures.</p>
+              <p>· No background music. No auto-play of recitation.</p>
+              <p>· No truncation of Quranic text. Sacred text never breaks.</p>
+            </div>
+          </div>
+
+          <div class="rule-soft"></div>
+
+          <div class="text-center pt-4 pb-2">
+            <p class="f-ar text-accent mb-3" style="font-size:32px;direction:rtl">نِيَّةً لِوَجْهِ ٱللَّهِ</p>
+            <p class="kicker" style="color:var(--text-3)">FOR THE FACE OF ALLAH</p>
+            <p class="text-sm italic mt-3" style="color:var(--text-4);line-height:1.55;max-width:320px;margin-left:auto;margin-right:auto">
+              If a verse here moved your heart, that's between you and Him — keep me a small share in your duʿāʾ.
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- ================= LIBRARY ================= -->
@@ -1722,6 +1852,15 @@
           </button>
         </div>
 
+        <button @click="go('about')" class="ed-row w-full text-left mt-2" style="cursor:pointer">
+          <span class="ed-num num">✦</span>
+          <div class="flex-1 min-w-0">
+            <p class="f-display" style="font-size:16px;font-weight:600;letter-spacing:-0.01em">About Noor</p>
+            <p class="text-xs mt-1" style="color:var(--text-3)">WHAT THIS APP IS · PRIVACY · AUTHENTICITY</p>
+          </div>
+          <svg class="w-4 h-4 flex-shrink-0" style="color:var(--text-3)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M9 5l7 7-7 7"/></svg>
+        </button>
+
         <button @click="showDeleteConfirm=true" class="mt-8 btn btn-block" style="background:transparent;color:#E15554;border-color:#E15554">
           CLEAR ALL DATA
         </button>
@@ -1788,7 +1927,7 @@
     <!-- ================= BOTTOM NAV ================= -->
     <nav v-if="showHeader" class="glass fixed bottom-0 left-0 right-0 z-40" style="padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--rule)">
       <div class="max-w-xl mx-auto grid grid-cols-4">
-        <button v-for="(tab,ti) in [{id:'home',icon:'home',label:'HOME',match:['home']},{id:'quran',icon:'book',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',icon:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace','adhkar','duas','tasbih']},{id:'profile',icon:'user',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-2.5" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
+        <button v-for="(tab,ti) in [{id:'home',icon:'home',label:'HOME',match:['home']},{id:'quran',icon:'book',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',icon:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace','adhkar','duas','tasbih','about']},{id:'profile',icon:'user',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-2.5" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
           <svg v-if="tab.icon==='home'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11l9-8 9 8M5 10v10a1 1 0 001 1h4v-7h4v7h4a1 1 0 001-1V10"/></svg>
           <svg v-if="tab.icon==='book'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 014 17.5v-13zM4 17.5A2.5 2.5 0 016.5 15H20"/></svg>
           <svg v-if="tab.icon==='library'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5V4a1 1 0 011-1h3a1 1 0 011 1v15.5M9 19.5V4a1 1 0 011-1h3a1 1 0 011 1v15.5M14 19.5l3.5-15.2a1 1 0 011.2-.7l1.9.4a1 1 0 01.8 1.2L18 19.5"/></svg>
@@ -1980,6 +2119,37 @@
           <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
           <p class="f-display italic mb-6" style="font-size:17px;font-weight:500;color:var(--text-2);line-height:1.55">"{{selectedSeerah.lesson}}"</p>
           <button @click="selectedSeerah=null" class="btn btn-ghost btn-block">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Word-by-word panel -->
+    <div v-if="selectedWordVerse" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedWordVerse=null">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
+        <div class="invert p-6 pb-6 relative">
+          <div class="flex items-center justify-between mb-4">
+            <span class="kicker" style="color:var(--accent)">WORD BY WORD · {{selectedWordVerse.verse_key}}</span>
+            <button @click="selectedWordVerse=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)" aria-label="Close">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="sacred-text size-sm" :dir="'rtl'" :lang="'ar'" style="color:var(--fg-invert)">{{selectedWordVerse.text_uthmani}}</p>
+        </div>
+        <div class="p-6">
+          <p class="kicker mb-4" style="color:var(--text-3)">EACH WORD · {{selectedWordVerse.words.length}} WORDS</p>
+          <div class="space-y-3">
+            <div v-for="(w,wi) in selectedWordVerse.words" :key="wi" class="flex items-baseline justify-between gap-4 py-3" style="border-bottom:1px solid var(--rule-soft)">
+              <div class="flex-1 min-w-0">
+                <p class="f-display" style="font-size:13px;font-weight:600;color:var(--text);letter-spacing:-0.005em;line-height:1.3">{{w.en}}</p>
+                <p v-if="w.tr" class="translit-text mt-1" style="font-size:12px">{{w.tr}}</p>
+              </div>
+              <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:24px;line-height:1.4">{{w.ar}}</p>
+            </div>
+          </div>
+          <div class="rule-gold w-12 mt-6 mb-4"></div>
+          <p class="kicker mb-2" style="color:var(--accent)">FULL TRANSLATION</p>
+          <p class="f-display italic" style="font-size:15px;font-weight:500;color:var(--text-2);line-height:1.55">"{{stripHtml(selectedWordVerse.translation)}}"</p>
+          <button @click="selectedWordVerse=null" class="btn btn-ghost btn-block mt-6">CLOSE</button>
         </div>
       </div>
     </div>
@@ -4595,6 +4765,12 @@ V.createApp({
     var wisdomTheme = V.ref('all');
     var solaceTheme = V.ref('all');
     var figureCat = V.ref('all');
+    /* Per-collection search queries — kept page-local so each tab
+       remembers its own search context as the user navigates around. */
+    var hadithSearch = V.ref('');
+    var figureSearch = V.ref('');
+    var solaceSearch = V.ref('');
+    var duaSearch = V.ref('');
     var adhkarTime = V.ref('morning');             // 'morning' | 'evening'
     var adhkarProgress = V.ref({});                 // { id: count }
     var adhkarSession = V.ref({ key: '', time: '' }); // YYYY-M-D + half (rolls over)
@@ -4612,10 +4788,16 @@ V.createApp({
     var selectedStory = V.ref(null);
     var selectedFigure = V.ref(null);
     var selectedSeerah = V.ref(null);
+    var selectedWordVerse = V.ref(null); // holds a verse object → opens word-by-word panel
     var showNameEdit = V.ref(false);
     var showDeleteConfirm = V.ref(false);
 
     var audio = V.ref({ currentAyah: null, isPlaying: false, label: '', progress: 0 });
+    /* Verse repeat — for memorization. The user picks a verse and a
+       count (3 / 5 / 10); the audio loops that ayah that many times
+       before either advancing or stopping. State lives outside `audio`
+       so it survives stops between memorization sessions. */
+    var memorize = V.ref({ verseKey: null, target: 3, done: 0 });
     var audioEl = null;
 
     var prefs = V.ref({ reciterId: 7, showTranslit: true });
@@ -4722,8 +4904,17 @@ V.createApp({
     });
 
     var filteredSolace = V.computed(function () {
-      if (solaceTheme.value === 'all') return SOLACE_DB;
-      return SOLACE_DB.filter(function (s) { return s.theme === solaceTheme.value; });
+      var q = solaceSearch.value.toLowerCase().trim();
+      var base = solaceTheme.value === 'all'
+        ? SOLACE_DB
+        : SOLACE_DB.filter(function (s) { return s.theme === solaceTheme.value; });
+      if (!q) return base;
+      return base.filter(function (s) {
+        return (s.translation || '').toLowerCase().indexOf(q) >= 0
+          || (s.note || '').toLowerCase().indexOf(q) >= 0
+          || (s.translit || '').toLowerCase().indexOf(q) >= 0
+          || (s.reference || '').toLowerCase().indexOf(q) >= 0;
+      });
     });
 
     var currentSolaceTheme = V.computed(function () {
@@ -4732,8 +4923,30 @@ V.createApp({
     });
 
     var filteredFigures = V.computed(function () {
-      if (figureCat.value === 'all') return FIGURES_DB;
-      return FIGURES_DB.filter(function (f) { return f.cat === figureCat.value; });
+      var q = figureSearch.value.toLowerCase().trim();
+      var base = figureCat.value === 'all'
+        ? FIGURES_DB
+        : FIGURES_DB.filter(function (f) { return f.cat === figureCat.value; });
+      if (!q) return base;
+      return base.filter(function (f) {
+        return (f.en || '').toLowerCase().indexOf(q) >= 0
+          || (f.title || '').toLowerCase().indexOf(q) >= 0
+          || (f.kunya || '').toLowerCase().indexOf(q) >= 0
+          || (f.summary || '').toLowerCase().indexOf(q) >= 0
+          || (f.era || '').toLowerCase().indexOf(q) >= 0;
+      });
+    });
+
+    var filteredHadith = V.computed(function () {
+      var q = hadithSearch.value.toLowerCase().trim();
+      if (!q) return HADITH_DB;
+      return HADITH_DB.filter(function (h) {
+        return (h.theme || '').toLowerCase().indexOf(q) >= 0
+          || (h.english || '').toLowerCase().indexOf(q) >= 0
+          || (h.translit || '').toLowerCase().indexOf(q) >= 0
+          || (h.narrator || '').toLowerCase().indexOf(q) >= 0
+          || (h.note || '').toLowerCase().indexOf(q) >= 0;
+      });
     });
 
     var currentFigureCat = V.computed(function () {
@@ -4798,8 +5011,17 @@ V.createApp({
 
     /* ===== DUʿĀʾ ===== */
     var filteredDuas = V.computed(function () {
-      if (duaCategory.value === 'all') return DUA_DB;
-      return DUA_DB.filter(function (d) { return d.cat === duaCategory.value; });
+      var q = duaSearch.value.toLowerCase().trim();
+      var base = duaCategory.value === 'all'
+        ? DUA_DB
+        : DUA_DB.filter(function (d) { return d.cat === duaCategory.value; });
+      if (!q) return base;
+      return base.filter(function (d) {
+        return (d.occasion || '').toLowerCase().indexOf(q) >= 0
+          || (d.translation || '').toLowerCase().indexOf(q) >= 0
+          || (d.translit || '').toLowerCase().indexOf(q) >= 0
+          || (d.source || '').toLowerCase().indexOf(q) >= 0;
+      });
     });
     var currentDuaCategory = V.computed(function () {
       if (duaCategory.value === 'all') return null;
@@ -5031,8 +5253,10 @@ V.createApp({
       versesError.value = false;
       // Translation 20 = Saheeh International (clear, widely-trusted English).
       // Khattab/Clear Quran (131) was withdrawn from the API in 2026.
+      // Asking for word_fields=translation gives us per-word English glosses
+      // — the foundation of the long-press word-by-word panel.
       var url = 'https://api.quran.com/api/v4/verses/by_chapter/' + id +
-        '?translations=20&words=true&word_fields=text_uthmani,transliteration' +
+        '?translations=20&words=true&word_fields=text_uthmani,transliteration,translation' +
         '&fields=text_uthmani,verse_key,verse_number' +
         '&translation_fields=text&per_page=286';
       fetch(url)
@@ -5041,18 +5265,27 @@ V.createApp({
           verses.value = (d.verses || []).map(function (v) {
             // Build transliteration from words array (skip word-type 'end' / ayah marker)
             var translit = '';
+            var wordList = [];
             if (Array.isArray(v.words)) {
-              translit = v.words
-                .filter(function (w) { return w && w.transliteration && w.transliteration.text && w.char_type_name !== 'end'; })
-                .map(function (w) { return w.transliteration.text; })
-                .join(' ');
+              v.words.forEach(function (w) {
+                if (!w || w.char_type_name === 'end') return;
+                if (w.transliteration && w.transliteration.text) {
+                  translit += (translit ? ' ' : '') + w.transliteration.text;
+                }
+                wordList.push({
+                  ar: w.text_uthmani || '',
+                  tr: (w.transliteration && w.transliteration.text) || '',
+                  en: (w.translation && w.translation.text) || ''
+                });
+              });
             }
             return {
               verse_key: v.verse_key,
               verse_number: v.verse_number,
               text_uthmani: v.text_uthmani,
               transliteration: translit,
-              translation: v.translations && v.translations[0] ? v.translations[0].text : ''
+              translation: v.translations && v.translations[0] ? v.translations[0].text : '',
+              words: wordList
             };
           });
           // Preserve last-read ayah if reopening the same surah; otherwise
@@ -5085,6 +5318,20 @@ V.createApp({
       stopAudio();
       audioEl = new Audio(audioUrl(v.verse_key));
       audioEl.addEventListener('ended', function () {
+        // Memorization repeat: same verse repeats `target` times before
+        // moving on or stopping.
+        var m = memorize.value;
+        if (m.verseKey === v.verse_key && (m.done + 1) < m.target) {
+          memorize.value = { verseKey: m.verseKey, target: m.target, done: m.done + 1 };
+          if (audioEl) {
+            try { audioEl.currentTime = 0; audioEl.play(); } catch (e) {}
+          }
+          return;
+        }
+        // Repeat finished — clear state, advance to next ayah
+        if (m.verseKey === v.verse_key) {
+          memorize.value = { verseKey: null, target: m.target, done: 0 };
+        }
         var idx = verses.value.findIndex(function (x) { return x.verse_key === v.verse_key; });
         if (idx >= 0 && idx < verses.value.length - 1) {
           playAyah(verses.value[idx + 1]);
@@ -5116,6 +5363,24 @@ V.createApp({
     function stopAudio() {
       if (audioEl) { try { audioEl.pause(); } catch (e) {} audioEl.src = ''; audioEl = null; }
       audio.value = { currentAyah: null, isPlaying: false, label: '', progress: 0 };
+      memorize.value = { verseKey: null, target: memorize.value.target, done: 0 };
+    }
+    /* Cycle repeat target: 1 → 3 → 5 → 10 → 1 (off). Setting it on a
+       verse arms it; tapping play afterwards starts the loop. */
+    function cycleVerseRepeat(v) {
+      var current = (memorize.value.verseKey === v.verse_key) ? memorize.value.target : 1;
+      var nextTarget;
+      if (current === 1) nextTarget = 3;
+      else if (current === 3) nextTarget = 5;
+      else if (current === 5) nextTarget = 10;
+      else nextTarget = 1;
+      if (nextTarget === 1) {
+        memorize.value = { verseKey: null, target: 1, done: 0 };
+        showMsg('REPEAT OFF');
+      } else {
+        memorize.value = { verseKey: v.verse_key, target: nextTarget, done: 0 };
+        showMsg('REPEAT × ' + nextTarget);
+      }
     }
 
     /* ===== BOOKMARKS ===== */
@@ -5276,6 +5541,7 @@ V.createApp({
           if (selectedStory.value) { selectedStory.value = null; history.pushState({ noor: true }, ''); return; }
           if (selectedFigure.value) { selectedFigure.value = null; history.pushState({ noor: true }, ''); return; }
           if (selectedSeerah.value) { selectedSeerah.value = null; history.pushState({ noor: true }, ''); return; }
+          if (selectedWordVerse.value) { selectedWordVerse.value = null; history.pushState({ noor: true }, ''); return; }
           if (showNameEdit.value) { showNameEdit.value = false; history.pushState({ noor: true }, ''); return; }
           if (showDeleteConfirm.value) { showDeleteConfirm.value = false; history.pushState({ noor: true }, ''); return; }
           goBack();
@@ -5292,6 +5558,7 @@ V.createApp({
             if (selectedStory.value) { selectedStory.value = null; return; }
             if (selectedFigure.value) { selectedFigure.value = null; return; }
             if (selectedSeerah.value) { selectedSeerah.value = null; return; }
+            if (selectedWordVerse.value) { selectedWordVerse.value = null; return; }
             if (showNameEdit.value) { showNameEdit.value = false; return; }
             if (showDeleteConfirm.value) { showDeleteConfirm.value = false; return; }
             if (canGoBack.value) goBack();
@@ -5309,13 +5576,16 @@ V.createApp({
       selectedName: selectedName, selectedVerse: selectedVerse,
       selectedHadith: selectedHadith, selectedStory: selectedStory,
       selectedFigure: selectedFigure, selectedSeerah: selectedSeerah,
+      selectedWordVerse: selectedWordVerse,
       showNameEdit: showNameEdit, showDeleteConfirm: showDeleteConfirm,
-      audio: audio, prefs: prefs, toast: toast,
+      audio: audio, prefs: prefs, toast: toast, memorize: memorize,
       showHeader: showHeader, avatarInitial: avatarInitial, greeting: greeting,
       todayLabel: todayLabel, todayYear: todayYear, hijriLabel: hijriLabel, isFriday: isFriday,
       filteredSurahs: filteredSurahs, filteredWisdom: filteredWisdom,
       filteredSolace: filteredSolace, currentSolaceTheme: currentSolaceTheme,
       filteredFigures: filteredFigures, currentFigureCat: currentFigureCat,
+      filteredHadith: filteredHadith,
+      hadithSearch: hadithSearch, figureSearch: figureSearch, solaceSearch: solaceSearch, duaSearch: duaSearch,
       readingProgress: readingProgress,
       dailyVerse: dailyVerse, dailyReflection: dailyReflection,
       asmaUlHusna: asmaUlHusna, wisdomThemes: wisdomThemes, surahs: surahs,
@@ -5337,7 +5607,7 @@ V.createApp({
       getReciterName: getReciterName, cyclePreferredReciter: cyclePreferredReciter,
       openReader: openReader, openReaderAt: openReaderAt, resumeReading: resumeReading,
       loadSurah: loadSurah,
-      playAyah: playAyah, toggleAudio: toggleAudio, stopAudio: stopAudio,
+      playAyah: playAyah, toggleAudio: toggleAudio, stopAudio: stopAudio, cycleVerseRepeat: cycleVerseRepeat,
       isBookmarked: isBookmarked, toggleBookmark: toggleBookmark, removeBookmark: removeBookmark,
       jumpToBookmark: jumpToBookmark, openVerseDetail: openVerseDetail,
       openRandomVerse: openRandomVerse, shareAyah: shareAyah,
