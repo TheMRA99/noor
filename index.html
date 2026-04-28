@@ -282,7 +282,35 @@
     .rule { height: 1px; background: var(--rule); width: 100%; }
     .rule-thick { height: 2px; background: var(--rule); width: 100%; }
     .rule-soft { height: 1px; background: var(--rule-soft); width: 100%; }
-    .rule-gold { height: 1px; background: var(--accent); opacity: 0.8; }
+    /* Gold rule with a softened gradient — a beam, not a hard line.
+       Use whenever a section opens to a Quranic text or a translation. */
+    .rule-gold {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent) 20%, var(--accent) 80%, transparent);
+      opacity: 0.7;
+    }
+    /* Ornamental divider — diamond + gold line + diamond. Use sparingly
+       between major sections (mastheads, About, story endings). */
+    .rule-ornament {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 28px 0;
+      opacity: 0.7;
+    }
+    .rule-ornament::before, .rule-ornament::after {
+      content: '';
+      flex: 0 1 80px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .rule-ornament-diamond {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
 
     .rule-v { width: 1px; background: var(--rule-soft); height: 100%; }
 
@@ -413,10 +441,22 @@
       text-align: left;
       cursor: pointer;
       border-radius: 4px;
-      transition: border-color var(--d-q), transform var(--d-q) var(--e-out);
+      transition: border-color var(--d-q) var(--e-out), transform var(--d-q) var(--e-out), box-shadow var(--d-q) var(--e-out);
     }
-    .tile:hover { border-color: var(--accent); transform: translateY(-3px); }
-    .tile:active { transform: scale(0.98); }
+    /* A subtle gold hairline grows along the bottom edge on hover —
+       a quiet "underlining" rather than a blunt border swap. */
+    .tile::after {
+      content: '';
+      position: absolute;
+      left: 18px; right: 18px; bottom: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity var(--d-q) var(--e-out);
+    }
+    .tile:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(201,169,97,0.06); }
+    .tile:hover::after { opacity: 0.7; }
+    .tile:active { transform: scale(0.985); }
     .tile .tile-index {
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 500;
@@ -468,7 +508,17 @@
     /* ===== BIG HERO STRIP (masthead) ===== */
     .masthead {
       position: relative;
-      padding: 24px 0 20px;
+      padding: 28px 0 22px;
+    }
+    /* A tiny gold pip at the top-left — a quiet flag that says: a
+       new section begins here. Echoes the manuscript-margin tradition. */
+    .masthead::before {
+      content: '';
+      position: absolute;
+      top: 6px; left: 0;
+      width: 18px; height: 1px;
+      background: var(--accent);
+      opacity: 0.55;
     }
     .masthead-ar {
       position: absolute; right: 0; top: 18px;
@@ -476,20 +526,22 @@
       direction: rtl;
       color: var(--accent);
       font-size: 26px;
-      opacity: 0.9;
+      opacity: 0.85;
       line-height: 1;
+      text-shadow: 0 0 18px rgba(201,169,97,0.10);
     }
 
     /* ===== VERSE CARD (reader) ===== */
     .verse-card {
       position: relative;
-      padding: 26px 20px 20px;
+      padding: 28px 22px 22px;
       background: var(--surface);
       border: 1px solid var(--surface-border);
       border-radius: 4px;
-      transition: border-color var(--d-q), box-shadow var(--d-q);
+      transition: border-color var(--d-q) var(--e-out), box-shadow var(--d-q) var(--e-out), transform 80ms var(--e-out);
       overflow: hidden;
     }
+    .verse-card:hover { border-color: var(--rule); box-shadow: 0 6px 28px rgba(0,0,0,0.04); }
     .verse-card.is-playing {
       border-color: var(--accent);
       box-shadow: 0 0 0 1px var(--accent), 0 4px 28px rgba(201,169,97,0.14);
@@ -602,11 +654,12 @@
       cursor: pointer;
       transition: all var(--d-q);
     }
-    .chip:hover { border-color: var(--text); color: var(--text); }
+    .chip:hover { border-color: var(--text-2); color: var(--text); }
     .chip.active {
       background: var(--text);
       color: var(--bg);
       border-color: var(--text);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.10);
     }
 
     /* ===== PLAY BUTTON ===== */
@@ -656,7 +709,8 @@
       outline: none;
       transition: border-color var(--d-q);
     }
-    .input:focus { border-color: var(--text); }
+    .input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,169,97,0.10); }
+    .input::placeholder { color: var(--text-3); opacity: 0.7; }
     .input-lg {
       font-size: 26px;
       font-weight: 700;
@@ -667,10 +721,10 @@
 
     /* ===== ANIMATIONS ===== */
     @keyframes pageIn {
-      from { opacity: 0; transform: translateY(14px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(10px); filter: blur(2px); }
+      to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
     }
-    .page-enter { animation: pageIn 0.55s var(--e-out) both; }
+    .page-enter { animation: pageIn 0.5s var(--e-out) both; }
 
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(12px); }
@@ -1734,6 +1788,43 @@
         </div>
       </div>
 
+      <!-- ================= PRAYERS (Ṣalāh) ================= -->
+      <div v-if="page==='prayers'" class="page-enter">
+        <div class="masthead">
+          <p class="kicker" style="color:var(--text-3)">THE PRAYERS / ṢALĀH</p>
+          <h2 class="display display-lg mt-2" style="color:var(--text)">The<br>Prayers<span class="text-accent">.</span></h2>
+          <p class="f-ar text-accent masthead-ar" style="top:40px">ٱلصَّلَاة</p>
+        </div>
+        <div class="rule-thick mb-4"></div>
+        <p class="kicker mb-5" style="color:var(--text-3)">FIVE OBLIGATORY · SUNNAH · SPECIAL OCCASIONS</p>
+
+        <!-- Category chips -->
+        <div class="flex gap-2 mb-6 overflow-x-auto scroll-hide">
+          <button @click="prayerCat='fard'" class="chip" :class="{active:prayerCat==='fard'}">DAILY 5</button>
+          <button @click="prayerCat='sunnah'" class="chip" :class="{active:prayerCat==='sunnah'}">SUNNAH</button>
+          <button @click="prayerCat='special'" class="chip" :class="{active:prayerCat==='special'}">SPECIAL</button>
+        </div>
+
+        <!-- Banner -->
+        <div v-if="currentPrayerCat" class="block-invert mb-6">
+          <p class="kicker" style="color:var(--accent)">{{currentPrayerCat.kicker}}</p>
+          <h3 class="display display-md mt-2" style="color:var(--fg-invert)">{{currentPrayerCat.label}}<span class="text-accent">.</span></h3>
+        </div>
+
+        <!-- Prayer entries -->
+        <div class="space-y-3 stagger">
+          <button v-for="p in filteredPrayers" :key="p.id" @click="selectedPrayer=p" class="ed-row w-full text-left">
+            <span class="ed-num num">{{p.n}}</span>
+            <div class="flex-1 min-w-0">
+              <p class="f-display" style="font-size:19px;font-weight:700;letter-spacing:-0.02em">{{p.en}}</p>
+              <p class="f-display mt-0.5" style="font-size:13px;font-weight:500;letter-spacing:-0.005em;color:var(--accent);font-style:italic">{{p.title}}</p>
+              <p class="kicker mt-1" style="color:var(--text-3);font-size:9px">{{p.rakah}}</p>
+            </div>
+            <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:24px">{{p.ar}}</p>
+          </button>
+        </div>
+      </div>
+
       <!-- ================= LIBRARY ================= -->
       <div v-if="page==='library'" class="page-enter">
         <div class="masthead">
@@ -1745,6 +1836,12 @@
         <p class="kicker mb-5" style="color:var(--text-3)">EVERYTHING BEYOND THE QURAN</p>
 
         <div class="grid grid-cols-2 gap-3">
+          <button @click="go('prayers')" class="tile" style="grid-column:span 2">
+            <p class="tile-index">★ / PRAYERS</p>
+            <p class="tile-title">The<br>Prayers<span class="text-accent">.</span></p>
+            <p class="tile-sub num">DAILY 5 · SUNNAH · TAHAJJUD · ISTIKHĀRA</p>
+            <svg class="tile-arrow w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
           <button @click="go('names')" class="tile">
             <p class="tile-index">01 / NAMES</p>
             <p class="tile-title">99<br>Names</p>
@@ -1927,7 +2024,7 @@
     <!-- ================= BOTTOM NAV ================= -->
     <nav v-if="showHeader" class="glass fixed bottom-0 left-0 right-0 z-40" style="padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--rule)">
       <div class="max-w-xl mx-auto grid grid-cols-4">
-        <button v-for="(tab,ti) in [{id:'home',icon:'home',label:'HOME',match:['home']},{id:'quran',icon:'book',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',icon:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace','adhkar','duas','tasbih','about']},{id:'profile',icon:'user',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-2.5" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
+        <button v-for="(tab,ti) in [{id:'home',icon:'home',label:'HOME',match:['home']},{id:'quran',icon:'book',label:'QURAN',match:['quran','reader','bookmarks']},{id:'library',icon:'library',label:'LIBRARY',match:['library','names','wisdom','hadith','stories','figures','seerah','solace','adhkar','duas','tasbih','prayers','about']},{id:'profile',icon:'user',label:'PROFILE',match:['profile']}]" :key="tab.id" @click="go(tab.id)" class="relative flex flex-col items-center py-2.5" :class="tab.match.indexOf(page)>=0?'tab-on':''" :style="tab.match.indexOf(page)<0?{color:'var(--text-3)'}:{}">
           <svg v-if="tab.icon==='home'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11l9-8 9 8M5 10v10a1 1 0 001 1h4v-7h4v7h4a1 1 0 001-1V10"/></svg>
           <svg v-if="tab.icon==='book'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 014 17.5v-13zM4 17.5A2.5 2.5 0 016.5 15H20"/></svg>
           <svg v-if="tab.icon==='library'" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5V4a1 1 0 011-1h3a1 1 0 011 1v15.5M9 19.5V4a1 1 0 011-1h3a1 1 0 011 1v15.5M14 19.5l3.5-15.2a1 1 0 011.2-.7l1.9.4a1 1 0 01.8 1.2L18 19.5"/></svg>
@@ -2119,6 +2216,41 @@
           <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
           <p class="f-display italic mb-6" style="font-size:17px;font-weight:500;color:var(--text-2);line-height:1.55">"{{selectedSeerah.lesson}}"</p>
           <button @click="selectedSeerah=null" class="btn btn-ghost btn-block">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prayer detail -->
+    <div v-if="selectedPrayer" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedPrayer=null">
+      <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
+        <div class="invert p-6 pb-7 relative">
+          <div class="flex items-center justify-between mb-4">
+            <span class="kicker" style="color:var(--accent)">PRAYER · <span class="num">{{selectedPrayer.n}}</span></span>
+            <button @click="selectedPrayer=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)" aria-label="Close">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="f-ar" style="color:var(--accent);font-size:54px;direction:rtl;line-height:1.1;margin-bottom:12px;text-align:right">{{selectedPrayer.ar}}</p>
+          <h3 class="display display-md" style="color:var(--fg-invert)">{{selectedPrayer.en}}<span class="text-accent">.</span></h3>
+          <p class="kicker mt-3" style="color:rgba(245,240,225,0.7)">{{selectedPrayer.title.toUpperCase()}}</p>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 gap-4 mb-5">
+            <div>
+              <p class="kicker mb-1" style="color:var(--text-3)">RAKAʿĀT</p>
+              <p class="f-body" style="font-size:14px;color:var(--text-2);line-height:1.5">{{selectedPrayer.rakah}}</p>
+            </div>
+            <div>
+              <p class="kicker mb-1" style="color:var(--text-3)">TIME</p>
+              <p class="f-body" style="font-size:14px;color:var(--text-2);line-height:1.5">{{selectedPrayer.time}}</p>
+            </div>
+          </div>
+          <div class="rule-gold w-16 mb-4"></div>
+          <p class="f-display leading-snug mb-5" style="font-size:16px;font-weight:500;letter-spacing:-0.005em;color:var(--text);line-height:1.65">{{selectedPrayer.summary}}</p>
+          <div v-if="selectedPrayer.notes" class="rule-soft mb-4"></div>
+          <p v-if="selectedPrayer.notes" class="kicker mb-2" style="color:var(--accent)">NOTE</p>
+          <p v-if="selectedPrayer.notes" class="text-sm italic mb-6" style="color:var(--text-2);line-height:1.55;border-left:2px solid var(--accent);padding-left:14px">{{selectedPrayer.notes}}</p>
+          <button @click="selectedPrayer=null" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
@@ -4388,14 +4520,14 @@ var ADHKAR_MORNING_DB = [
   {id:'m01', count:1, source:'Bukhārī, Muslim',
     title:'Āyat al-Kursī',
     arabic:'ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ ۚ لَا تَأْخُذُهُۥ سِنَةٌۭ وَلَا نَوْمٌۭ ۚ لَّهُۥ مَا فِى ٱلسَّمَٰوَٰتِ وَمَا فِى ٱلْأَرْضِ ۗ مَن ذَا ٱلَّذِى يَشْفَعُ عِندَهُۥٓ إِلَّا بِإِذْنِهِۦ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَىْءٍۢ مِّنْ عِلْمِهِۦٓ إِلَّا بِمَا شَآءَ ۚ وَسِعَ كُرْسِيُّهُ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضَ ۖ وَلَا يَـُٔودُهُۥ حِفْظُهُمَا ۚ وَهُوَ ٱلْعَلِىُّ ٱلْعَظِيمُ',
-    translit:'Allāhu lā ilāha illā huwa al-Ḥayyu al-Qayyūm…',
-    translation:'Allah — there is no god but He, the Ever-Living, the Self-Sustaining.',
+    translit:'Allāhu lā ilāha illā huwa al-Ḥayyu al-Qayyūm. Lā taʾkhudhuhu sinatun wa lā nawm. Lahu mā fī as-samāwāti wa mā fī al-arḍ. Man dhā alladhī yashfaʿu ʿindahu illā bi-idhnih. Yaʿlamu mā bayna aydīhim wa mā khalfahum. Wa lā yuḥīṭūna bi-shayʾin min ʿilmihi illā bimā shāʾ. Wasiʿa kursiyyuhu as-samāwāti wal-arḍ. Wa lā yaʾūduhu ḥifẓuhumā. Wa huwa al-ʿAliyyu al-ʿAẓīm.',
+    translation:'Allah — there is no god but He, the Ever-Living, the Self-Sustaining. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and on the earth. Who is it that can intercede with Him except by His permission? He knows what is before them and what is behind them, and they encompass nothing of His knowledge except what He wills. His Throne extends over the heavens and the earth, and their preservation tires Him not. He is the Most High, the Most Great.',
     reward:'Whoever recites this in the morning is protected from the jinn until evening.'},
   {id:'m02', count:3, source:'Abū Dāwūd, Tirmidhī',
     title:'Surah al-Ikhlāṣ · al-Falaq · an-Nās (each ×3)',
-    arabic:'قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ ٱللَّهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ',
-    translit:'Qul huwa Allāhu aḥad. Allāhu aṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahu kufuwan aḥad.',
-    translation:'Say: He is Allah, the One. The Eternal Refuge. He neither begets nor is born, and there is none equal to Him.',
+    arabic:'قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ ٱللَّهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ ۞ قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ ۞ قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ ۝ مَلِكِ ٱلنَّاسِ ۝ إِلَٰهِ ٱلنَّاسِ ۝ مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ ۝ ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ ۝ مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ',
+    translit:'Qul huwa Allāhu aḥad. Allāhu aṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahu kufuwan aḥad. ❖ Qul aʿūdhu bi-Rabbi al-falaq. Min sharri mā khalaq. Wa min sharri ghāsiqin idhā waqab. Wa min sharri an-naffāthāti fī al-ʿuqad. Wa min sharri ḥāsidin idhā ḥasad. ❖ Qul aʿūdhu bi-Rabbi an-nās. Maliki an-nās. Ilāhi an-nās. Min sharri al-waswāsi al-khannās. Alladhī yuwaswisu fī ṣudūri an-nās. Mina al-jinnati wan-nās.',
+    translation:'Say: He is Allah, the One. Allah, the Eternal Refuge. He neither begets nor is born, and there is none equal to Him. ❖ Say: I seek refuge in the Lord of the daybreak — from the evil of what He has created, from the evil of darkness when it settles, from the evil of those who blow on knots, and from the evil of an envier when he envies. ❖ Say: I seek refuge in the Lord of mankind, the King of mankind, the God of mankind — from the evil of the retreating whisperer who whispers in the breasts of mankind, from among the jinn and mankind.',
     reward:'He who recites these three sūrahs three times in the morning and evening — they will suffice him from everything.'},
   {id:'m03', count:1, source:'Bukhārī',
     title:'Sayyid al-Istighfār — Master of Seeking Forgiveness',
@@ -4469,27 +4601,27 @@ var ADHKAR_MORNING_DB = [
 var ADHKAR_EVENING_DB = [
   {id:'e01', count:1, source:'Bukhārī, Muslim',
     title:'Āyat al-Kursī',
-    arabic:'ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ ۚ لَا تَأْخُذُهُۥ سِنَةٌۭ وَلَا نَوْمٌۭ',
-    translit:'Allāhu lā ilāha illā huwa al-Ḥayyu al-Qayyūm…',
-    translation:'Allah — there is no god but He, the Ever-Living, the Self-Sustaining.',
+    arabic:'ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ ۚ لَا تَأْخُذُهُۥ سِنَةٌۭ وَلَا نَوْمٌۭ ۚ لَّهُۥ مَا فِى ٱلسَّمَٰوَٰتِ وَمَا فِى ٱلْأَرْضِ ۗ مَن ذَا ٱلَّذِى يَشْفَعُ عِندَهُۥٓ إِلَّا بِإِذْنِهِۦ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَىْءٍۢ مِّنْ عِلْمِهِۦٓ إِلَّا بِمَا شَآءَ ۚ وَسِعَ كُرْسِيُّهُ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضَ ۖ وَلَا يَـُٔودُهُۥ حِفْظُهُمَا ۚ وَهُوَ ٱلْعَلِىُّ ٱلْعَظِيمُ',
+    translit:'Allāhu lā ilāha illā huwa al-Ḥayyu al-Qayyūm. Lā taʾkhudhuhu sinatun wa lā nawm. Lahu mā fī as-samāwāti wa mā fī al-arḍ. Man dhā alladhī yashfaʿu ʿindahu illā bi-idhnih. Yaʿlamu mā bayna aydīhim wa mā khalfahum. Wa lā yuḥīṭūna bi-shayʾin min ʿilmihi illā bimā shāʾ. Wasiʿa kursiyyuhu as-samāwāti wal-arḍ. Wa lā yaʾūduhu ḥifẓuhumā. Wa huwa al-ʿAliyyu al-ʿAẓīm.',
+    translation:'Allah — there is no god but He, the Ever-Living, the Self-Sustaining. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and on the earth. Who is it that can intercede with Him except by His permission? He knows what is before them and what is behind them, and they encompass nothing of His knowledge except what He wills. His Throne extends over the heavens and the earth, and their preservation tires Him not. He is the Most High, the Most Great.',
     reward:'Whoever recites this in the evening is protected from the jinn until morning.'},
   {id:'e02', count:3, source:'Abū Dāwūd, Tirmidhī',
     title:'Surah al-Ikhlāṣ · al-Falaq · an-Nās (each ×3)',
-    arabic:'قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ ۝ قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ',
-    translit:'Qul huwa Allāhu aḥad… Qul aʿūdhu bi-Rabbi al-falaq… Qul aʿūdhu bi-Rabbi an-nās…',
-    translation:'Say: He is Allah, the One… I seek refuge in the Lord of the daybreak… I seek refuge in the Lord of mankind…',
+    arabic:'قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ ٱللَّهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ ۞ قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ ۞ قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ ۝ مَلِكِ ٱلنَّاسِ ۝ إِلَٰهِ ٱلنَّاسِ ۝ مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ ۝ ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ ۝ مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ',
+    translit:'Qul huwa Allāhu aḥad. Allāhu aṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahu kufuwan aḥad. ❖ Qul aʿūdhu bi-Rabbi al-falaq. Min sharri mā khalaq. Wa min sharri ghāsiqin idhā waqab. Wa min sharri an-naffāthāti fī al-ʿuqad. Wa min sharri ḥāsidin idhā ḥasad. ❖ Qul aʿūdhu bi-Rabbi an-nās. Maliki an-nās. Ilāhi an-nās. Min sharri al-waswāsi al-khannās. Alladhī yuwaswisu fī ṣudūri an-nās. Mina al-jinnati wan-nās.',
+    translation:'Say: He is Allah, the One. Allah, the Eternal Refuge. He neither begets nor is born, and there is none equal to Him. ❖ Say: I seek refuge in the Lord of the daybreak — from the evil of what He has created, from the evil of darkness when it settles, from the evil of those who blow on knots, and from the evil of an envier when he envies. ❖ Say: I seek refuge in the Lord of mankind, the King of mankind, the God of mankind — from the evil of the retreating whisperer who whispers in the breasts of mankind, from among the jinn and mankind.',
     reward:'These three sūrahs morning and evening will suffice you from everything.'},
   {id:'e03', count:1, source:'Bukhārī',
     title:'Sayyid al-Istighfār',
     arabic:'ٱللَّهُمَّ أَنْتَ رَبِّى لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِى وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا ٱسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَىَّ، وَأَبُوءُ بِذَنْبِى، فَٱغْفِرْ لِى فَإِنَّهُ لَا يَغْفِرُ ٱلذُّنُوبَ إِلَّا أَنْتَ',
-    translit:'Allāhumma anta Rabbī, lā ilāha illā anta, khalaqtanī wa anā ʿabduka…',
-    translation:'O Allah, You are my Lord — there is no god but You. You created me and I am Your servant…',
+    translit:'Allāhumma anta Rabbī, lā ilāha illā anta, khalaqtanī wa anā ʿabduka, wa anā ʿalā ʿahdika wa waʿdika ma-staṭaʿtu, aʿūdhu bika min sharri mā ṣanaʿtu, abūʾu laka bi-niʿmatika ʿalayya, wa abūʾu bi-dhanbī, fa-ghfir lī fa-innahu lā yaghfiru adh-dhunūba illā anta.',
+    translation:'O Allah, You are my Lord — there is no god but You. You created me and I am Your servant. I keep Your covenant and pledge as best I can. I seek refuge in You from the evil I have done. I acknowledge Your blessings upon me, and I confess my sins — so forgive me, for none forgives sins except You.',
     reward:'Whoever says it during the night with conviction and dies before morning enters Paradise.'},
   {id:'e04', count:1, source:'Abū Dāwūd, Tirmidhī',
     title:'Amsaynā wa amsa al-mulk lillāh',
     arabic:'أَمْسَيْنَا وَأَمْسَىٰ ٱلْمُلْكُ لِلَّهِ، وَٱلْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا ٱللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ ٱلْمُلْكُ وَلَهُ ٱلْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍۢ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِى هَٰذِهِ ٱللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا',
-    translit:'Amsaynā wa amsa al-mulku lillāh, wal-ḥamdu lillāh, lā ilāha illā Allāhu waḥdahu lā sharīka lah… Rabbi as-aluka khayra mā fī hādhihi al-laylati wa khayra mā baʿdahā.',
-    translation:'We have entered the evening and the dominion belongs to Allah. My Lord, I ask You for the good of this night and the good that follows.'},
+    translit:'Amsaynā wa amsa al-mulku lillāh, wal-ḥamdu lillāh, lā ilāha illā Allāhu waḥdahu lā sharīka lah, lahu al-mulku wa lahu al-ḥamdu wa huwa ʿalā kulli shayʾin qadīr. Rabbi as-aluka khayra mā fī hādhihi al-laylati wa khayra mā baʿdahā.',
+    translation:'We have entered the evening and the dominion belongs to Allah. All praise is for Allah. There is no god but Allah, alone with no partner. His is the dominion, His is the praise, and He has power over all things. My Lord, I ask You for the good of this night and the good that follows.'},
   {id:'e05', count:1, source:'Abū Dāwūd, Tirmidhī',
     title:'Allāhumma bika amsaynā',
     arabic:'ٱللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ ٱلْمَصِيرُ',
@@ -4732,6 +4864,147 @@ var DUA_DB = [
     source:'Bukhārī, Muslim'}
 ];
 
+/* =================================================================
+   ṢALĀH — The Prayers.
+   The five obligatory daily prayers (farḍ) and the most-prayed
+   voluntary prayers (sunnah, nafl), with their times, raka'ah counts,
+   and a short note on each. Sources cited where the matter rests on a
+   specific narration.
+   ================================================================= */
+var PRAYER_CATEGORIES = [
+  {id:'fard',     label:'Daily 5',     kicker:'THE OBLIGATORY · FARḌ'},
+  {id:'sunnah',   label:'Sunnah',      kicker:'EMPHASIZED VOLUNTARY · MUʾAKKADAH'},
+  {id:'special',  label:'Special',     kicker:'TAHAJJUD · ISTIKHĀRA · OCCASIONS'}
+];
+
+var PRAYERS_DB = [
+  /* THE FIVE DAILY PRAYERS (FARḌ) */
+  {id:'fajr', cat:'fard', n:'01', ar:'ٱلْفَجْر', en:'Fajr', title:'The Dawn Prayer',
+    rakah:'2 farḍ (preceded by 2 sunnah)',
+    time:'From true dawn (subḥ ṣādiq) until just before sunrise.',
+    summary:'Recited aloud. The two sunnah rakaʿāt before Fajr — the Prophet ﷺ said: "Better than this world and all that is in it." Fajr is the witness-prayer of the angels: those of the night and those of the day meet at it (Bukhārī, Muslim).',
+    notes:'Best to pray at the very start of the time. Whoever prays Fajr in congregation — the Prophet ﷺ said — is in the protection of Allah for the rest of his day (Muslim).',
+    when:'before-sunrise'},
+  {id:'dhuhr', cat:'fard', n:'02', ar:'ٱلظُّهْر', en:'Ẓuhr', title:'The Noon Prayer',
+    rakah:'4 farḍ (4 sunnah before, 2 sunnah after)',
+    time:'From when the sun has just passed its zenith until ʿAṣr time begins.',
+    summary:'Prayed silently. The middle of the working day — a pause to remember Whom you work for. The first prayer to be made obligatory after the night journey (al-Isrāʾ wal-Miʿrāj).',
+    notes:'In intense heat, the Prophet ﷺ recommended delaying it until the heat softens (Bukhārī).',
+    when:'after-noon'},
+  {id:'asr', cat:'fard', n:'03', ar:'ٱلْعَصْر', en:'ʿAṣr', title:'The Afternoon Prayer',
+    rakah:'4 farḍ',
+    time:'From when an object\'s shadow equals its own length (Mālik / Shāfiʿī) — until just before sunset.',
+    summary:'Prayed silently. The "middle prayer" emphasized in the Qurʾān: "Guard strictly the prayers, especially the middle prayer" (2:238). The prayer most often missed by the negligent — the Prophet ﷺ warned that whoever misses ʿAṣr, his deeds are nullified for the day (Bukhārī).',
+    notes:'Pray it before the sun begins to yellow. The angels of night and day witness it together with Fajr (Bukhārī).',
+    when:'late-afternoon'},
+  {id:'maghrib', cat:'fard', n:'04', ar:'ٱلْمَغْرِب', en:'Maghrib', title:'The Sunset Prayer',
+    rakah:'3 farḍ (2 sunnah after)',
+    time:'From sunset until the red glow on the horizon disappears.',
+    summary:'Recited aloud in the first two rakaʿāt. The shortest window of all five — pray it as soon as the sun is gone. The "witr of the day" because of its odd three rakaʿāt (Bukhārī).',
+    notes:'Break your fast in Ramadan first, then pray. The Prophet ﷺ would not delay this prayer.',
+    when:'sunset'},
+  {id:'isha', cat:'fard', n:'05', ar:'ٱلْعِشَاء', en:'ʿIshāʾ', title:'The Night Prayer',
+    rakah:'4 farḍ (2 sunnah after) + Witr',
+    time:'From the disappearance of the red horizon until midnight (or until just before Fajr in necessity).',
+    summary:'Recited aloud in the first two rakaʿāt. The Prophet ﷺ said: "If they knew what is in ʿIshāʾ and Fajr, they would come even crawling" (Bukhārī).',
+    notes:'Best delayed to the first third of the night when not difficult. Witr should be the last prayer of the night for those who do not pray Tahajjud.',
+    when:'after-dusk'},
+
+  /* SUNNAH MUʾAKKADAH — emphasized voluntary prayers */
+  {id:'witr', cat:'sunnah', n:'06', ar:'ٱلْوِتْر', en:'Witr', title:'The Closing Odd Prayer',
+    rakah:'1, 3, 5, 7 or 9 (always odd)',
+    time:'After ʿIshāʾ until just before Fajr.',
+    summary:'The Prophet ﷺ never abandoned Witr. "Allah is Witr (One) and loves what is odd" (Tirmidhī). Most commonly prayed as 3 rakaʿāt: in the last, raise the hands and recite the duʿā of qunūt — Allāhumma-hdinā fīman hadayta…',
+    notes:'If you fear missing Fajr, pray Witr before sleeping. If you have a habit of waking, delay it to your last prayer of the night.',
+    when:'late-night'},
+  {id:'sunnah-fajr', cat:'sunnah', n:'07', ar:'سُنَّة ٱلْفَجْر', en:'Sunnah of Fajr', title:'The Two Light Rakaʿāt',
+    rakah:'2',
+    time:'Between the call to Fajr and the iqāma — before the obligatory Fajr.',
+    summary:'The Prophet ﷺ would pray these so lightly the companions said: "Did he recite al-Fātiḥa?" Yet of these he said: "They are better than this world and all that is in it" (Muslim).',
+    notes:'Best after the adhān, before the iqāma. Recite Surah al-Kāfirūn in the first and al-Ikhlāṣ in the second (or al-Baqarah 2:136 and Āl ʿImrān 3:52).',
+    when:'before-fajr'},
+  {id:'sunnah-zuhr', cat:'sunnah', n:'08', ar:'سُنَّة ٱلظُّهْر', en:'Sunnah of Ẓuhr', title:'Four Before, Two After',
+    rakah:'4 before + 2 after',
+    time:'4 in the time before farḍ Ẓuhr; 2 immediately after.',
+    summary:'Umm Ḥabība (RA) reported: "Whoever prays twelve rakaʿāt of voluntary prayer in a day and night — Allah will build for him a house in Paradise" (Muslim). The four before Ẓuhr are part of these twelve.',
+    notes:'The 4 before may be offered as 2+2 with one tasleem in between, or as 4 with one tasleem.',
+    when:'around-zuhr'},
+  {id:'sunnah-maghrib', cat:'sunnah', n:'09', ar:'سُنَّة ٱلْمَغْرِب', en:'Sunnah of Maghrib', title:'Two After',
+    rakah:'2 after',
+    time:'Immediately after the obligatory Maghrib.',
+    summary:'Recite Surah al-Kāfirūn in the first rakaʿah and al-Ikhlāṣ in the second — the Prophet\'s ﷺ habit (Tirmidhī).',
+    notes:'Pray these at home if possible — the Prophet ﷺ said: "Pray your nawāfil at home" (Bukhārī).',
+    when:'after-maghrib'},
+  {id:'sunnah-isha', cat:'sunnah', n:'10', ar:'سُنَّة ٱلْعِشَاء', en:'Sunnah of ʿIshāʾ', title:'Two After',
+    rakah:'2 after',
+    time:'Immediately after the obligatory ʿIshāʾ.',
+    summary:'Part of the twelve sunnah rakaʿāt that earn a house in Paradise (Muslim).',
+    notes:'',
+    when:'after-isha'},
+
+  /* SPECIAL — voluntary prayers for occasions and elevation */
+  {id:'tahajjud', cat:'special', n:'11', ar:'ٱلتَّهَجُّد', en:'Tahajjud', title:'The Night Vigil',
+    rakah:'2 by 2 — usually 2, 4, 6, or 8 rakaʿāt; finish with Witr',
+    time:'After waking from sleep, in the last third of the night, before Fajr.',
+    summary:'The Qurʾān calls it qiyām al-layl — standing in the night. Allah descends to the lowest heaven in the last third of the night and asks: "Who is calling Me, that I may answer? Who is asking Me, that I may give?" (Bukhārī, Muslim). The most beloved prayer to Allah after the obligatory.',
+    notes:'Even two short rakaʿāt count. The Prophet ﷺ said the best night prayer is that of Dāwūd (AS) — half the night sleep, third standing, sixth sleep again (Bukhārī).',
+    when:'last-third-night'},
+  {id:'istikhara', cat:'special', n:'12', ar:'ٱلِٱسْتِخَارَة', en:'Istikhāra', title:'Asking Allah\'s Guidance on a Decision',
+    rakah:'2 (any time except the prohibited times)',
+    time:'When facing a decision and seeking divine guidance.',
+    summary:'Pray two rakaʿāt of any voluntary prayer (other than the obligatory). After the salām, raise hands and recite the long duʿā beginning: Allāhumma innī astakhīruka bi-ʿilmika, wa astaqdiruka bi-qudratika… The Prophet ﷺ taught it as he taught a sūrah (Bukhārī).',
+    notes:'No special signs are required — proceed with what your heart settles on after the prayer. If something is good, Allah will make it easy; if not, He will turn you away.',
+    when:'any-decision'},
+  {id:'duha', cat:'special', n:'13', ar:'صَلَاةُ ٱلضُّحَىٰ', en:'Ḍuḥā', title:'The Forenoon Prayer',
+    rakah:'2 (minimum) — up to 8 (recommended) — up to 12 (maximum)',
+    time:'After sunrise has fully risen (about 15-20 min after) until just before noon.',
+    summary:'The "prayer of the awwābīn" — those who turn often to Allah. Abū Hurayra (RA) said: "My beloved ﷺ advised me of three things, which I will never abandon — fasting three days each month, the two rakaʿāt of Ḍuḥā, and praying Witr before sleeping" (Bukhārī).',
+    notes:'Each finger and joint of your body owes a charity — the two rakaʿāt of Ḍuḥā suffice for them all (Muslim).',
+    when:'mid-morning'},
+  {id:'tarawih', cat:'special', n:'14', ar:'ٱلتَّرَاوِيح', en:'Tarāwīḥ', title:'The Ramaḍān Night Prayer',
+    rakah:'8 to 20 rakaʿāt (in pairs), followed by Witr',
+    time:'After ʿIshāʾ throughout the nights of Ramaḍān.',
+    summary:'The Prophet ﷺ prayed it in the masjid for three nights, then stopped — fearing it might become obligatory. ʿUmar (RA) revived the congregational form. The Prophet ﷺ said: "Whoever stands in prayer during Ramaḍān with faith and seeking reward — his past sins are forgiven" (Bukhārī, Muslim).',
+    notes:'Quality over quantity — long, calm rakaʿāt are better than rushed many. Pray with khushūʿ.',
+    when:'ramadan-nights'},
+  {id:'eid', cat:'special', n:'15', ar:'صَلَاةُ ٱلْعِيد', en:'ʿĪd', title:'The Festival Prayer',
+    rakah:'2 — with extra takbīrāt',
+    time:'After sunrise on ʿĪd al-Fiṭr (1 Shawwāl) and ʿĪd al-Aḍḥā (10 Dhū al-Ḥijja).',
+    summary:'Prayed in an open space if possible (the musallā), in congregation. 7 takbīrs in the first rakaʿah (after the opening takbīr), 5 in the second (before the rukūʿ takbīr). A khuṭba follows.',
+    notes:'For ʿĪd al-Fiṭr: take a different route home than the route you came. For ʿĪd al-Aḍḥā: delay breakfast until after the prayer (the meat of your sacrifice is the first thing you eat).',
+    when:'eid-mornings'},
+  {id:'janaza', cat:'special', n:'16', ar:'صَلَاةُ ٱلْجَنَازَة', en:'Janāza', title:'The Funeral Prayer',
+    rakah:'No rukūʿ, no sujūd — just four takbīrs while standing',
+    time:'When a Muslim has passed and the body is being prepared for burial.',
+    summary:'A community obligation (farḍ kifāya). After the first takbīr, recite al-Fātiḥa. After the second, send blessings on the Prophet ﷺ. After the third, supplicate for the deceased. After the fourth, supplicate for the living. Then the salām.',
+    notes:'The Prophet ﷺ said whoever attends a janāza until the prayer earns one qīrāṭ of reward; whoever stays until the burial earns two — each qīrāṭ like the size of Mount Uḥud (Bukhārī, Muslim).',
+    when:'when-needed'},
+  {id:'tawba', cat:'special', n:'17', ar:'صَلَاةُ ٱلتَّوْبَة', en:'Tawba', title:'The Prayer of Repentance',
+    rakah:'2 — at any time outside the prohibited times',
+    time:'After committing a sin, with awareness of it and intention to turn back.',
+    summary:'The Prophet ﷺ said: "There is no servant who commits a sin, then performs wudūʾ well, prays two rakaʿāt, then asks Allah\'s forgiveness — except that Allah forgives him" (Abū Dāwūd, Tirmidhī). After the salām, ask Allah for forgiveness sincerely.',
+    notes:'Sincerity (ikhlāṣ), regret, and resolve not to return are the conditions of accepted repentance.',
+    when:'after-a-sin'},
+  {id:'kusuf', cat:'special', n:'18', ar:'صَلَاةُ ٱلْكُسُوف', en:'Kusūf / Khusūf', title:'The Eclipse Prayer',
+    rakah:'2 — with two rukūʿs and two recitations in each rakaʿah',
+    time:'During a solar (kusūf) or lunar (khusūf) eclipse.',
+    summary:'The Prophet ﷺ prayed it the day his son Ibrāhīm died, when an eclipse coincided. He said: "The sun and the moon do not eclipse for the death or birth of any human — they are signs of Allah. When you see this, hasten to prayer" (Bukhārī).',
+    notes:'Long recitation, long rukūʿ — the prayer continues until the eclipse ends. A khuṭba follows.',
+    when:'eclipse'},
+  {id:'istisqa', cat:'special', n:'19', ar:'صَلَاةُ ٱلِٱسْتِسْقَاء', en:'Istisqāʾ', title:'The Rain Prayer',
+    rakah:'2 — like ʿĪd, in the open',
+    time:'In a time of drought, when rain is needed.',
+    summary:'The community gathers in an open space, prays two rakaʿāt aloud, then the imām gives a khuṭba turning his cloak inside-out — a symbolic gesture of inverting the situation, asking Allah to turn drought into rain.',
+    notes:'The Prophet ﷺ said: "When you see clouds, leave what you are doing and pray for good in them — the heart of every believer should soften at the wind that brings rain."',
+    when:'drought'},
+  {id:'awwabin', cat:'special', n:'20', ar:'صَلَاةُ ٱلْأَوَّابِين', en:'Awwābīn', title:'The Prayer of the Oft-Returning',
+    rakah:'6 (or up to 20)',
+    time:'Between Maghrib and ʿIshāʾ.',
+    summary:'A prayer of those who turn often to Allah (al-awwābīn). The Prophet ﷺ said: "Whoever prays six rakaʿāt after Maghrib without speaking ill in between, will be raised by Allah equal to twelve years of worship" (Tirmidhī, ḥasan).',
+    notes:'A beautiful gap-prayer — fills the time between the haste of evening and the calm of night.',
+    when:'after-maghrib'}
+];
+
 /* Reciters */
 var RECITERS = [
   {id:7,name:"Mishary Alafasy",subfolder:"Alafasy_128kbps"},
@@ -4789,6 +5062,8 @@ V.createApp({
     var selectedFigure = V.ref(null);
     var selectedSeerah = V.ref(null);
     var selectedWordVerse = V.ref(null); // holds a verse object → opens word-by-word panel
+    var selectedPrayer = V.ref(null);
+    var prayerCat = V.ref('fard');
     var showNameEdit = V.ref(false);
     var showDeleteConfirm = V.ref(false);
 
@@ -5026,6 +5301,14 @@ V.createApp({
     var currentDuaCategory = V.computed(function () {
       if (duaCategory.value === 'all') return null;
       return DUA_CATEGORIES.find(function (c) { return c.id === duaCategory.value; }) || null;
+    });
+
+    /* ===== PRAYERS ===== */
+    var filteredPrayers = V.computed(function () {
+      return PRAYERS_DB.filter(function (p) { return p.cat === prayerCat.value; });
+    });
+    var currentPrayerCat = V.computed(function () {
+      return PRAYER_CATEGORIES.find(function (c) { return c.id === prayerCat.value; }) || null;
     });
 
     /* ===== TASBĪḤ ===== */
@@ -5542,6 +5825,7 @@ V.createApp({
           if (selectedFigure.value) { selectedFigure.value = null; history.pushState({ noor: true }, ''); return; }
           if (selectedSeerah.value) { selectedSeerah.value = null; history.pushState({ noor: true }, ''); return; }
           if (selectedWordVerse.value) { selectedWordVerse.value = null; history.pushState({ noor: true }, ''); return; }
+          if (selectedPrayer.value) { selectedPrayer.value = null; history.pushState({ noor: true }, ''); return; }
           if (showNameEdit.value) { showNameEdit.value = false; history.pushState({ noor: true }, ''); return; }
           if (showDeleteConfirm.value) { showDeleteConfirm.value = false; history.pushState({ noor: true }, ''); return; }
           goBack();
@@ -5559,6 +5843,7 @@ V.createApp({
             if (selectedFigure.value) { selectedFigure.value = null; return; }
             if (selectedSeerah.value) { selectedSeerah.value = null; return; }
             if (selectedWordVerse.value) { selectedWordVerse.value = null; return; }
+            if (selectedPrayer.value) { selectedPrayer.value = null; return; }
             if (showNameEdit.value) { showNameEdit.value = false; return; }
             if (showDeleteConfirm.value) { showDeleteConfirm.value = false; return; }
             if (canGoBack.value) goBack();
@@ -5576,7 +5861,9 @@ V.createApp({
       selectedName: selectedName, selectedVerse: selectedVerse,
       selectedHadith: selectedHadith, selectedStory: selectedStory,
       selectedFigure: selectedFigure, selectedSeerah: selectedSeerah,
-      selectedWordVerse: selectedWordVerse,
+      selectedWordVerse: selectedWordVerse, selectedPrayer: selectedPrayer,
+      prayerCat: prayerCat, filteredPrayers: filteredPrayers, currentPrayerCat: currentPrayerCat,
+      PRAYERS_DB: PRAYERS_DB, PRAYER_CATEGORIES: PRAYER_CATEGORIES,
       showNameEdit: showNameEdit, showDeleteConfirm: showDeleteConfirm,
       audio: audio, prefs: prefs, toast: toast, memorize: memorize,
       showHeader: showHeader, avatarInitial: avatarInitial, greeting: greeting,
