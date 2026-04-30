@@ -4,10 +4,10 @@
   "description": "Noor — A reverent Islamic educational companion. Quran, Names of Allah, wisdom, and remembrance.",
   "main": "index.html",
   "scripts": {
-    "build": "mkdir -p www/fonts www/assets && cp index.html www/index.html && cp sw.js www/sw.js && cp manifest.webmanifest www/manifest.webmanifest && cp assets/fonts/*.ttf www/fonts/ && cp assets/*.png www/assets/ && npx cap copy android",
+    "build": "mkdir -p www/fonts www/assets && cp index.html www/index.html && cp sw.js www/sw.js && cp manifest.webmanifest www/manifest.webmanifest && cp assets/fonts/*.ttf www/fonts/ && cp assets/*.png www/assets/ && cp apple-touch-icon.png www/apple-touch-icon.png && cp apple-touch-icon-precomposed.png www/apple-touch-icon-precomposed.png && cp favicon.png www/favicon.png && npx cap copy android",
     "open": "npx cap open android",
     "sync": "npx cap sync android",
-    "add-android": "mkdir -p www/fonts www/assets && cp index.html www/index.html && cp sw.js www/sw.js && cp manifest.webmanifest www/manifest.webmanifest && cp assets/fonts/*.ttf www/fonts/ && cp assets/*.png www/assets/ && npx cap add android"
+    "add-android": "mkdir -p www/fonts www/assets && cp index.html www/index.html && cp sw.js www/sw.js && cp manifest.webmanifest www/manifest.webmanifest && cp assets/fonts/*.ttf www/fonts/ && cp assets/*.png www/assets/ && cp apple-touch-icon.png www/apple-touch-icon.png && cp apple-touch-icon-precomposed.png www/apple-touch-icon-precomposed.png && cp favicon.png www/favicon.png && npx cap add android"
   },
   "keywords": [
     "quran",

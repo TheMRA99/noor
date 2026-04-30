@@ -11,11 +11,18 @@
   <title>Noor — نور</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230A0F0D'/><text x='50' y='62' text-anchor='middle' font-family='Inter,sans-serif' font-weight='900' font-size='44' fill='%23C9A961' letter-spacing='-2'>N</text></svg>">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" type="image/png" sizes="48x48" href="./assets/favicon.png">
+  <!-- Root-level apple-touch-icon — iOS Safari auto-fetches this path
+       on "Add to Home Screen" even without an explicit hint, but having
+       both the rel link and the root file is the most reliable setup. -->
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="./apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="./apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="./apple-touch-icon.png">
+  <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon-precomposed.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="./favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./assets/icon.png">
-  <link rel="apple-touch-icon" href="./assets/icon.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon.png">
   <meta name="msapplication-TileColor" content="#0A0F0D">
   <meta name="msapplication-TileImage" content="./assets/icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
