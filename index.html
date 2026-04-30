@@ -11,7 +11,13 @@
   <title>Noor — نور</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230A0F0D'/><text x='50' y='62' text-anchor='middle' font-family='Inter,sans-serif' font-weight='900' font-size='44' fill='%23C9A961' letter-spacing='-2'>N</text></svg>">
   <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="48x48" href="./assets/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./assets/icon.png">
   <link rel="apple-touch-icon" href="./assets/icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon.png">
+  <meta name="msapplication-TileColor" content="#0A0F0D">
+  <meta name="msapplication-TileImage" content="./assets/icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -914,9 +920,7 @@
             <span class="f-ar text-accent" style="font-size:15px;direction:rtl">نور</span>
           </button>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="toggle" :class="{'is-on':isDark}" @click="toggleTheme" aria-label="Toggle theme"><div class="knob"></div></div>
-        </div>
+        <!-- Theme toggle moved to Profile only — keeps the header quiet. -->
       </div>
       <div class="rule"></div>
     </header>
@@ -1529,6 +1533,14 @@
           </div>
         </div>
 
+        <!-- Sensitive crisis note — only shown for the despair theme -->
+        <div v-if="solaceTheme==='despair'" class="mb-6" style="border:1px solid var(--accent);background:var(--accent-soft);padding:18px 20px;border-radius:4px">
+          <p class="kicker mb-2" style="color:var(--accent)">YOU ARE NOT ALONE</p>
+          <p class="f-display leading-snug" style="font-size:14px;font-weight:500;color:var(--text);line-height:1.6">
+            If you are in crisis, please also reach out — to someone you trust, an imam at your local masjid, or a crisis line in your country. The verses below are a comfort and a return to Allah; a person beside you is part of His mercy too.
+          </p>
+        </div>
+
         <!-- Verses -->
         <div class="space-y-3 stagger">
           <div v-for="(s,si) in filteredSolace" :key="s.reference+si" class="verse-card">
@@ -1781,7 +1793,10 @@
           <div class="text-center pt-4 pb-2">
             <p class="f-ar text-accent mb-3" style="font-size:32px;direction:rtl">نِيَّةً لِوَجْهِ ٱللَّهِ</p>
             <p class="kicker" style="color:var(--text-3)">FOR THE FACE OF ALLAH</p>
-            <p class="text-sm italic mt-3" style="color:var(--text-4);line-height:1.55;max-width:320px;margin-left:auto;margin-right:auto">
+            <p class="f-body mt-4" style="font-size:13px;color:var(--text-3);line-height:1.7;max-width:380px;margin-left:auto;margin-right:auto;text-align:left">
+              <span style="color:var(--text-2);font-style:italic">"For the face of Allah"</span> — <span class="f-ar text-accent" style="font-size:14px">li-wajhi Allāh</span> — is a Quranic phrase meaning <em>for His pleasure alone</em>. Done not for praise, payment, fame, or any return from people. The <em>face</em> in Arabic is metaphor for what is sought, what one turns toward. Surah al-Insān 76:9 — <em>"We feed you only for the face of Allah; we want from you neither reward nor thanks."</em> That is the nīyya behind Noor.
+            </p>
+            <p class="text-sm italic mt-5" style="color:var(--text-4);line-height:1.55;max-width:320px;margin-left:auto;margin-right:auto">
               If a verse here moved your heart, that's between you and Him — keep me a small share in your duʿāʾ.
             </p>
           </div>
@@ -2247,6 +2262,20 @@
           </div>
           <div class="rule-gold w-16 mb-4"></div>
           <p class="f-display leading-snug mb-5" style="font-size:16px;font-weight:500;letter-spacing:-0.005em;color:var(--text);line-height:1.65">{{selectedPrayer.summary}}</p>
+
+          <!-- The duʿā itself, if one is transmitted for this prayer -->
+          <div v-if="selectedPrayer.dua" class="rule-ornament">
+            <span class="rule-ornament-diamond"></span>
+          </div>
+          <div v-if="selectedPrayer.dua">
+            <p class="kicker mb-3" style="color:var(--accent)">THE DUʿĀʾ</p>
+            <p class="sacred-text size-sm mb-4" :dir="'rtl'" :lang="'ar'">{{selectedPrayer.dua.arabic}}</p>
+            <p class="translit-text mb-4">{{selectedPrayer.dua.translit}}</p>
+            <div class="rule-gold w-12 mb-3"></div>
+            <p class="f-display leading-snug mb-3" style="font-size:15px;font-weight:500;color:var(--text-2);line-height:1.65">"{{selectedPrayer.dua.translation}}"</p>
+            <p class="kicker mb-5" style="color:var(--text-4)">SOURCE · {{selectedPrayer.dua.source}}</p>
+          </div>
+
           <div v-if="selectedPrayer.notes" class="rule-soft mb-4"></div>
           <p v-if="selectedPrayer.notes" class="kicker mb-2" style="color:var(--accent)">NOTE</p>
           <p v-if="selectedPrayer.notes" class="text-sm italic mb-6" style="color:var(--text-2);line-height:1.55;border-left:2px solid var(--accent);padding-left:14px">{{selectedPrayer.notes}}</p>
@@ -2695,7 +2724,38 @@ var DAILY_REFLECTIONS = [
   "There is a verse in the Quran written for tonight. Open it.",
   "He left you breath enough to repent. That alone is mercy.",
   "Plant the seed. Water the seed. The harvest is His business.",
-  "Every storm passes. Every winter ends. Every fajr comes."
+  "Every storm passes. Every winter ends. Every fajr comes.",
+  "The hand that wounds is the hand that heals — both are His.",
+  "Pray two rakaʿāt. Watch the room change.",
+  "A heart that remembers Allah is never alone in any room.",
+  "He answered before you asked. That is why you are still here.",
+  "The smallest sincere deed weighs more than the largest performance.",
+  "When you fall, fall in His direction.",
+  "Speak to Him about everything. He has the patience of an Eternity.",
+  "Your worst day is still inside His mercy.",
+  "You will not regret the prayer you prayed.",
+  "Fear of Him releases you from fear of all else.",
+  "The heart is a mirror — istighfār is the cloth.",
+  "Pain is not a verdict. It is a passage.",
+  "A grateful eye sees more than a hungry one.",
+  "Waswasah is loud because it is empty. Truth speaks softly.",
+  "If you cannot give wealth — give kindness. It is heavier on the scale.",
+  "He has not abandoned you. The silence is the test, not the answer.",
+  "Read one ayah today as if it was just revealed for you.",
+  "Tonight, forgive someone — the relief is for you.",
+  "Sleep is a small death. Wake grateful.",
+  "Make duʿā for the one who hurt you. Watch the knot in your chest loosen.",
+  "Your tears in sujood are recorded before they fall.",
+  "He sees the prayer you almost gave up on.",
+  "What you call a delay, He calls preservation.",
+  "The Quran does not wait for the right mood. It creates one.",
+  "Be of those whose absence is missed in the masjid.",
+  "Provision arrives at its appointed time — no earlier, no later.",
+  "Your name is on the lips of an angel right now, asking for your good.",
+  "The straight path is straight — but it is not flat. Keep climbing.",
+  "If the only deed you do today is one good thought — that, too, He receives.",
+  "Forgiveness is an act of self-respect: refusing to let what was done own you.",
+  "He sees you reading this. Even now. Even still."
 ];
 
 /* Wisdom */
@@ -3765,7 +3825,12 @@ var SOLACE_THEMES = [
   {id:'protection', label:'Protection',  ar:'ٱلْحِفْظ',           kicker:'AGAINST THE UNSEEN'},
   {id:'repentance', label:'Repentance',  ar:'ٱلتَّوْبَة',         kicker:'COMING HOME TO HIM'},
   {id:'heart',      label:'Heart',       ar:'ٱلْقَلْب',           kicker:'KEEP IT SOFT, KEEP IT WHOLE'},
-  {id:'death',      label:'Death',       ar:'ٱلْمَوْت',           kicker:'WHEN THE SOUL TRAVELS'}
+  {id:'death',      label:'Death',       ar:'ٱلْمَوْت',           kicker:'WHEN THE SOUL TRAVELS'},
+  {id:'whispers',   label:'Negative thoughts', ar:'ٱلْوَسْوَاس',  kicker:'WHEN THE MIND TURNS DARK'},
+  {id:'despair',    label:'Despair',     ar:'ٱلْيَأْس',           kicker:'WHEN YOU CANNOT GO ON'},
+  {id:'anger',      label:'Anger',       ar:'ٱلْغَضَب',          kicker:'TO COOL WHAT BURNS'},
+  {id:'joy',        label:'Joy',         ar:'ٱلْفَرَح',           kicker:'WHEN THE HEART IS LIGHT'},
+  {id:'love',       label:'Love',        ar:'ٱلْمَحَبَّة',        kicker:'OF ALLAH · OF ONE ANOTHER'}
 ];
 
 var SOLACE_DB = [
@@ -4506,7 +4571,141 @@ var SOLACE_DB = [
     arabic:'كُلُّ نَفْسٍۢ ذَآئِقَةُ ٱلْمَوْتِ ۖ ثُمَّ إِلَيْنَا تُرْجَعُونَ',
     translit:'Kullu nafsin dhāʾiqatu al-mawt, thumma ilaynā turjaʿūn.',
     translation:'Every soul will taste death, then to Us you will be returned.',
-    note:'The exit door of this life is the entry door of the next.'}
+    note:'The exit door of this life is the entry door of the next.'},
+
+  /* WASWASAH — INTRUSIVE / NEGATIVE THOUGHTS */
+  {theme:'whispers', reference:'Quran 114:1-6', surahId:114, ayah:1,
+    arabic:'قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ ۝ مَلِكِ ٱلنَّاسِ ۝ إِلَٰهِ ٱلنَّاسِ ۝ مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ ۝ ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ ۝ مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ',
+    translit:'Qul aʿūdhu bi-Rabbi an-nās. Maliki an-nās. Ilāhi an-nās. Min sharri al-waswāsi al-khannās. Alladhī yuwaswisu fī ṣudūri an-nās. Mina al-jinnati wan-nās.',
+    translation:'Say: I seek refuge in the Lord of mankind, the King of mankind, the God of mankind — from the evil of the retreating whisperer who whispers in the breasts of mankind, from among the jinn and mankind.',
+    note:'Surah an-Nās — the named refuge against waswasah. The whisperer is called "the retreating one" — he flees the moment Allah\'s name is on the tongue.'},
+  {theme:'whispers', reference:'Quran 7:200', surahId:7, ayah:200,
+    arabic:'وَإِمَّا يَنزَغَنَّكَ مِنَ ٱلشَّيْطَٰنِ نَزْغٌۭ فَٱسْتَعِذْ بِٱللَّهِ ۚ إِنَّهُۥ سَمِيعٌ عَلِيمٌ',
+    translit:'Wa immā yanzaghannaka mina ash-shayṭāni nazghun fa-staʿidh billāh, innahu Samīʿun ʿAlīm.',
+    translation:'If a prompting from Shayṭān provokes you, seek refuge in Allah. He is All-Hearing, All-Knowing.',
+    note:'A thought is not a sin. The Prophet ﷺ said Allah pardons what crosses our minds — until we act on it (Bukhārī, Muslim).'},
+  {theme:'whispers', reference:'Quran 23:97-98', surahId:23, ayah:97,
+    arabic:'وَقُل رَّبِّ أَعُوذُ بِكَ مِنْ هَمَزَٰتِ ٱلشَّيَٰطِينِ ۝ وَأَعُوذُ بِكَ رَبِّ أَن يَحْضُرُونِ',
+    translit:'Wa qul Rabbi aʿūdhu bika min hamazāti ash-shayāṭīn. Wa aʿūdhu bika Rabbi an yaḥḍurūn.',
+    translation:'Say: My Lord, I seek refuge in You from the promptings of the devils, and I seek refuge in You — my Lord — from their being present with me.',
+    note:'A direct prayer for the moment a dark thought arrives. Whisper it back at the whisper.'},
+  {theme:'whispers', reference:'Quran 41:36', surahId:41, ayah:36,
+    arabic:'وَإِمَّا يَنزَغَنَّكَ مِنَ ٱلشَّيْطَٰنِ نَزْغٌۭ فَٱسْتَعِذْ بِٱللَّهِ ۖ إِنَّهُۥ هُوَ ٱلسَّمِيعُ ٱلْعَلِيمُ',
+    translit:'Wa immā yanzaghannaka mina ash-shayṭāni nazghun fa-staʿidh billāh, innahu huwa as-Samīʿu al-ʿAlīm.',
+    translation:'If a prompting from Shayṭān provokes you, seek refuge in Allah — He is the All-Hearing, the All-Knowing.',
+    note:'A second mention in the Qur\'an of the same instruction — a sign of how often it is needed.'},
+  {theme:'whispers', reference:'Quran 13:11', surahId:13, ayah:11,
+    arabic:'إِنَّ ٱللَّهَ لَا يُغَيِّرُ مَا بِقَوْمٍ حَتَّىٰ يُغَيِّرُوا۟ مَا بِأَنفُسِهِمْ',
+    translit:'Inna Allāha lā yughayyiru mā bi-qawmin ḥattā yughayyirū mā bi-anfusihim.',
+    translation:'Allah does not change what is in a people until they change what is in themselves.',
+    note:'The thought may not stop on its own — but you have agency over what you do with it. Move once. He responds.'},
+
+  /* DESPAIR — WHEN YOU CANNOT GO ON.
+     The Qur\'an speaks plainly here: do not destroy yourselves; despair
+     is a kind of disbelief in His mercy. If you are in crisis, please
+     also reach out to a person — a trusted friend, an imam, or a crisis
+     line — alongside reading these verses. */
+  {theme:'despair', reference:'Quran 4:29', surahId:4, ayah:29,
+    arabic:'وَلَا تَقْتُلُوٓا۟ أَنفُسَكُمْ ۚ إِنَّ ٱللَّهَ كَانَ بِكُمْ رَحِيمًۭا',
+    translit:'Wa lā taqtulū anfusakum, inna Allāha kāna bikum raḥīmā.',
+    translation:'Do not kill yourselves — surely Allah is Most Merciful to you.',
+    note:'Said directly. Your life is a trust. Whatever you carry, He has named you Mercy in the same breath He commanded preservation. If you are unsafe, please reach out — a person you trust, an imam, a crisis line — alongside this prayer.'},
+  {theme:'despair', reference:'Quran 39:53', surahId:39, ayah:53,
+    arabic:'يَٰعِبَادِىَ ٱلَّذِينَ أَسْرَفُوا۟ عَلَىٰٓ أَنفُسِهِمْ لَا تَقْنَطُوا۟ مِن رَّحْمَةِ ٱللَّهِ ۚ إِنَّ ٱللَّهَ يَغْفِرُ ٱلذُّنُوبَ جَمِيعًا ۚ إِنَّهُۥ هُوَ ٱلْغَفُورُ ٱلرَّحِيمُ',
+    translit:'Yā ʿibādiya alladhīna asrafū ʿalā anfusihim lā taqnaṭū min raḥmati Allāh, inna Allāha yaghfiru adh-dhunūba jamīʿā, innahu huwa al-Ghafūru ar-Raḥīm.',
+    translation:'O My servants who have transgressed against themselves — do not despair of Allah\'s mercy. Surely Allah forgives all sins. He is the Most Forgiving, the Most Merciful.',
+    note:'No matter how far. No matter how many. He calls them — still — His servants.'},
+  {theme:'despair', reference:'Quran 12:87', surahId:12, ayah:87,
+    arabic:'وَلَا تَا۟يْـَٔسُوا۟ مِن رَّوْحِ ٱللَّهِ ۖ إِنَّهُۥ لَا يَا۟يْـَٔسُ مِن رَّوْحِ ٱللَّهِ إِلَّا ٱلْقَوْمُ ٱلْكَٰفِرُونَ',
+    translit:'Wa lā tayʾasū min rawḥi Allāh, innahu lā yayʾasu min rawḥi Allāhi illā al-qawmu al-kāfirūn.',
+    translation:'Do not despair of the comfort of Allah. Truly, none despairs of the comfort of Allah except the disbelieving people.',
+    note:'Yaʿqūb said this to his sons after losing both Yūsuf and Binyāmīn. Years pass in his grief. The end is reunion.'},
+  {theme:'despair', reference:'Quran 94:5-6', surahId:94, ayah:5,
+    arabic:'فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا ۝ إِنَّ مَعَ ٱلْعُسْرِ يُسْرًا',
+    translit:'Fa-inna maʿa al-ʿusri yusrā. Inna maʿa al-ʿusri yusrā.',
+    translation:'With every hardship comes ease. With every hardship comes ease.',
+    note:'Said twice. The relief is *with* the hardship — not after it. Already on its way.'},
+  {theme:'despair', reference:'Quran 2:286', surahId:2, ayah:286,
+    arabic:'لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا',
+    translit:'Lā yukallifu Allāhu nafsan illā wusʿahā.',
+    translation:'Allah does not burden any soul beyond what it can bear.',
+    note:'If you are still here today, you have already endured more than you thought possible. He knew you could.'},
+  {theme:'despair', reference:'Quran 6:54', surahId:6, ayah:54,
+    arabic:'كَتَبَ رَبُّكُمْ عَلَىٰ نَفْسِهِ ٱلرَّحْمَةَ',
+    translit:'Kataba Rabbukum ʿalā nafsihi ar-raḥmah.',
+    translation:'Your Lord has prescribed mercy upon Himself.',
+    note:'A debt the Most Merciful has bound to Himself. He cannot fail in it.'},
+
+  /* ANGER */
+  {theme:'anger', reference:'Quran 3:134', surahId:3, ayah:134,
+    arabic:'وَٱلْكَٰظِمِينَ ٱلْغَيْظَ وَٱلْعَافِينَ عَنِ ٱلنَّاسِ ۗ وَٱللَّهُ يُحِبُّ ٱلْمُحْسِنِينَ',
+    translit:'Wal-kāẓimīna al-ghayẓa wal-ʿāfīna ʿani an-nās, wa-llāhu yuḥibbu al-muḥsinīn.',
+    translation:'Those who restrain anger and pardon people — Allah loves those who do good.',
+    note:'Restraint and pardon — the two doors out of fury. Both are loved.'},
+  {theme:'anger', reference:'Quran 41:34', surahId:41, ayah:34,
+    arabic:'ٱدْفَعْ بِٱلَّتِى هِىَ أَحْسَنُ فَإِذَا ٱلَّذِى بَيْنَكَ وَبَيْنَهُۥ عَدَٰوَةٌۭ كَأَنَّهُۥ وَلِىٌّ حَمِيمٌۭ',
+    translit:'Idfaʿ bi-llatī hiya aḥsanu fa-idhā alladhī baynaka wa baynahu ʿadāwatun ka-annahu waliyyun ḥamīm.',
+    translation:'Repel evil with what is better — and behold, the one between whom and you was enmity becomes like a close friend.',
+    note:'Better — not equal. The reply that surprises silences the quarrel.'},
+  {theme:'anger', reference:'Quran 7:199', surahId:7, ayah:199,
+    arabic:'خُذِ ٱلْعَفْوَ وَأْمُرْ بِٱلْعُرْفِ وَأَعْرِضْ عَنِ ٱلْجَٰهِلِينَ',
+    translit:'Khudhi al-ʿafwa wa-ʾmur bil-ʿurfi wa aʿriḍ ʿani al-jāhilīn.',
+    translation:'Take to forgiveness, enjoin what is good, and turn away from the ignorant.',
+    note:'Three steps. Forgive. Speak the better word. Walk past — do not match the ignorance.'},
+  {theme:'anger', reference:'Quran 25:63', surahId:25, ayah:63,
+    arabic:'وَعِبَادُ ٱلرَّحْمَٰنِ ٱلَّذِينَ يَمْشُونَ عَلَى ٱلْأَرْضِ هَوْنًۭا وَإِذَا خَاطَبَهُمُ ٱلْجَٰهِلُونَ قَالُوا۟ سَلَٰمًۭا',
+    translit:'Wa ʿibādu ar-Raḥmāni alladhīna yamshūna ʿalā al-arḍi hawnan, wa idhā khāṭabahumu al-jāhilūna qālū salāmā.',
+    translation:'The servants of the Most Merciful walk upon the earth gently, and when the ignorant address them, they reply with peace.',
+    note:'Peace — said back to the harsh word. The most disarming reply.'},
+
+  /* JOY */
+  {theme:'joy', reference:'Quran 10:58', surahId:10, ayah:58,
+    arabic:'قُلْ بِفَضْلِ ٱللَّهِ وَبِرَحْمَتِهِۦ فَبِذَٰلِكَ فَلْيَفْرَحُوا۟ هُوَ خَيْرٌۭ مِّمَّا يَجْمَعُونَ',
+    translit:'Qul bi-faḍli Allāhi wa bi-raḥmatihi fa-bi-dhālika fal-yafraḥū, huwa khayrun mimmā yajmaʿūn.',
+    translation:'Say: in Allah\'s favor and mercy — in that, let them rejoice. It is better than what they gather.',
+    note:'When joy comes, point its source out loud. Joy named is joy doubled.'},
+  {theme:'joy', reference:'Quran 14:7', surahId:14, ayah:7,
+    arabic:'لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ',
+    translit:'La-in shakartum la-azīdannakum.',
+    translation:'If you are grateful — I will surely give you more.',
+    note:'Gratitude is the door joy walks through to bring its sister.'},
+  {theme:'joy', reference:'Quran 16:97', surahId:16, ayah:97,
+    arabic:'مَنْ عَمِلَ صَٰلِحًۭا مِّن ذَكَرٍ أَوْ أُنثَىٰ وَهُوَ مُؤْمِنٌۭ فَلَنُحْيِيَنَّهُۥ حَيَوٰةًۭ طَيِّبَةًۭ',
+    translit:'Man ʿamila ṣāliḥan min dhakarin aw unthā wa huwa muʾminun fa-la-nuḥyiyannahu ḥayātan ṭayyibah.',
+    translation:'Whoever does good — male or female — and is a believer, We will grant a good life.',
+    note:'A "good life" — ḥayātan ṭayyibah — is a Quranic promise. Joy has His name on it.'},
+  {theme:'joy', reference:'Quran 41:30', surahId:41, ayah:30,
+    arabic:'أَلَّا تَخَافُوا۟ وَلَا تَحْزَنُوا۟ وَأَبْشِرُوا۟ بِٱلْجَنَّةِ ٱلَّتِى كُنتُمْ تُوعَدُونَ',
+    translit:'Allā takhāfū wa lā taḥzanū wa abshirū bil-jannati allatī kuntum tūʿadūn.',
+    translation:'Do not fear, do not grieve — receive good news of the Garden you were promised.',
+    note:'The opposite of grief in the Quran is not just relief — it is good news. Bushrā.'},
+
+  /* LOVE */
+  {theme:'love', reference:'Quran 2:165', surahId:2, ayah:165,
+    arabic:'وَٱلَّذِينَ ءَامَنُوٓا۟ أَشَدُّ حُبًّۭا لِّلَّهِ',
+    translit:'Walladhīna āmanū ashaddu ḥubban lillāh.',
+    translation:'Those who believe are stronger in love for Allah.',
+    note:'Love before everything else. The first love makes every other love possible.'},
+  {theme:'love', reference:'Quran 5:54', surahId:5, ayah:54,
+    arabic:'يُحِبُّهُمْ وَيُحِبُّونَهُۥٓ',
+    translit:'Yuḥibbuhum wa yuḥibbūnah.',
+    translation:'He loves them, and they love Him.',
+    note:'A love that begins with His. We do not chase Him to Him — He chose us first.'},
+  {theme:'love', reference:'Quran 30:21', surahId:30, ayah:21,
+    arabic:'وَجَعَلَ بَيْنَكُم مَّوَدَّةًۭ وَرَحْمَةً',
+    translit:'Wa jaʿala baynakum mawaddatan wa raḥmah.',
+    translation:'And He placed between you affection and mercy.',
+    note:'On marriage — the marriage verse. Affection is the beginning, mercy is what carries it through the years.'},
+  {theme:'love', reference:'Quran 49:10', surahId:49, ayah:10,
+    arabic:'إِنَّمَا ٱلْمُؤْمِنُونَ إِخْوَةٌۭ',
+    translit:'Innamā al-muʾminūna ikhwah.',
+    translation:'The believers are but brothers and sisters.',
+    note:'Three words. The basis of every Muslim friendship that ever endured.'},
+  {theme:'love', reference:'Quran 19:96', surahId:19, ayah:96,
+    arabic:'إِنَّ ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّٰلِحَٰتِ سَيَجْعَلُ لَهُمُ ٱلرَّحْمَٰنُ وُدًّۭا',
+    translit:'Inna alladhīna āmanū wa ʿamilū aṣ-ṣāliḥāti sa-yajʿalu lahumu ar-Raḥmānu wuddā.',
+    translation:'Those who believe and do good — the Most Merciful will place love for them.',
+    note:'Place — meaning, He puts the love in other hearts. The right people will love you because He arranged it.'}
 ];
 
 /* =================================================================
@@ -4914,8 +5113,14 @@ var PRAYERS_DB = [
   {id:'witr', cat:'sunnah', n:'06', ar:'ٱلْوِتْر', en:'Witr', title:'The Closing Odd Prayer',
     rakah:'1, 3, 5, 7 or 9 (always odd)',
     time:'After ʿIshāʾ until just before Fajr.',
-    summary:'The Prophet ﷺ never abandoned Witr. "Allah is Witr (One) and loves what is odd" (Tirmidhī). Most commonly prayed as 3 rakaʿāt: in the last, raise the hands and recite the duʿā of qunūt — Allāhumma-hdinā fīman hadayta…',
+    summary:'The Prophet ﷺ never abandoned Witr. "Allah is Witr (One) and loves what is odd" (Tirmidhī). Most commonly prayed as 3 rakaʿāt: in the last, raise the hands before or after rukūʿ and recite the duʿā of qunūt below.',
     notes:'If you fear missing Fajr, pray Witr before sleeping. If you have a habit of waking, delay it to your last prayer of the night.',
+    dua:{
+      arabic:'ٱللَّهُمَّ ٱهْدِنَا فِيمَنْ هَدَيْتَ، وَعَافِنَا فِيمَنْ عَافَيْتَ، وَتَوَلَّنَا فِيمَنْ تَوَلَّيْتَ، وَبَارِكْ لَنَا فِيمَا أَعْطَيْتَ، وَقِنَا شَرَّ مَا قَضَيْتَ، فَإِنَّكَ تَقْضِى وَلَا يُقْضَىٰ عَلَيْكَ، وَإِنَّهُ لَا يَذِلُّ مَن وَالَيْتَ، وَلَا يَعِزُّ مَنْ عَادَيْتَ، تَبَارَكْتَ رَبَّنَا وَتَعَالَيْتَ',
+      translit:'Allāhumma-hdinā fī-man hadayt, wa ʿāfinā fī-man ʿāfayt, wa tawallanā fī-man tawallayt, wa bārik lanā fī-mā aʿṭayt, wa qinā sharra mā qaḍayt — fa-innaka taqḍī wa lā yuqḍā ʿalayk, wa innahu lā yadhillu man wālayt, wa lā yaʿizzu man ʿādayt, tabārakta Rabbanā wa taʿālayt.',
+      translation:'O Allah, guide us among those You have guided, grant us well-being among those You have given well-being, take us into Your friendship among those You have befriended, bless us in what You have given, and protect us from the evil of what You have decreed. For You decree and none decrees over You. The one You have befriended is never humiliated; the one You oppose is never honored. Blessed are You, our Lord, and Most High.',
+      source:'Abū Dāwūd, Tirmidhī, Nasāʾī (Qunūt al-Witr — taught by the Prophet ﷺ to al-Ḥasan ibn ʿAlī (RA))'
+    },
     when:'late-night'},
   {id:'sunnah-fajr', cat:'sunnah', n:'07', ar:'سُنَّة ٱلْفَجْر', en:'Sunnah of Fajr', title:'The Two Light Rakaʿāt',
     rakah:'2',
@@ -4952,8 +5157,14 @@ var PRAYERS_DB = [
   {id:'istikhara', cat:'special', n:'12', ar:'ٱلِٱسْتِخَارَة', en:'Istikhāra', title:'Asking Allah\'s Guidance on a Decision',
     rakah:'2 (any time except the prohibited times)',
     time:'When facing a decision and seeking divine guidance.',
-    summary:'Pray two rakaʿāt of any voluntary prayer (other than the obligatory). After the salām, raise hands and recite the long duʿā beginning: Allāhumma innī astakhīruka bi-ʿilmika, wa astaqdiruka bi-qudratika… The Prophet ﷺ taught it as he taught a sūrah (Bukhārī).',
-    notes:'No special signs are required — proceed with what your heart settles on after the prayer. If something is good, Allah will make it easy; if not, He will turn you away.',
+    summary:'Pray two rakaʿāt of any voluntary prayer (other than the obligatory). After the salām, raise hands and recite the duʿā below. The Prophet ﷺ taught it as he taught a sūrah (Bukhārī).',
+    notes:'No special signs are required — proceed with what your heart settles on after the prayer. If something is good, Allah will make it easy; if not, He will turn you away. Where the duʿā says "this matter," name what you are asking about specifically — out loud or in your heart.',
+    dua:{
+      arabic:'ٱللَّهُمَّ إِنِّى أَسْتَخِيرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِنْ فَضْلِكَ ٱلْعَظِيمِ، فَإِنَّكَ تَقْدِرُ وَلَا أَقْدِرُ، وَتَعْلَمُ وَلَا أَعْلَمُ، وَأَنْتَ عَلَّامُ ٱلْغُيُوبِ. ٱللَّهُمَّ إِنْ كُنْتَ تَعْلَمُ أَنَّ هَٰذَا ٱلْأَمْرَ — [وَيُسَمِّيهِ بِعَيْنِهِ] — خَيْرٌۭ لِى فِى دِينِى وَمَعَاشِى وَعَاقِبَةِ أَمْرِى، عَاجِلِهِ وَآجِلِهِ — فَٱقْدُرْهُ لِى وَيَسِّرْهُ لِى ثُمَّ بَارِكْ لِى فِيهِ. وَإِنْ كُنْتَ تَعْلَمُ أَنَّ هَٰذَا ٱلْأَمْرَ شَرٌّۭ لِى فِى دِينِى وَمَعَاشِى وَعَاقِبَةِ أَمْرِى، عَاجِلِهِ وَآجِلِهِ — فَٱصْرِفْهُ عَنِّى وَٱصْرِفْنِى عَنْهُ، وَٱقْدُرْ لِىَ ٱلْخَيْرَ حَيْثُ كَانَ، ثُمَّ أَرْضِنِى بِهِ',
+      translit:'Allāhumma innī astakhīruka bi-ʿilmika, wa astaqdiruka bi-qudratika, wa as-aluka min faḍlika al-ʿaẓīm. Fa-innaka taqdiru wa lā aqdir, wa taʿlamu wa lā aʿlam, wa anta ʿallāmu al-ghuyūb. Allāhumma in kunta taʿlamu anna hādhā al-amra — [name your matter] — khayrun lī fī dīnī wa maʿāshī wa ʿāqibati amrī, ʿājilihi wa ājilih — fa-qdurhu lī wa yassirhu lī thumma bārik lī fīh. Wa in kunta taʿlamu anna hādhā al-amra sharrun lī fī dīnī wa maʿāshī wa ʿāqibati amrī, ʿājilihi wa ājilih — fa-ṣrifhu ʿannī wa-ṣrifnī ʿanh, wa-qdur liya al-khayra ḥaythu kāna, thumma arḍinī bih.',
+      translation:'O Allah, I seek Your guidance through Your knowledge, and Your power through Your might, and I ask You of Your great favor. For You have the power and I do not. You know and I do not. You are the Knower of the unseen. O Allah, if You know that this matter — [name it specifically] — is good for me, in my religion, my livelihood, and the outcome of my affair, in this life and the next — then ordain it for me, ease it for me, and bless me in it. And if You know that this matter is bad for me, in my religion, my livelihood, and the outcome of my affair, in this life and the next — then turn it away from me, turn me away from it, ordain for me what is good wherever it may be, and make me content with it.',
+      source:'Bukhārī'
+    },
     when:'any-decision'},
   {id:'duha', cat:'special', n:'13', ar:'صَلَاةُ ٱلضُّحَىٰ', en:'Ḍuḥā', title:'The Forenoon Prayer',
     rakah:'2 (minimum) — up to 8 (recommended) — up to 12 (maximum)',
@@ -4976,14 +5187,26 @@ var PRAYERS_DB = [
   {id:'janaza', cat:'special', n:'16', ar:'صَلَاةُ ٱلْجَنَازَة', en:'Janāza', title:'The Funeral Prayer',
     rakah:'No rukūʿ, no sujūd — just four takbīrs while standing',
     time:'When a Muslim has passed and the body is being prepared for burial.',
-    summary:'A community obligation (farḍ kifāya). After the first takbīr, recite al-Fātiḥa. After the second, send blessings on the Prophet ﷺ. After the third, supplicate for the deceased. After the fourth, supplicate for the living. Then the salām.',
+    summary:'A community obligation (farḍ kifāya). After the first takbīr, recite al-Fātiḥa. After the second, send blessings on the Prophet ﷺ. After the third, supplicate for the deceased (the duʿā below). After the fourth, supplicate for the living. Then the salām.',
     notes:'The Prophet ﷺ said whoever attends a janāza until the prayer earns one qīrāṭ of reward; whoever stays until the burial earns two — each qīrāṭ like the size of Mount Uḥud (Bukhārī, Muslim).',
+    dua:{
+      arabic:'ٱللَّهُمَّ ٱغْفِرْ لَهُ وَٱرْحَمْهُ، وَعَافِهِ وَٱعْفُ عَنْهُ، وَأَكْرِمْ نُزُلَهُ، وَوَسِّعْ مُدْخَلَهُ، وَٱغْسِلْهُ بِٱلْمَآءِ وَٱلثَّلْجِ وَٱلْبَرَدِ، وَنَقِّهِ مِنَ ٱلْخَطَايَا كَمَا يُنَقَّى ٱلثَّوْبُ ٱلْأَبْيَضُ مِنَ ٱلدَّنَسِ، وَأَبْدِلْهُ دَارًۭا خَيْرًۭا مِّن دَارِهِ، وَأَهْلًا خَيْرًۭا مِّنْ أَهْلِهِ، وَزَوْجًا خَيْرًۭا مِّن زَوْجِهِ، وَأَدْخِلْهُ ٱلْجَنَّةَ، وَأَعِذْهُ مِنْ عَذَابِ ٱلْقَبْرِ وَمِنْ عَذَابِ ٱلنَّارِ',
+      translit:'Allāhumma-ghfir lahu wa-rḥamhu, wa ʿāfihi wa-ʿfu ʿanhu, wa akrim nuzulahu, wa wassiʿ mudkhalahu, wa-ghsilhu bil-māʾi wath-thalji wal-barad, wa naqqihi min al-khaṭāyā kamā yunaqqā ath-thawbu al-abyaḍu min ad-danas. Wa abdilhu dāran khayran min dārih, wa ahlan khayran min ahlih, wa zawjan khayran min zawjih. Wa adkhilhu al-jannah, wa aʿidhhu min ʿadhābi al-qabri wa min ʿadhābi an-nār.',
+      translation:'O Allah, forgive him and have mercy on him. Pardon him and overlook his shortcomings. Honor his arrival and ease his entry. Wash him with water, snow, and ice. Cleanse him of his sins as a white garment is cleansed of stains. Give him a home better than his home, a family better than his family, a spouse better than his spouse. Admit him to Paradise, and protect him from the punishment of the grave and the punishment of the Fire.',
+      source:'Muslim (use feminine forms — "lahā / ʿafihā…" — for a woman; plural for multiple)'
+    },
     when:'when-needed'},
   {id:'tawba', cat:'special', n:'17', ar:'صَلَاةُ ٱلتَّوْبَة', en:'Tawba', title:'The Prayer of Repentance',
     rakah:'2 — at any time outside the prohibited times',
     time:'After committing a sin, with awareness of it and intention to turn back.',
     summary:'The Prophet ﷺ said: "There is no servant who commits a sin, then performs wudūʾ well, prays two rakaʿāt, then asks Allah\'s forgiveness — except that Allah forgives him" (Abū Dāwūd, Tirmidhī). After the salām, ask Allah for forgiveness sincerely.',
     notes:'Sincerity (ikhlāṣ), regret, and resolve not to return are the conditions of accepted repentance.',
+    dua:{
+      arabic:'أَسْتَغْفِرُ ٱللَّهَ ٱلَّذِى لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىَّ ٱلْقَيُّومَ وَأَتُوبُ إِلَيْهِ',
+      translit:'Astaghfiru Allāha alladhī lā ilāha illā huwa al-Ḥayya al-Qayyūma wa atūbu ilayh.',
+      translation:'I seek the forgiveness of Allah — beside whom there is no god — the Ever-Living, the Self-Sustaining, and I turn to Him in repentance.',
+      source:'Abū Dāwūd, Tirmidhī (whoever says it, his sins are forgiven though he fled the battlefield)'
+    },
     when:'after-a-sin'},
   {id:'kusuf', cat:'special', n:'18', ar:'صَلَاةُ ٱلْكُسُوف', en:'Kusūf / Khusūf', title:'The Eclipse Prayer',
     rakah:'2 — with two rukūʿs and two recitations in each rakaʿah',
@@ -5156,21 +5379,50 @@ V.createApp({
       });
     });
 
-    var dailyVerse = V.computed(function () {
-      // Mix in the year so the order doesn't repeat identically every
-      // calendar — different sequence year over year, still stable
-      // within a single day.
-      var d = new Date(_nowTick.value);
-      var seed = (d.getFullYear() * 367) + _dayOfYear();
-      return DAILY_VERSES[seed % DAILY_VERSES.length];
+    /* Pool the daily verse from the entire Quranic-text content of the
+       app — DAILY_VERSES + WISDOM_DB + SOLACE_DB — so the cycle is much
+       longer (currently ~280 entries instead of 30). The order is
+       shuffled deterministically by year, so each year sees a different
+       sequence, but the verse for any given today is always the same.
+       Reused only every ~280 days at the earliest. */
+    function _seededShuffle(arr, seed) {
+      // Mulberry-32 — small, fast, deterministic given a seed
+      var s = seed >>> 0;
+      function rnd() {
+        s = (s + 0x6D2B79F5) >>> 0;
+        var t = s;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      }
+      var out = arr.slice();
+      for (var i = out.length - 1; i > 0; i--) {
+        var j = Math.floor(rnd() * (i + 1));
+        var tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+      }
+      return out;
+    }
+    var _dailyVerseRotation = V.computed(function () {
+      // Reshuffle once a year — a fresh sequence, same content.
+      var year = new Date(_nowTick.value).getFullYear();
+      var pool = DAILY_VERSES.concat(WISDOM_DB).concat(SOLACE_DB);
+      return _seededShuffle(pool, year);
     });
-
+    var _dailyReflectionRotation = V.computed(function () {
+      var year = new Date(_nowTick.value).getFullYear();
+      // Different seed → different shuffle, so verse and reflection
+      // never accidentally repeat the same day-pairing year over year.
+      return _seededShuffle(DAILY_REFLECTIONS, year ^ 0x5b1f);
+    });
+    var dailyVerse = V.computed(function () {
+      var rot = _dailyVerseRotation.value;
+      if (!rot.length) return null;
+      return rot[_dayOfYear() % rot.length];
+    });
     var dailyReflection = V.computed(function () {
-      var d = new Date(_nowTick.value);
-      // Different seed multiplier from dailyVerse so the verse and
-      // reflection rotate independently — never accidentally coupled.
-      var seed = (d.getFullYear() * 421) + _dayOfYear();
-      return DAILY_REFLECTIONS[seed % DAILY_REFLECTIONS.length];
+      var rot = _dailyReflectionRotation.value;
+      if (!rot.length) return null;
+      return rot[_dayOfYear() % rot.length];
     });
 
     var filteredWisdom = V.computed(function () {

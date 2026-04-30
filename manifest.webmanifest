@@ -2,8 +2,8 @@
   "name": "Noor — نور",
   "short_name": "Noor",
   "description": "A reverent Islamic companion: Quran, 99 Names of Allah, wisdom, and remembrance.",
-  "start_url": ".",
-  "scope": ".",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0A0F0D",
@@ -19,13 +19,13 @@
     },
     {
       "src": "assets/icon.png",
-      "sizes": "1024x1024",
+      "sizes": "192x192 256x256 384x384 512x512 1024x1024",
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "assets/adaptive-icon.png",
-      "sizes": "1024x1024",
+      "sizes": "192x192 256x256 384x384 512x512 1024x1024",
       "type": "image/png",
       "purpose": "maskable"
     }
