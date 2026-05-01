@@ -1350,6 +1350,10 @@
             <p class="name-tr">{{n.meaning.toUpperCase()}}</p>
           </button>
         </div>
+        <div v-if="asmaUlHusna.length < 99" class="text-center mt-6 mb-2">
+          <p class="kicker mb-3" style="color:var(--text-3)">SHOWING {{asmaUlHusna.length}} OF 99</p>
+          <button @click="namesShowMore()" class="btn btn-ghost">SHOW MORE</button>
+        </div>
       </div>
 
       <!-- ================= WISDOM ================= -->
@@ -1381,6 +1385,10 @@
               <p class="f-display leading-snug" style="font-size:16px;font-weight:500;letter-spacing:-0.015em;color:var(--text-2)">"{{w.translation}}"</p>
             </div>
           </div>
+        </div>
+        <div v-if="filteredWisdomAll.length > filteredWisdom.length" class="text-center mt-6 mb-2">
+          <p class="kicker mb-3" style="color:var(--text-3)">SHOWING {{filteredWisdom.length}} OF {{filteredWisdomAll.length}}</p>
+          <button @click="wisdomShowMore()" class="btn btn-ghost">SHOW MORE</button>
         </div>
       </div>
 
@@ -1480,7 +1488,11 @@
             </div>
             <p class="f-ar text-accent flex-shrink-0" style="direction:rtl;font-size:18px;text-align:right;max-width:120px">{{p.ar}}</p>
           </button>
-          <p v-if="filteredFigures.length===0" class="text-center py-12 kicker" style="color:var(--text-3)">NO ENTRIES IN THIS CATEGORY</p>
+          <p v-if="filteredFiguresAll.length===0" class="text-center py-12 kicker" style="color:var(--text-3)">NO MATCHES{{figureSearch?' FOR "'+figureSearch.toUpperCase()+'"':''}}</p>
+        </div>
+        <div v-if="filteredFiguresAll.length > filteredFigures.length" class="text-center mt-6 mb-2">
+          <p class="kicker mb-3" style="color:var(--text-3)">SHOWING {{filteredFigures.length}} OF {{filteredFiguresAll.length}}</p>
+          <button @click="figureShowMore()" class="btn btn-ghost">SHOW MORE</button>
         </div>
       </div>
 
@@ -1572,6 +1584,14 @@
             </div>
           </div>
         </div>
+
+        <!-- Pagination footer — caps initial render so iOS Safari doesn't
+             crash on a 155-card sacred-text wall. -->
+        <div v-if="filteredSolaceAll.length > filteredSolace.length" class="text-center mt-6 mb-2">
+          <p class="kicker mb-3" style="color:var(--text-3)">SHOWING {{filteredSolace.length}} OF {{filteredSolaceAll.length}}</p>
+          <button @click="solaceShowMore()" class="btn btn-ghost">SHOW MORE</button>
+        </div>
+        <p v-if="filteredSolaceAll.length === 0 && solaceSearch" class="text-center py-12 kicker" style="color:var(--text-3)">NO MATCHES FOR "{{solaceSearch.toUpperCase()}}"</p>
       </div>
 
       <!-- ================= ADHKĀR (morning + evening) ================= -->
@@ -5268,6 +5288,19 @@ V.createApp({
     var wisdomTheme = V.ref('all');
     var solaceTheme = V.ref('all');
     var figureCat = V.ref('all');
+    /* Render-limit caps for content-heavy pages. Solace at 155 entries
+       and Figures at 89 — when shown all-at-once with sacred-text Arabic,
+       iOS Safari was hitting its WebKit memory ceiling and crashing
+       ("a problem repeatedly occurred"). Cap initial render; "Show more"
+       reveals the next batch. Both reset when theme/search changes. */
+    var solaceLimit = V.ref(25);
+    var figureLimit = V.ref(20);
+    var wisdomLimit = V.ref(20);
+    var namesLimit = V.ref(33);   // 99 / 3 = 33-name batches
+    var SOLACE_BATCH = 25;
+    var FIGURE_BATCH = 20;
+    var WISDOM_BATCH = 20;
+    var NAMES_BATCH  = 33;
     /* Per-collection search queries — kept page-local so each tab
        remembers its own search context as the user navigates around. */
     var hadithSearch = V.ref('');
@@ -5432,12 +5465,24 @@ V.createApp({
       return rot[_dayOfYear() % rot.length];
     });
 
-    var filteredWisdom = V.computed(function () {
+    var filteredWisdomAll = V.computed(function () {
       if (wisdomTheme.value === 'all') return WISDOM_DB;
       return WISDOM_DB.filter(function (w) { return w.theme === wisdomTheme.value; });
     });
+    var filteredWisdom = V.computed(function () {
+      return filteredWisdomAll.value.slice(0, wisdomLimit.value);
+    });
+    V.watch(wisdomTheme, function () { wisdomLimit.value = WISDOM_BATCH; });
+    function wisdomShowMore() { wisdomLimit.value = wisdomLimit.value + WISDOM_BATCH; }
 
-    var filteredSolace = V.computed(function () {
+    var asmaUlHusnaSliced = V.computed(function () {
+      return ASMA_DB.slice(0, namesLimit.value);
+    });
+    function namesShowMore() { namesLimit.value = namesLimit.value + NAMES_BATCH; }
+
+    /* Internal — full filtered list (not capped). Used to know if we
+       have more to show for the "Show more" button. */
+    var filteredSolaceAll = V.computed(function () {
       var q = solaceSearch.value.toLowerCase().trim();
       var base = solaceTheme.value === 'all'
         ? SOLACE_DB
@@ -5450,13 +5495,22 @@ V.createApp({
           || (s.reference || '').toLowerCase().indexOf(q) >= 0;
       });
     });
+    /* Capped slice for the v-for — keeps initial DOM small enough that
+       iOS Safari does not exhaust its memory budget rendering 155
+       sacred-text cards at once. */
+    var filteredSolace = V.computed(function () {
+      return filteredSolaceAll.value.slice(0, solaceLimit.value);
+    });
+    /* Reset the cap whenever the user changes theme or types in search. */
+    V.watch([solaceTheme, solaceSearch], function () { solaceLimit.value = SOLACE_BATCH; });
+    function solaceShowMore() { solaceLimit.value = solaceLimit.value + SOLACE_BATCH; }
 
     var currentSolaceTheme = V.computed(function () {
       if (solaceTheme.value === 'all') return null;
       return SOLACE_THEMES.find(function (t) { return t.id === solaceTheme.value; }) || null;
     });
 
-    var filteredFigures = V.computed(function () {
+    var filteredFiguresAll = V.computed(function () {
       var q = figureSearch.value.toLowerCase().trim();
       var base = figureCat.value === 'all'
         ? FIGURES_DB
@@ -5470,6 +5524,11 @@ V.createApp({
           || (f.era || '').toLowerCase().indexOf(q) >= 0;
       });
     });
+    var filteredFigures = V.computed(function () {
+      return filteredFiguresAll.value.slice(0, figureLimit.value);
+    });
+    V.watch([figureCat, figureSearch], function () { figureLimit.value = FIGURE_BATCH; });
+    function figureShowMore() { figureLimit.value = figureLimit.value + FIGURE_BATCH; }
 
     var filteredHadith = V.computed(function () {
       var q = hadithSearch.value.toLowerCase().trim();
@@ -5624,7 +5683,7 @@ V.createApp({
       return bookmarks.value.slice().sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
     });
 
-    var asmaUlHusna = V.computed(function () { return ASMA_DB; });
+    var asmaUlHusna = V.computed(function () { return ASMA_DB.slice(0, namesLimit.value); });
     var wisdomThemes = V.computed(function () { return WISDOM_THEMES; });
     var surahs = V.computed(function () { return SURAHS_DB; });
     var WISDOM_COUNT = WISDOM_DB.length;
@@ -6129,8 +6188,11 @@ V.createApp({
       todayLabel: todayLabel, todayYear: todayYear, hijriLabel: hijriLabel, isFriday: isFriday,
       filteredSurahs: filteredSurahs, filteredWisdom: filteredWisdom,
       filteredSolace: filteredSolace, currentSolaceTheme: currentSolaceTheme,
-      filteredFigures: filteredFigures, currentFigureCat: currentFigureCat,
+      filteredFigures: filteredFigures, filteredFiguresAll: filteredFiguresAll, currentFigureCat: currentFigureCat,
       filteredHadith: filteredHadith,
+      filteredSolaceAll: filteredSolaceAll, filteredWisdomAll: filteredWisdomAll,
+      solaceLimit: solaceLimit, figureLimit: figureLimit, wisdomLimit: wisdomLimit, namesLimit: namesLimit,
+      solaceShowMore: solaceShowMore, figureShowMore: figureShowMore, wisdomShowMore: wisdomShowMore, namesShowMore: namesShowMore,
       hadithSearch: hadithSearch, figureSearch: figureSearch, solaceSearch: solaceSearch, duaSearch: duaSearch,
       readingProgress: readingProgress,
       dailyVerse: dailyVerse, dailyReflection: dailyReflection,

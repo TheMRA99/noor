@@ -1,5 +1,5 @@
 /* Noor service worker — offline-first caching for the shell + fonts */
-var CACHE = 'noor-v14';
+var CACHE = 'noor-v15';
 var SHELL = [
   './',
   './index.html',
