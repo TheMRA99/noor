@@ -29,7 +29,7 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     /* =================================================================
@@ -2005,31 +2005,28 @@
         </button>
 
         <!-- Maker's signature -->
-        <div class="maker-sig mt-12 p-6 text-center" :style="{background:isDark?'linear-gradient(180deg,rgba(13,31,26,0.96),rgba(8,20,16,0.98))':'linear-gradient(180deg,rgba(245,240,225,0.98),rgba(238,230,210,0.96))',border:'1px solid '+(isDark?'rgba(232,201,121,0.10)':'rgba(15,76,58,0.08)'),borderRadius:4,boxShadow:isDark?'0 4px 24px rgba(0,0,0,0.4)':'0 2px 12px rgba(15,76,58,0.04)'}">
-          <!-- Thin rule top -->
-          <div class="mx-auto mb-4" :style="{width:'40px',height:'1px',background:isDark?'rgba(232,201,121,0.18)':'rgba(15,76,58,0.12)'}"></div>
-          <!-- Minimal crest with signature MA -->
-          <svg class="mx-auto mb-3" width="48" height="56" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+        <!-- ===== MAKER'S MARK — Muneer Ahmed (official, shared across all apps) ===== -->
+        <div class="makers-mark mt-12 p-6 text-center" :style="{background:isDark?'linear-gradient(180deg,#0a0a0a,#0f0a06)':'linear-gradient(180deg,#faf6ed,#f4ecd8)',border:'1px solid '+(isDark?'rgba(212,175,55,0.18)':'rgba(139,111,46,0.18)'),borderRadius:4,boxShadow:isDark?'0 8px 32px rgba(0,0,0,0.5),inset 0 1px 0 rgba(212,175,55,0.08)':'0 4px 20px rgba(139,111,46,0.06)'}">
+          <!-- Hexagon crest with elegant serif MA -->
+          <svg class="mx-auto mb-4" width="80" height="100" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" fill="none">
             <defs>
-              <linearGradient id="noor-crest-stroke" x1="0" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" :stop-color="isDark?'rgba(232,201,121,0.55)':'rgba(15,76,58,0.35)'"/>
-                <stop offset="100%" :stop-color="isDark?'rgba(94,168,146,0.30)':'rgba(15,76,58,0.18)'"/>
+              <linearGradient id="noor-mm-gold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" :stop-color="isDark?'#e6c97a':'#a07f3a'"/>
+                <stop offset="50%" :stop-color="isDark?'#d4af37':'#8b6f2e'"/>
+                <stop offset="100%" :stop-color="isDark?'#a8862a':'#6b5320'"/>
               </linearGradient>
             </defs>
-            <!-- Shield outline — thin, understated -->
-            <path d="M60 8 L104 26 L104 60 Q104 96 60 126 Q16 96 16 60 L16 26 Z" fill="none" stroke="url(#noor-crest-stroke)" stroke-width="1.5"/>
-            <!-- MA monogram -->
-            <text x="60" y="82" text-anchor="middle" :fill="isDark?'rgba(232,201,121,0.75)':'rgba(15,76,58,0.7)'" font-size="46" font-family="'Space Grotesk','Arial Black',sans-serif" font-weight="900" letter-spacing="-2">MA</text>
-            <!-- Subtle underline flourish -->
-            <path d="M36 88 Q48 95 60 90 Q72 85 84 90" fill="none" :stroke="isDark?'rgba(232,201,121,0.25)':'rgba(15,76,58,0.20)'" stroke-width="0.8" stroke-linecap="round"/>
+            <path d="M60 4 L106 30 L106 120 L60 146 L14 120 L14 30 Z" stroke="url(#noor-mm-gold)" stroke-width="1.6" stroke-linejoin="miter"/>
+            <text x="60" y="98" text-anchor="middle" font-family="'Cinzel','Cormorant Garamond','Times New Roman',serif" font-weight="600" font-size="62" letter-spacing="-3" fill="url(#noor-mm-gold)">MA</text>
           </svg>
-          <!-- Name — bold uppercase -->
-          <p class="mb-0.5" style="font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;" :style="{color:isDark?'rgba(245,240,225,0.55)':'rgba(15,76,58,0.55)'}">Muneer Ahmed</p>
-          <!-- House name — quiet -->
-          <p class="text-[7px] uppercase mb-2.5" style="letter-spacing:0.28em;" :style="{color:isDark?'rgba(232,201,121,0.30)':'rgba(15,76,58,0.30)'}">Ahmed Khaandaan</p>
-          <!-- Thin rule bottom -->
-          <div class="mx-auto mb-1.5" :style="{width:'24px',height:'1px',background:isDark?'rgba(232,201,121,0.12)':'rgba(15,76,58,0.10)'}"></div>
-          <p class="text-[7px] uppercase" style="letter-spacing:0.22em;" :style="{color:isDark?'rgba(232,201,121,0.30)':'rgba(15,76,58,0.30)'}">CRAFTED WITH NIYYAH</p>
+          <p style="font-family:'Cinzel','Cormorant Garamond',serif;font-size:13px;font-weight:600;letter-spacing:0.32em;" :style="{color:isDark?'#d4af37':'#8b6f2e'}">MUNEER AHMED</p>
+          <svg class="mx-auto my-2.5" width="160" height="8" viewBox="0 0 160 8" xmlns="http://www.w3.org/2000/svg">
+            <line x1="10" y1="4" x2="72" y2="4" :stroke="isDark?'rgba(212,175,55,0.55)':'rgba(139,111,46,0.45)'" stroke-width="0.6"/>
+            <path d="M80 1 L83 4 L80 7 L77 4 Z" :fill="isDark?'#d4af37':'#8b6f2e'"/>
+            <line x1="88" y1="4" x2="150" y2="4" :stroke="isDark?'rgba(212,175,55,0.55)':'rgba(139,111,46,0.45)'" stroke-width="0.6"/>
+          </svg>
+          <p style="font-family:'Cinzel','Cormorant Garamond',serif;font-size:9px;font-weight:500;letter-spacing:0.45em;" :style="{color:isDark?'rgba(212,175,55,0.7)':'rgba(139,111,46,0.65)'}">AHMED KHAANDAAN</p>
+          <p class="mt-4 text-[8px] uppercase" style="letter-spacing:0.3em;" :style="{color:isDark?'rgba(212,175,55,0.3)':'rgba(139,111,46,0.3)'}">CRAFTED WITH NIYYAH</p>
         </div>
 
         <div class="text-center mt-8 mb-4">
