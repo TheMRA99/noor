@@ -2005,33 +2005,11 @@
         </button>
 
         <!-- Maker's signature -->
-        <!-- ===== MAKER'S MARK — Muneer Ahmed (matched to Verso) ===== -->
-        <div class="makers-mark p-5 rounded-2xl text-center mt-12" :style="{background:isDark?'linear-gradient(180deg,rgba(10,2,6,0.96),rgba(6,2,10,0.98))':'linear-gradient(180deg,rgba(250,246,248,0.98),rgba(244,238,242,0.96))',border:'1px solid '+(isDark?'rgba(251,113,133,0.08)':'rgba(159,18,57,0.07)'),boxShadow:isDark?'0 4px 24px rgba(0,0,0,0.4)':'0 2px 12px rgba(159,18,57,0.04)'}">
-          <!-- Thin rule top -->
-          <div class="mx-auto mb-4" :style="{width:'40px',height:'1px',background:isDark?'rgba(251,113,133,0.15)':'rgba(159,18,57,0.1)'}"></div>
-          <!-- Minimal crest with signature MA -->
-          <svg class="mx-auto mb-3" width="48" height="56" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="crest-stroke" x1="0" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" :stop-color="isDark?'rgba(251,113,133,0.4)':'rgba(159,18,57,0.25)'"/>
-                <stop offset="100%" :stop-color="isDark?'rgba(192,132,252,0.25)':'rgba(124,58,237,0.15)'"/>
-              </linearGradient>
-            </defs>
-            <!-- Shield outline only — thin, understated -->
-            <path d="M60 8 L104 26 L104 60 Q104 96 60 126 Q16 96 16 60 L16 26 Z" fill="none" stroke="url(#crest-stroke)" stroke-width="1.5"/>
-            <!-- MA monogram — bold, heavy, masculine -->
-            <text x="60" y="82" text-anchor="middle" :fill="isDark?'rgba(251,113,133,0.7)':'rgba(159,18,57,0.6)'" font-size="46" font-family="'Sora','Arial Black',sans-serif" font-weight="900" letter-spacing="-2">MA</text>
-            <!-- Subtle underline flourish beneath signature -->
-            <path d="M36 88 Q48 95 60 90 Q72 85 84 90" fill="none" :stroke="isDark?'rgba(192,132,252,0.2)':'rgba(124,58,237,0.15)'" stroke-width="0.8" stroke-linecap="round"/>
-          </svg>
-          <!-- Name — bold uppercase -->
-          <p class="mb-0.5" style="font-family:'Sora',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;" :style="{color:isDark?'rgba(250,240,244,0.5)':'rgba(26,10,18,0.45)'}">Muneer Ahmed</p>
-          <!-- House name — whisper quiet -->
-          <p class="text-[7px] uppercase mb-2.5" style="letter-spacing:0.28em;" :style="{color:isDark?'rgba(251,113,133,0.2)':'rgba(159,18,57,0.18)'}">Ahmed Khaandaan</p>
-          <!-- Thin rule bottom -->
-          <div class="mx-auto mb-1.5" :style="{width:'24px',height:'1px',background:isDark?'rgba(192,132,252,0.1)':'rgba(124,58,237,0.07)'}"></div>
-          <p class="text-[7px] uppercase" style="letter-spacing:0.22em;" :style="{color:isDark?'rgba(192,132,252,0.18)':'rgba(124,58,237,0.15)'}">NOOR v1.0</p>
-        </div>
+        <!-- ===== MAKER'S MARK — Muneer Ahmed · Ahmed Khaandaan
+             Same designed mark used across RHN, Verso, and Noor. ===== -->
+        <figure class="makers-mark mt-12 mb-2 flex justify-center">
+          <img src="./assets/makers-mark.png" alt="Muneer Ahmed · Ahmed Khaandaan" style="display:block;width:100%;max-width:480px;height:auto;border-radius:10px;opacity:0.88">
+        </figure>
 
         <div class="text-center mt-8 mb-4">
           <p class="f-ar text-accent mb-2" style="font-size:24px;direction:rtl">نور</p>
