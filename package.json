@@ -4,10 +4,16 @@
   "description": "Noor — A reverent Islamic educational companion. Quran, Names of Allah, wisdom, and remembrance.",
   "main": "index.html",
   "scripts": {
-    "build": "mkdir -p www/fonts www/assets && cp index.html www/index.html && cp sw.js www/sw.js && cp manifest.webmanifest www/manifest.webmanifest && cp assets/fonts/*.ttf www/fonts/ && cp assets/*.png www/assets/ && cp apple-touch-icon.png www/apple-touch-icon.png && cp apple-touch-icon-precomposed.png www/apple-touch-icon-precomposed.png && cp favicon.png www/favicon.png && npx cap copy android",
+    "icons": "npx @capacitor/assets generate --iconBackgroundColor '#0A0F0D' --iconBackgroundColorDark '#0A0F0D' --splashBackgroundColor '#0A0F0D' --splashBackgroundColorDark '#0A0F0D'",
+    "copy-www": "mkdir -p www/fonts www/assets && cp index.html www/index.html && cp privacy.html www/privacy.html && cp sw.js www/sw.js && cp manifest.webmanifest www/manifest.webmanifest && cp assets/fonts/*.ttf www/fonts/ && cp assets/*.png www/assets/ && cp apple-touch-icon.png www/apple-touch-icon.png && cp apple-touch-icon-precomposed.png www/apple-touch-icon-precomposed.png && cp favicon.png www/favicon.png",
+    "build": "npm run copy-www && npx cap copy android",
+    "build-ios": "npm run copy-www && npx cap copy ios",
     "open": "npx cap open android",
+    "open-ios": "npx cap open ios",
     "sync": "npx cap sync android",
-    "add-android": "mkdir -p www/fonts www/assets && cp index.html www/index.html && cp sw.js www/sw.js && cp manifest.webmanifest www/manifest.webmanifest && cp assets/fonts/*.ttf www/fonts/ && cp assets/*.png www/assets/ && cp apple-touch-icon.png www/apple-touch-icon.png && cp apple-touch-icon-precomposed.png www/apple-touch-icon-precomposed.png && cp favicon.png www/favicon.png && npx cap add android"
+    "sync-ios": "npx cap sync ios",
+    "add-android": "npm run copy-www && npx cap add android",
+    "add-ios": "npm run copy-www && npx cap add ios"
   },
   "keywords": [
     "quran",
@@ -18,12 +24,16 @@
     "capacitor",
     "vue"
   ],
-  "author": "",
+  "author": "Muneer Ahmed",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "@capacitor/android": "^8.3.0",
     "@capacitor/cli": "^8.3.0",
-    "@capacitor/core": "^8.3.0"
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/ios": "^8.3.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
   }
 }

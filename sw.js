@@ -1,15 +1,17 @@
 /* Noor service worker — offline-first caching for the shell + fonts */
-var CACHE = 'noor-v17';
+var CACHE = 'noor-v18';
 var SHELL = [
   './',
   './index.html',
+  './privacy.html',
   './manifest.webmanifest',
   './apple-touch-icon.png',
   './apple-touch-icon-precomposed.png',
   './favicon.png',
   './assets/icon.png',
   './assets/adaptive-icon.png',
-  './assets/favicon.png'
+  './assets/favicon.png',
+  './assets/makers-mark.png'
 ];
 
 self.addEventListener('install', function (e) {
