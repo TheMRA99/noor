@@ -756,6 +756,20 @@
     .stagger > *:nth-child(8)  { animation-delay: 0.30s; }
     .stagger > *:nth-child(n+9){ animation-delay: 0.34s; }
 
+    /* Accessibility — honor the OS "reduce motion" setting. Animations
+       become instant; the marquee and pulsing dots hold still. Content
+       and layout are untouched. */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001s !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001s !important;
+        scroll-behavior: auto !important;
+      }
+      .marquee-track { animation: none !important; }
+      .page-enter { animation: none !important; filter: none !important; }
+    }
+
     /* Skeleton */
     @keyframes shimmer {
       0% { background-position: -600px 0; }
@@ -1280,7 +1294,29 @@
           </div>
         </div>
 
-        <p v-if="!loadingVerses && verses.length>0" class="text-center mt-8 mb-4 f-ar text-accent" style="font-size:24px;direction:rtl">۞</p>
+        <p v-if="!loadingVerses && verses.length>0" class="text-center mt-8 mb-2 f-ar text-accent" style="font-size:24px;direction:rtl">۞</p>
+
+        <!-- Surah-to-surah navigation — read straight through the muṣḥaf -->
+        <div v-if="!loadingVerses && verses.length>0 && currentSurah" class="mt-4 mb-2">
+          <div class="rule-soft mb-4"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <button v-if="currentSurah.id>1" @click="openReader(currentSurah.id-1)" class="ed-row text-left" style="padding:16px 14px">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" style="color:var(--accent)" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M19 12H5M11 6l-6 6 6 6"/></svg>
+              <div class="flex-1 min-w-0">
+                <p class="kicker" style="color:var(--text-3);font-size:9px">PREVIOUS</p>
+                <p class="f-display truncate" style="font-size:15px;font-weight:700;letter-spacing:-0.02em;color:var(--text)">{{getSurah(currentSurah.id-1).nameEn}}</p>
+              </div>
+            </button>
+            <div v-else></div>
+            <button v-if="currentSurah.id<114" @click="openReader(currentSurah.id+1)" class="ed-row text-right" style="padding:16px 14px;grid-template-columns:1fr auto">
+              <div class="flex-1 min-w-0">
+                <p class="kicker" style="color:var(--text-3);font-size:9px">NEXT</p>
+                <p class="f-display truncate" style="font-size:15px;font-weight:700;letter-spacing:-0.02em;color:var(--text)">{{getSurah(currentSurah.id+1).nameEn}}</p>
+              </div>
+              <svg class="w-3.5 h-3.5 flex-shrink-0" style="color:var(--accent)" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- ================= BOOKMARKS ================= -->
@@ -5608,6 +5644,15 @@ V.createApp({
     });
 
     /* ===== TASBĪḤ ===== */
+    /* Persist the tasbīḥ so a count survives navigation and app
+       restarts — losing a dhikr count mid-tally is a real annoyance. */
+    function _saveTasbih() {
+      try {
+        localStorage.setItem('noor_tasbih', JSON.stringify({
+          count: tasbihCount.value, phase: tasbihPhase.value
+        }));
+      } catch (e) {}
+    }
     function tapTasbih() {
       var phase = tasbihPhases[tasbihPhase.value];
       if (!phase) return;
@@ -5623,14 +5668,17 @@ V.createApp({
           showMsg('TASBĪḤ COMPLETE — ALḤAMDULILLĀH');
         }
       }
+      _saveTasbih();
     }
     function resetTasbih() {
       tasbihCount.value = 0;
       tasbihPhase.value = 0;
+      _saveTasbih();
     }
     function cycleTasbihPhase() {
       tasbihCount.value = 0;
       tasbihPhase.value = (tasbihPhase.value + 1) % tasbihPhases.length;
+      _saveTasbih();
     }
 
     /* ===== HIJRI DATE =====
@@ -6058,6 +6106,11 @@ V.createApp({
           adhkarSession.value = adh.session;
           adhkarProgress.value = adh.progress;
         }
+        var tsb = JSON.parse(localStorage.getItem('noor_tasbih'));
+        if (tsb && typeof tsb.count === 'number' && typeof tsb.phase === 'number') {
+          tasbihCount.value = tsb.count;
+          tasbihPhase.value = tsb.phase;
+        }
       } catch (e) {}
       applyTheme();
       if (profile.value.name) page.value = 'home';
@@ -6080,10 +6133,13 @@ V.createApp({
         localStorage.removeItem('noor_prefs');
         localStorage.removeItem('noor_arabic_size');
         localStorage.removeItem('noor_adhkar');
+        localStorage.removeItem('noor_tasbih');
       } catch (e) {}
       profile.value = { name: '' };
       bookmarks.value = [];
       lastPosition.value = null;
+      tasbihCount.value = 0;
+      tasbihPhase.value = 0;
       showDeleteConfirm.value = false;
       page.value = 'onboarding';
     }
