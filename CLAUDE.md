@@ -8,8 +8,9 @@ A reverent Islamic educational companion. Quran (Arabic + translations + recitat
 ## Architecture at a glance
 
 - **One file does the whole app.** `index.html` holds markup, CSS (tokens + components), and a Vue 3 app. No build step, no bundler, no node_modules for the app itself — only Capacitor's CLI for packaging.
-- **Vue 3 from CDN** (`vue.global.prod.js`) + **Tailwind from CDN** (`cdn.tailwindcss.com`) + **Google Fonts** for display text.
-- **Local font asset:** `assets/fonts/KFGQPCUthmanicScriptHAFS.ttf` is copied into `www/fonts/` and `@font-face`-loaded for Quranic Arabic. The other fonts (Amiri, Cormorant Garamond, Inter) come from Google Fonts at runtime.
+- **Everything vendored for offline boot.** Vue 3 is pinned and self-hosted at `vendor/vue.global.prod.js`; Tailwind is precompiled to a static `styles.css` (via `npm run css` — see `tailwind.config.js` / `tailwind.input.css`), not the JIT CDN. Both are listed in the SW shell so an installed Noor boots and renders with zero network.
+- **Self-hosted fonts:** `assets/fonts/KFGQPCUthmanicScriptHAFS.ttf` (Quranic Arabic) plus the Amiri faces — `amiri-400.ttf`, `amiri-700.ttf`, `amiri-quran.ttf` — are `@font-face`-loaded and SW-cached, so the sacred Arabic face never degrades offline. Display fonts (Cinzel, Cormorant Garamond, Inter, Sora, Space Grotesk) still come from Google Fonts at runtime.
+- **Motion (progressive enhancement):** section nav + detail sheets + the surah→reader hero use the View Transitions API via a `vt()` helper, gated behind `@supports`/feature-detection so they no-op cleanly on Firefox/older Safari and respect `prefers-reduced-motion`.
 - **Persistence:** `localStorage` only. Keys: `noor_profile`, `noor_bookmarks`, `noor_last`, `noor_theme`, `noor_prefs`, `noor_arabic_size`.
 - **Offline shell:** `sw.js` — network-first with cache fallback; always-live pass-through for `api.quran.com`, `verses.quran.com`, `everyayah.com`.
 - **Android wrapper:** Capacitor 8 copies `index.html`, `sw.js`, and fonts into `www/`, then into the Android project.
@@ -20,21 +21,23 @@ A reverent Islamic educational companion. Quran (Arabic + translations + recitat
 
 | Layer | Choice |
 |-------|--------|
-| App framework | Vue 3 (global build, CDN) |
-| Styling | Tailwind (CDN) + CSS custom properties in `:root` / `.dark` |
+| App framework | Vue 3 (global build, **vendored** at `vendor/vue.global.prod.js`) |
+| Styling | Tailwind **precompiled** to `styles.css` + CSS custom properties in `:root` / `.dark` |
+| Motion | View Transitions API (`vt()` helper, `@supports`-gated progressive enhancement) |
 | Persistence | `localStorage` |
 | Offline | Service worker (`sw.js`) |
 | Native wrapper | Capacitor 8 (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android`) |
-| Fonts | KFGQPC Uthmanic Hafs (local), Amiri / Cormorant Garamond / Inter (Google Fonts) |
+| Fonts | KFGQPC Uthmanic Hafs + Amiri (self-hosted); Cinzel / Cormorant Garamond / Inter / Sora / Space Grotesk (Google Fonts) |
 
 ---
 
 ## Getting Started
 
 ```bash
-npm install              # installs Capacitor CLI + Android platform
+npm install              # installs Capacitor CLI + Android platform + tailwindcss
 npm run add-android      # first-time only — creates /android
-npm run build            # copies index.html, sw.js, fonts into www/ and syncs Android
+npm run css              # precompile Tailwind → styles.css (re-run after editing index.html classes)
+npm run build            # css → copy index.html/sw.js/styles.css/vendor/fonts into www/ → cap copy android
 npm run open             # opens Android Studio
 ```
 
@@ -42,12 +45,16 @@ Scripts in `package.json`:
 
 | Script | What it does |
 |--------|--------------|
-| `build` | `mkdir -p www/fonts && cp index.html www/ && cp sw.js www/ && cp assets/fonts/*.ttf www/fonts/ && npx cap copy android` |
+| `css` | `npx tailwindcss -i tailwind.input.css -o styles.css --config tailwind.config.js --minify` |
+| `build` | `npm run css && npm run copy-www && npx cap copy android` |
+| `copy-www` | copies `index.html`, `sw.js`, `styles.css`, `vendor/`, fonts, icons into `www/` |
 | `sync` | `npx cap sync android` (copy + update native deps) |
 | `open` | `npx cap open android` |
 | `add-android` | One-time Android platform add |
 
-For pure web testing, open `index.html` directly in a browser or serve the project root over any static server.
+**Web deploy (GitHub Pages):** Pages serves the repo root (`themra99.github.io/noor/`), so a web release is just committing the source files — `index.html`, `sw.js`, `styles.css`, `vendor/`, `assets/`. The `www/` build is only for the Capacitor Android wrapper. **Bump the `CACHE` constant in `sw.js` on every web deploy** so returning installs pick up the new shell.
+
+For pure web testing, serve the project root over any static server (e.g. `python -m http.server`) so the SW + vendored paths resolve.
 
 ---
 
@@ -56,12 +63,18 @@ For pure web testing, open `index.html` directly in a browser or serve the proje
 ```
 noor/
 ├── index.html              # THE app — markup, styles, Vue component
-├── sw.js                   # Service worker
+├── sw.js                   # Service worker (bump CACHE on every web deploy)
+├── styles.css              # precompiled Tailwind (generated by npm run css)
+├── tailwind.config.js      # content + safelist (pt-4) for the precompile
+├── tailwind.input.css      # @tailwind base/components/utilities
+├── vendor/
+│   └── vue.global.prod.js  # pinned, self-hosted Vue 3
 ├── capacitor.config.json   # appId com.themra99.noor, webDir www, bg #0D1F1A
 ├── package.json
 ├── assets/
 │   ├── fonts/
-│   │   └── KFGQPCUthmanicScriptHAFS.ttf   # local Quran font (the others come from Google)
+│   │   ├── KFGQPCUthmanicScriptHAFS.ttf   # Quranic Arabic (Uthmani Hafs)
+│   │   └── amiri-400.ttf, amiri-700.ttf, amiri-quran.ttf   # self-hosted Amiri faces
 │   ├── icon.png, adaptive-icon.png, splash-icon.png, favicon.png
 └── www/                    # build output — git-ignored, created by npm run build
 ```

@@ -80,7 +80,7 @@
       --base-2: #1A6650;
       --accent: #C9A961;
       --accent-2: #B8935A;
-      --accent-soft: rgba(201,169,97,0.12);
+      --accent-soft: color-mix(in oklch, var(--accent) 12%, transparent);
       --parchment: #F5F0E1;
       --ink: #0A0F0D;
       --sacred: #0F4C3A;        /* RESERVED — .sacred-frame only */
@@ -157,7 +157,7 @@
     button, [role="button"], .tile, .hv, .ed-row { transition: transform var(--d-q) var(--e-out), color var(--d-q), background var(--d-q), border-color var(--d-q); }
 
     /* ===== TYPE SYSTEM — editorial ===== */
-    .f-display { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; }
+    .f-display { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; text-wrap: pretty; }
     .f-body    { font-family: 'Inter', system-ui, sans-serif; }
     .f-ar      { font-family: 'Amiri', 'Amiri Quran', serif; }
     .num       { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
@@ -167,6 +167,7 @@
       font-weight: 700;
       letter-spacing: -0.035em;
       line-height: 0.92;
+      text-wrap: balance;
       user-select: none;
       -webkit-user-select: none;
       cursor: default;
@@ -956,6 +957,38 @@
     button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
       outline: 2px solid var(--accent); outline-offset: 2px;
     }
+
+    /* ===== VIEW TRANSITIONS =====
+       Progressive enhancement: the whole block is gated behind @supports, so
+       browsers without the API simply never see these rules and fall back to
+       the existing sheetIn / page-enter animations. */
+    @supports (view-transition-name: none) {
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: var(--d-m);
+        animation-timing-function: var(--e-out);
+      }
+      /* Detail sheets — only ONE .modal-ct is ever mounted (mutually-exclusive
+         v-if), so a single shared name is safe and gives a clean rise-and-morph. */
+      .modal-ct { view-transition-name: detail-sheet; }
+      ::view-transition-group(detail-sheet) {
+        animation-duration: var(--d-m);
+        animation-timing-function: var(--e-bounce);
+      }
+      /* Surah index card → reader masthead morph (Phase 2). Only the tapped
+         card is named at a time, via the heroId ref, so the other 113 don't
+         each run an exit animation. */
+      ::view-transition-group(surah-hero) {
+        animation-duration: var(--d-s);
+        animation-timing-function: var(--e-inout);
+      }
+    }
+    /* Respect opt-out: kill transition animations entirely. */
+    @media (prefers-reduced-motion: reduce) {
+      ::view-transition-group(*),
+      ::view-transition-old(*),
+      ::view-transition-new(*) { animation: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -1217,7 +1250,7 @@
 
         <!-- List -->
         <div class="stagger">
-          <button v-for="s in filteredSurahs" :key="s.id" @click="openReader(s.id)" class="ed-row w-full text-left">
+          <button v-for="s in filteredSurahs" :key="s.id" @click="heroId = s.id; openReader(s.id)" :style="{ viewTransitionName: heroId === s.id ? 'surah-hero' : '' }" class="ed-row w-full text-left">
             <span class="ed-num num">{{String(s.id).padStart(3,'0')}}</span>
             <div class="flex-1 min-w-0">
               <p class="f-display truncate" style="font-size:19px;font-weight:700;letter-spacing:-0.02em">{{s.nameEn}}</p>
@@ -1243,7 +1276,7 @@
             <p class="kicker" style="color:var(--text-3)">SURAH / {{currentSurah.revelationPlace==='Mecca'?'MECCAN':'MEDINAN'}} / <span class="num">{{currentSurah.ayahCount}} AYĀT</span></p>
             <div class="flex items-end justify-between mt-2">
               <div class="flex-1 min-w-0">
-                <h1 class="display display-md" style="color:var(--text)">{{currentSurah.nameEn}}<span class="text-accent">.</span></h1>
+                <h1 class="display display-md" style="color:var(--text);view-transition-name:surah-hero">{{currentSurah.nameEn}}<span class="text-accent">.</span></h1>
                 <p class="f-display mt-2" style="font-size:17px;font-weight:500;color:var(--accent);font-style:italic;letter-spacing:-0.005em">"{{currentSurah.meaning}}"</p>
               </div>
               <p class="big-num flex-shrink-0" style="font-size:clamp(64px,16vw,92px);line-height:0.82;color:var(--accent);opacity:0.8">{{String(currentSurah.id).padStart(3,'0')}}</p>
@@ -1326,7 +1359,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M17 2l4 4-4 4M3 10v-2a4 4 0 014-4h14M7 22l-4-4 4-4M21 14v2a4 4 0 01-4 4H3"/></svg>
                 <span v-if="memorize.verseKey===v.verse_key" style="font-size:9px;font-weight:700;margin-left:2px">×{{memorize.target}}</span>
               </button>
-              <button v-if="v.words && v.words.length" @click="selectedWordVerse=v" class="btn-icon" aria-label="Word-by-word">
+              <button v-if="v.words && v.words.length" @click="vt(()=>selectedWordVerse=v)" class="btn-icon" aria-label="Word-by-word">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M4 7h16M4 12h10M4 17h16"/></svg>
               </button>
               <span class="ml-auto kicker num" style="color:var(--text-3)">{{v.verse_key}}</span>
@@ -1422,7 +1455,7 @@
         <p class="kicker num mb-6" style="color:var(--text-3)">99 / 99 OF ALLAH'S MOST BEAUTIFUL NAMES</p>
 
         <div class="grid grid-cols-2 gap-3">
-          <button v-for="n in asmaUlHusna" :key="n.id" @click="selectedName=n" class="name-tile">
+          <button v-for="n in asmaUlHusna" :key="n.id" @click="vt(()=>selectedName=n)" class="name-tile">
             <p class="name-num">{{String(n.id).padStart(2,'0')}}</p>
             <p class="name-ar">{{n.ar}}</p>
             <p class="name-en">{{n.translit}}</p>
@@ -1489,7 +1522,7 @@
         </div>
 
         <div class="space-y-3 stagger">
-          <div v-for="(h,hi) in filteredHadith" :key="h.n" @click="selectedHadith=h" class="verse-card" style="cursor:pointer">
+          <div v-for="(h,hi) in filteredHadith" :key="h.n" @click="vt(()=>selectedHadith=h)" class="verse-card" style="cursor:pointer">
             <span class="verse-index">HADITH</span>
             <span class="verse-num num">{{h.n}} / {{String(HADITH_DB.length).padStart(2,'0')}}</span>
             <div class="rule-soft mt-6 mb-4"></div>
@@ -1518,7 +1551,7 @@
         <p class="kicker mb-6" style="color:var(--text-3)">FROM ĀDAM (AS) TO MUḤAMMAD ﷺ</p>
 
         <div class="space-y-3 stagger">
-          <button v-for="p in STORIES_DB" :key="p.id" @click="selectedStory=p" class="ed-row w-full text-left">
+          <button v-for="p in STORIES_DB" :key="p.id" @click="vt(()=>selectedStory=p)" class="ed-row w-full text-left">
             <span class="ed-num num">{{p.n}}</span>
             <div class="flex-1 min-w-0">
               <p class="f-display truncate" style="font-size:19px;font-weight:700;letter-spacing:-0.02em">{{p.en}}</p>
@@ -1558,7 +1591,7 @@
         </div>
 
         <div class="space-y-3 stagger">
-          <button v-for="p in filteredFigures" :key="p.id" @click="selectedFigure=p" class="ed-row w-full text-left">
+          <button v-for="p in filteredFigures" :key="p.id" @click="vt(()=>selectedFigure=p)" class="ed-row w-full text-left">
             <span class="ed-num num">{{p.n}}</span>
             <div class="flex-1 min-w-0">
               <p class="f-display" style="font-size:18px;font-weight:700;letter-spacing:-0.02em;line-height:1.2">{{p.en}}</p>
@@ -1586,7 +1619,7 @@
         <p class="kicker mb-6" style="color:var(--text-3)">EVENTS FROM THE LIFE OF MUḤAMMAD ﷺ — IN ORDER</p>
 
         <div class="space-y-3 stagger">
-          <button v-for="(e,ei) in SEERAH_DB" :key="e.id" @click="selectedSeerah=e" class="ed-row w-full text-left">
+          <button v-for="(e,ei) in SEERAH_DB" :key="e.id" @click="vt(()=>selectedSeerah=e)" class="ed-row w-full text-left">
             <span class="ed-num num">{{e.n}}</span>
             <div class="flex-1 min-w-0">
               <p class="f-display" style="font-size:18px;font-weight:700;letter-spacing:-0.02em;line-height:1.2">{{e.title}}</p>
@@ -1935,7 +1968,7 @@
 
         <!-- Prayer entries -->
         <div class="space-y-3 stagger">
-          <button v-for="p in filteredPrayers" :key="p.id" @click="selectedPrayer=p" class="ed-row w-full text-left">
+          <button v-for="p in filteredPrayers" :key="p.id" @click="vt(()=>selectedPrayer=p)" class="ed-row w-full text-left">
             <span class="ed-num num">{{p.n}}</span>
             <div class="flex-1 min-w-0">
               <p class="f-display" style="font-size:19px;font-weight:700;letter-spacing:-0.02em">{{p.en}}</p>
@@ -2151,13 +2184,13 @@
     </div>
 
     <!-- Name detail -->
-    <div v-if="selectedName" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedName=null">
+    <div v-if="selectedName" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="vt(()=>selectedName=null)">
       <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4}">
         <!-- Black masthead -->
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-5">
             <span class="kicker" style="color:var(--accent)">NAME / <span class="num">{{String(selectedName.id).padStart(2,'0')}} OF 99</span></span>
-            <button @click="selectedName=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedName=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2170,18 +2203,18 @@
           <p class="f-display leading-snug mb-6" style="font-size:17px;font-weight:500;letter-spacing:-0.015em;color:var(--text-2)">
             Take a moment to contemplate this attribute of Allah. Invoke it in your du'a, and carry it with you through the day.
           </p>
-          <button @click="selectedName=null" class="btn btn-ghost btn-block">CLOSE</button>
+          <button @click="vt(()=>selectedName=null)" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
 
     <!-- Verse detail -->
-    <div v-if="selectedVerse" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedVerse=null">
+    <div v-if="selectedVerse" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="vt(()=>selectedVerse=null)">
       <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
         <div class="p-6">
           <div class="flex items-center justify-between mb-5">
             <p class="kicker text-accent">VERSE · {{selectedVerse.reference.replace('Quran ','').toUpperCase()}}</p>
-            <button @click="selectedVerse=null" class="btn-icon">
+            <button @click="vt(()=>selectedVerse=null)" class="btn-icon">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2191,7 +2224,7 @@
           <div class="rule-gold w-16 mb-4"></div>
           <p class="f-display leading-snug mb-5" style="font-size:19px;font-weight:500;letter-spacing:-0.015em;color:var(--text)">"{{selectedVerse.translation}}"</p>
           <p v-if="selectedVerse.note" class="text-sm italic mb-6" style="color:var(--text-3);line-height:1.55;border-left:2px solid var(--accent);padding-left:14px">{{selectedVerse.note}}</p>
-          <button v-if="selectedVerse.surahId" @click="openReaderAt(selectedVerse.surahId, selectedVerse.ayah);selectedVerse=null" class="btn btn-block">
+          <button v-if="selectedVerse.surahId" @click="vt(()=>{openReaderAt(selectedVerse.surahId, selectedVerse.ayah);selectedVerse=null})" class="btn btn-block">
             OPEN IN READER
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
           </button>
@@ -2200,12 +2233,12 @@
     </div>
 
     <!-- Hadith detail -->
-    <div v-if="selectedHadith" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedHadith=null">
+    <div v-if="selectedHadith" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="vt(()=>selectedHadith=null)">
       <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-3">
             <span class="kicker" style="color:var(--accent)">HADITH · <span class="num">{{selectedHadith.n}} OF {{String(HADITH_DB.length).padStart(2,'0')}}</span></span>
-            <button @click="selectedHadith=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedHadith=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2228,18 +2261,18 @@
               <p class="f-display mt-1" style="font-size:15px;font-weight:600;color:var(--text)">{{selectedHadith.source}}</p>
             </div>
           </div>
-          <button @click="selectedHadith=null" class="btn btn-ghost btn-block">CLOSE</button>
+          <button @click="vt(()=>selectedHadith=null)" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
 
     <!-- Story detail -->
-    <div v-if="selectedStory" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedStory=null">
+    <div v-if="selectedStory" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="vt(()=>selectedStory=null)">
       <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-5">
             <span class="kicker" style="color:var(--accent)">PROPHET · <span class="num">{{selectedStory.n}} OF 25</span></span>
-            <button @click="selectedStory=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedStory=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2255,18 +2288,18 @@
           <div class="rule-soft mb-4"></div>
           <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
           <p class="f-display italic mb-6" style="font-size:18px;font-weight:500;color:var(--text-2);line-height:1.5">"{{selectedStory.lesson}}"</p>
-          <button @click="selectedStory=null" class="btn btn-ghost btn-block">CLOSE</button>
+          <button @click="vt(()=>selectedStory=null)" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
 
     <!-- Figure detail -->
-    <div v-if="selectedFigure" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedFigure=null">
+    <div v-if="selectedFigure" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="vt(()=>selectedFigure=null)">
       <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-5">
             <span class="kicker" style="color:var(--accent)">{{selectedFigure.cat==='companion'?'COMPANION':selectedFigure.cat==='women'?'WOMAN OF ISLAM':'SCHOLAR'}} · <span class="num">{{selectedFigure.n}}</span></span>
-            <button @click="selectedFigure=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedFigure=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2290,18 +2323,18 @@
           <div class="rule-soft mb-4"></div>
           <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
           <p class="f-display italic mb-6" style="font-size:17px;font-weight:500;color:var(--text-2);line-height:1.55">"{{selectedFigure.lesson}}"</p>
-          <button @click="selectedFigure=null" class="btn btn-ghost btn-block">CLOSE</button>
+          <button @click="vt(()=>selectedFigure=null)" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
 
     <!-- Seerah event detail -->
-    <div v-if="selectedSeerah" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedSeerah=null">
+    <div v-if="selectedSeerah" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="vt(()=>selectedSeerah=null)">
       <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-5">
             <span class="kicker" style="color:var(--accent)">SEERAH · <span class="num">{{selectedSeerah.n}}</span> · {{selectedSeerah.year}}</span>
-            <button @click="selectedSeerah=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedSeerah=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2314,18 +2347,18 @@
           <div class="rule-soft mb-4"></div>
           <p class="kicker mb-2" style="color:var(--accent)">LESSON</p>
           <p class="f-display italic mb-6" style="font-size:17px;font-weight:500;color:var(--text-2);line-height:1.55">"{{selectedSeerah.lesson}}"</p>
-          <button @click="selectedSeerah=null" class="btn btn-ghost btn-block">CLOSE</button>
+          <button @click="vt(()=>selectedSeerah=null)" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
 
     <!-- Prayer detail -->
-    <div v-if="selectedPrayer" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedPrayer=null">
+    <div v-if="selectedPrayer" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="vt(()=>selectedPrayer=null)">
       <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-4">
             <span class="kicker" style="color:var(--accent)">PRAYER · <span class="num">{{selectedPrayer.n}}</span></span>
-            <button @click="selectedPrayer=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)" aria-label="Close">
+            <button @click="vt(()=>selectedPrayer=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)" aria-label="Close">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2363,18 +2396,18 @@
           <div v-if="selectedPrayer.notes" class="rule-soft mb-4"></div>
           <p v-if="selectedPrayer.notes" class="kicker mb-2" style="color:var(--accent)">NOTE</p>
           <p v-if="selectedPrayer.notes" class="text-sm italic mb-6" style="color:var(--text-2);line-height:1.55;border-left:2px solid var(--accent);padding-left:14px">{{selectedPrayer.notes}}</p>
-          <button @click="selectedPrayer=null" class="btn btn-ghost btn-block">CLOSE</button>
+          <button @click="vt(()=>selectedPrayer=null)" class="btn btn-ghost btn-block">CLOSE</button>
         </div>
       </div>
     </div>
 
     <!-- Word-by-word panel -->
-    <div v-if="selectedWordVerse" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="selectedWordVerse=null">
+    <div v-if="selectedWordVerse" class="fixed inset-0 z-50 flex items-end justify-center modal-bd" style="background:rgba(10,15,13,0.7)" @click.self="vt(()=>selectedWordVerse=null)">
       <div class="w-full max-w-xl overflow-hidden modal-ct" :style="{background:'var(--bg)',borderTop:'1.5px solid var(--text)',borderLeft:'1.5px solid var(--text)',borderRight:'1.5px solid var(--text)',borderTopLeftRadius:4,borderTopRightRadius:4,maxHeight:'90vh',overflowY:'auto'}">
         <div class="invert p-6 pb-6 relative">
           <div class="flex items-center justify-between mb-4">
             <span class="kicker" style="color:var(--accent)">WORD BY WORD · {{selectedWordVerse.verse_key}}</span>
-            <button @click="selectedWordVerse=null" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)" aria-label="Close">
+            <button @click="vt(()=>selectedWordVerse=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)" aria-label="Close">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2394,7 +2427,7 @@
           <div class="rule-gold w-12 mt-6 mb-4"></div>
           <p class="kicker mb-2" style="color:var(--accent)">FULL TRANSLATION</p>
           <p class="f-display italic" style="font-size:15px;font-weight:500;color:var(--text-2);line-height:1.55">"{{stripHtml(selectedWordVerse.translation)}}"</p>
-          <button @click="selectedWordVerse=null" class="btn btn-ghost btn-block mt-6">CLOSE</button>
+          <button @click="vt(()=>selectedWordVerse=null)" class="btn btn-ghost btn-block mt-6">CLOSE</button>
         </div>
       </div>
     </div>
@@ -5383,6 +5416,7 @@ V.createApp({
     var selectedSeerah = V.ref(null);
     var selectedWordVerse = V.ref(null); // holds a verse object → opens word-by-word panel
     var selectedPrayer = V.ref(null);
+    var heroId = V.ref(null); // surah id currently being morphed into the reader (Phase 2 view transition)
     var prayerCat = V.ref('fard');
     var showNameEdit = V.ref(false);
     var showDeleteConfirm = V.ref(false);
@@ -5763,6 +5797,15 @@ V.createApp({
        we DO push these onto history when navigating away from them
        (so going Library → Names builds a real back-trail). */
     var ROOT_PAGES = ['home', 'quran', 'library', 'profile', 'onboarding', 'setup-name'];
+    /* View Transitions — progressive enhancement.
+       startViewTransition snapshots OLD dom, runs mutate(), then waits for the
+       returned promise before snapshotting NEW dom. Vue renders async, so we
+       return V.nextTick() — otherwise it captures the stale frame and the morph
+       breaks. Falls back to a plain mutation where the API is absent. */
+    function vt(mutate) {
+      if (typeof document.startViewTransition !== 'function') { mutate(); return; }
+      document.startViewTransition(function () { mutate(); return V.nextTick(); });
+    }
     function go(p) {
       try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8); } catch (e) {}
       // Always push the current page onto history when moving to a new page
@@ -5773,21 +5816,21 @@ V.createApp({
       }
       // Tapping a top-level tab is intentionally "fresh" — clear the trail.
       if (ROOT_PAGES.indexOf(p) >= 0) pageHistory.value = [];
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(function () { page.value = p; }, 40);
+      window.scrollTo({ top: 0, behavior: 'auto' });   // instant; the transition supplies the motion
+      vt(function () { page.value = p; });
     }
     function goBack() {
       if (pageHistory.value.length > 0) {
         var prev = pageHistory.value.pop();
         try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8); } catch (e) {}
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(function () { page.value = prev; }, 40);
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        vt(function () { page.value = prev; });
       } else if (page.value === 'reader') {
         // Reader without history — fall back to the surah index.
-        page.value = 'quran';
+        vt(function () { page.value = 'quran'; });
       } else if (ROOT_PAGES.indexOf(page.value) < 0) {
         // Any sub-page without history — go home as a safe default.
-        page.value = 'home';
+        vt(function () { page.value = 'home'; });
       }
     }
     var canGoBack = V.computed(function () {
@@ -5847,11 +5890,13 @@ V.createApp({
         pageHistory.value.push(page.value);
         if (pageHistory.value.length > 24) pageHistory.value.shift();
       }
-      currentSurah.value = getSurah(surahId);
-      verses.value = [];
-      versesError.value = false;
-      page.value = 'reader';
       window.scrollTo({ top: 0 });
+      vt(function () {
+        currentSurah.value = getSurah(surahId);
+        verses.value = [];
+        versesError.value = false;
+        page.value = 'reader';
+      });
       loadSurah(surahId);
     }
     function openReaderAt(surahId, ayah) {
@@ -6090,7 +6135,7 @@ V.createApp({
     }
     function jumpToBookmark(bm) { openReaderAt(bm.surahId, parseInt(bm.verse_key.split(':')[1], 10)); }
 
-    function openVerseDetail(w) { selectedVerse.value = w; }
+    function openVerseDetail(w) { vt(function () { selectedVerse.value = w; }); }
 
     function openRandomVerse() {
       // Curated pool of meaningful verses (drawn from Daily, Wisdom, and Solace)
@@ -6287,7 +6332,7 @@ V.createApp({
       tasbihCount: tasbihCount, tasbihPhase: tasbihPhase, tasbihPhases: tasbihPhases,
       tapTasbih: tapTasbih, resetTasbih: resetTasbih, cycleTasbihPhase: cycleTasbihPhase,
       canGoBack: canGoBack, goBack: goBack,
-      go: go, toggleTheme: toggleTheme, getSurah: getSurah,
+      go: go, vt: vt, heroId: heroId, toggleTheme: toggleTheme, getSurah: getSurah,
       toArabicDigits: toArabicDigits, stripHtml: stripHtml, getThemeLabel: getThemeLabel,
       getReciterName: getReciterName, cyclePreferredReciter: cyclePreferredReciter,
       openReader: openReader, openReaderAt: openReaderAt, resumeReading: resumeReading,
