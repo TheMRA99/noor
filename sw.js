@@ -1,7 +1,7 @@
 /* Noor service worker — offline-first caching for the shell + fonts.
    With Tailwind and Vue vendored locally and the Arabic fonts self-
    hosted, an installed Noor now boots and renders fully offline. */
-var CACHE = 'noor-v22';
+var CACHE = 'noor-v23';
 var SHELL = [
   './',
   './index.html',

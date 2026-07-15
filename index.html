@@ -438,7 +438,7 @@
     .btn-block { width: 100%; padding: 18px 22px; font-size: 12px; letter-spacing: 0.24em; }
 
     .btn-icon {
-      width: 40px; height: 40px; border-radius: 999px;
+      width: 44px; height: 44px; border-radius: 999px;
       display: inline-flex; align-items: center; justify-content: center;
       border: 1.5px solid var(--surface-border);
       color: var(--text);
@@ -1009,7 +1009,7 @@
     <header v-if="showHeader" class="glass fixed top-0 left-0 right-0 z-40 safe-top" :style="{borderBottom:'1px solid var(--rule)'}">
       <div class="max-w-xl mx-auto flex items-center justify-between px-5 py-3.5">
         <div class="flex items-center gap-3">
-          <button v-if="canGoBack" @click="goBack" aria-label="Go back" class="btn-icon" style="width:36px;height:36px;border-color:var(--rule)">
+          <button v-if="canGoBack" @click="goBack" aria-label="Go back" class="btn-icon" style="width:44px;height:44px;border-color:var(--rule)">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="square" d="M19 12H5M11 6l-6 6 6 6"/></svg>
           </button>
           <button @click="page==='home'?null:go('home')" aria-label="Home" class="flex items-baseline gap-2">
@@ -1069,7 +1069,7 @@
         <h2 class="display display-lg mb-2" style="color:var(--text)">As-salamu<br>alaikum<span class="text-accent">.</span></h2>
         <div class="rule my-6"></div>
         <p class="label mb-4" style="color:var(--text-3)">What should we call you?</p>
-        <input v-model="profile.name" @keyup.enter="profile.name.trim()&&finishSetup()" type="text" placeholder="Your name" maxlength="30" class="input input-lg">
+        <input v-model="profile.name" @keyup.enter="profile.name.trim()&&finishSetup()" type="text" placeholder="Your name" aria-label="Your name" autocomplete="name" maxlength="30" class="input input-lg">
         <div class="flex items-center gap-5 mt-8">
           <div class="flex-shrink-0 invert" style="width:64px;height:64px;border-radius:4px;display:flex;align-items:center;justify-content:center">
             <span class="display f-display" style="font-size:30px;font-weight:700">{{avatarInitial}}</span>
@@ -1238,7 +1238,7 @@
 
         <!-- Search -->
         <div class="relative mb-4">
-          <input v-model="surahSearch" type="text" placeholder="Search — name, meaning, number" class="input">
+          <input v-model="surahSearch" type="text" placeholder="Search — name, meaning, number" aria-label="Search surahs" enterkeyhint="search" class="input">
           <button v-if="surahSearch" @click="surahSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -1348,7 +1348,7 @@
                 <svg v-if="!(audio.currentAyah===v.verse_key&&audio.isPlaying)" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.84A1 1 0 004.84 3.7v12.6a1 1 0 001.46.86l11-6.3a1 1 0 000-1.72l-11-6.3z"/></svg>
                 <svg v-else class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5zm7 0h3v12h-3z"/></svg>
               </button>
-              <button @click="toggleBookmark(v, $event)" class="btn-icon" :style="isBookmarked(v.verse_key)?{borderColor:'var(--accent)',color:'var(--accent)'}:{}">
+              <button @click="toggleBookmark(v, $event)" :aria-label="isBookmarked(v.verse_key)?'Remove bookmark':'Bookmark this verse'" class="btn-icon" :style="isBookmarked(v.verse_key)?{borderColor:'var(--accent)',color:'var(--accent)'}:{}">
                 <svg v-if="isBookmarked(v.verse_key)" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
               </button>
@@ -1436,7 +1436,7 @@
                 OPEN IN READER
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="square" d="M5 12h14M13 6l6 6-6 6"/></svg>
               </button>
-              <button @click="removeBookmark(bm.verse_key)" class="btn-icon">
+              <button @click="removeBookmark(bm.verse_key)" aria-label="Remove bookmark" class="btn-icon">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
@@ -1515,7 +1515,7 @@
         <p class="kicker mb-4" style="color:var(--text-3)">SELECTIONS — AN-NAWAWĪ · BUKHĀRĪ · MUSLIM</p>
 
         <div class="relative mb-5">
-          <input v-model="hadithSearch" type="text" placeholder="Search hadith — theme, narrator, text" class="input">
+          <input v-model="hadithSearch" type="text" placeholder="Search hadith — theme, narrator, text" aria-label="Search hadith" enterkeyhint="search" class="input">
           <button v-if="hadithSearch" @click="hadithSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)" aria-label="Clear search">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -1573,7 +1573,7 @@
         <p class="kicker mb-4" style="color:var(--text-3)">LIVES THAT SHAPED THE FAITH</p>
 
         <div class="relative mb-4">
-          <input v-model="figureSearch" type="text" placeholder="Search by name, era, title, or biography" class="input">
+          <input v-model="figureSearch" type="text" placeholder="Search by name, era, title, or biography" aria-label="Search figures" enterkeyhint="search" class="input">
           <button v-if="figureSearch" @click="figureSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)" aria-label="Clear search">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -1641,7 +1641,7 @@
         <p class="kicker mb-4" style="color:var(--text-3)">VERSES TO READ WHEN — CHOOSE A FEELING</p>
 
         <div class="relative mb-4">
-          <input v-model="solaceSearch" type="text" placeholder="Search verses — translation, reflection, reference" class="input">
+          <input v-model="solaceSearch" type="text" placeholder="Search verses — translation, reflection, reference" aria-label="Search solace verses" enterkeyhint="search" class="input">
           <button v-if="solaceSearch" @click="solaceSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)" aria-label="Clear search">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -1751,11 +1751,11 @@
             <div class="flex items-center justify-between gap-3">
               <span class="kicker num" style="color:var(--accent)">{{adhkarProgress[a.id]||0}} / {{a.count}}</span>
               <div class="flex gap-2">
-                <button @click="bumpAdhkar(a)" class="btn-icon" :style="(adhkarProgress[a.id]||0)>=a.count?{borderColor:'var(--accent)',background:'var(--accent)',color:'var(--ink)'}:{}">
+                <button @click="bumpAdhkar(a)" aria-label="Count this remembrance" class="btn-icon" :style="(adhkarProgress[a.id]||0)>=a.count?{borderColor:'var(--accent)',background:'var(--accent)',color:'var(--ink)'}:{}">
                   <svg v-if="(adhkarProgress[a.id]||0)>=a.count" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
                   <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M12 5v14M5 12h14"/></svg>
                 </button>
-                <button v-if="(adhkarProgress[a.id]||0)>0" @click="resetOne(a)" class="btn-icon" style="color:var(--text-3)">
+                <button v-if="(adhkarProgress[a.id]||0)>0" @click="resetOne(a)" aria-label="Reset count" class="btn-icon" style="color:var(--text-3)">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M3 12a9 9 0 1015-6.7L21 8M21 3v5h-5"/></svg>
                 </button>
               </div>
@@ -1775,7 +1775,7 @@
         <p class="kicker mb-4" style="color:var(--text-3)">PRAY THESE — AS THE OCCASION RISES</p>
 
         <div class="relative mb-4">
-          <input v-model="duaSearch" type="text" placeholder="Search by occasion, words, or source" class="input">
+          <input v-model="duaSearch" type="text" placeholder="Search by occasion, words, or source" aria-label="Search du'as" enterkeyhint="search" class="input">
           <button v-if="duaSearch" @click="duaSearch=''" class="absolute right-4 top-1/2 -translate-y-1/2" style="color:var(--text-3)" aria-label="Clear search">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -2146,7 +2146,7 @@
           <svg v-if="audio.isPlaying" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5zm7 0h3v12h-3z"/></svg>
           <svg v-else class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.84A1 1 0 004.84 3.7v12.6a1 1 0 001.46.86l11-6.3a1 1 0 000-1.72l-11-6.3z"/></svg>
         </button>
-        <button @click="stopAudio" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+        <button @click="stopAudio" aria-label="Stop recitation" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -2174,7 +2174,7 @@
         <div class="p-6">
           <p class="kicker text-accent mb-2">EDIT PROFILE</p>
           <h3 class="display display-sm mb-5" style="color:var(--text)">Your name</h3>
-          <input v-model="profile.name" @keyup.enter="showNameEdit=false;save()" type="text" maxlength="30" class="input input-lg" style="font-size:20px">
+          <input v-model="profile.name" @keyup.enter="showNameEdit=false;save()" type="text" aria-label="Your name" autocomplete="name" maxlength="30" class="input input-lg" style="font-size:20px">
           <div class="flex gap-3 mt-5">
             <button @click="showNameEdit=false" class="btn btn-ghost flex-1">CANCEL</button>
             <button @click="showNameEdit=false;save()" class="btn btn-accent flex-1">SAVE</button>
@@ -2190,7 +2190,7 @@
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-5">
             <span class="kicker" style="color:var(--accent)">NAME / <span class="num">{{String(selectedName.id).padStart(2,'0')}} OF 99</span></span>
-            <button @click="vt(()=>selectedName=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedName=null)" aria-label="Close" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2214,7 +2214,7 @@
         <div class="p-6">
           <div class="flex items-center justify-between mb-5">
             <p class="kicker text-accent">VERSE · {{selectedVerse.reference.replace('Quran ','').toUpperCase()}}</p>
-            <button @click="vt(()=>selectedVerse=null)" class="btn-icon">
+            <button @click="vt(()=>selectedVerse=null)" aria-label="Close" class="btn-icon">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2238,7 +2238,7 @@
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-3">
             <span class="kicker" style="color:var(--accent)">HADITH · <span class="num">{{selectedHadith.n}} OF {{String(HADITH_DB.length).padStart(2,'0')}}</span></span>
-            <button @click="vt(()=>selectedHadith=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedHadith=null)" aria-label="Close" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2272,7 +2272,7 @@
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-5">
             <span class="kicker" style="color:var(--accent)">PROPHET · <span class="num">{{selectedStory.n}} OF 25</span></span>
-            <button @click="vt(()=>selectedStory=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedStory=null)" aria-label="Close" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2299,7 +2299,7 @@
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-5">
             <span class="kicker" style="color:var(--accent)">{{selectedFigure.cat==='companion'?'COMPANION':selectedFigure.cat==='women'?'WOMAN OF ISLAM':'SCHOLAR'}} · <span class="num">{{selectedFigure.n}}</span></span>
-            <button @click="vt(()=>selectedFigure=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedFigure=null)" aria-label="Close" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -2334,7 +2334,7 @@
         <div class="invert p-6 pb-7 relative">
           <div class="flex items-center justify-between mb-5">
             <span class="kicker" style="color:var(--accent)">SEERAH · <span class="num">{{selectedSeerah.n}}</span> · {{selectedSeerah.year}}</span>
-            <button @click="vt(()=>selectedSeerah=null)" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
+            <button @click="vt(()=>selectedSeerah=null)" aria-label="Close" class="btn-icon" style="border-color:rgba(245,240,225,0.25);color:var(--fg-invert)">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
